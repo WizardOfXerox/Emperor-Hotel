@@ -1,0 +1,172 @@
+PROJECT OVERVIEW
+
+Project name:
+Emperor Hotel Reservation System
+
+Purpose:
+This project is a web-based hotel reservation system built with Core PHP, OOP, MySQL, XML + DOM, and Bootstrap-based responsive pages. It supports public hotel pages, user booking, admin operations, room inventory, reservations, payments, users, and dashboard reporting.
+
+TECH STACK
+
+- Core PHP with OOP model classes
+- MySQL database through PDO prepared statements
+- XML import/export using DOMDocument
+- Bootstrap 5 for responsive layout
+- Local Chart.js 4.5.1 browser build for dashboard charts
+- External CSS files under public/assets/css
+- XAMPP-compatible local development structure
+
+CURRENT FOLDER STRUCTURE
+
+- app/config/database.php: Database connection class
+- app/helpers/auth.php: Session, authentication, flash, escaping, and money helpers
+- app/models/User.php: User account CRUD and authentication
+- app/models/Guest.php: Guest profile CRUD and upsert helpers
+- app/models/Room.php: Room CRUD, room status, room prices, XML import/export, and room summaries
+- app/models/Reservation.php: Reservation CRUD, availability checking, status syncing, dashboard summaries
+- app/models/Payment.php: Payment recording and payment summaries
+- database/schema.sql: Main database schema plus initial room seed data
+- database/seed_rooms.sql: Safe seed/update script for existing databases
+- docs/database-erd.md: ERD and database documentation
+- docs/dashboard-feature-tracker.md: Current dashboard/admin feature tracker
+- docs/technology-stack.md: Technologies, libraries, assets, and runtime notes
+- public/site/home.php: Public homepage
+- public/site/rooms.php: Public room details and room inventory page
+- public/auth/login.php: Login page and handler
+- public/auth/register.php: Registration page and handler
+- public/auth/logout.php: Logout handler
+- public/admin/dashboard.php: Admin dashboard with live summaries and Chart.js charts
+- public/admin/rooms.php: Admin room CRUD, bulk type price update, XML import/export
+- public/admin/reservations.php: Admin reservation CRUD
+- public/admin/payments.php: Admin payment recording and summaries
+- public/admin/users.php: Admin user CRUD
+- public/user/dashboard.php: User booking dashboard
+- public/assets/vendor/chartjs/chart.umd.min.js: Local Chart.js browser file
+
+IMPLEMENTED REQUIREMENT STATUS
+
+1. Authentication System
+
+Status: Implemented
+
+- Login is handled by public/auth/login.php.
+- Registration is handled by public/auth/register.php.
+- Logout is handled by public/auth/logout.php.
+- Role-based access exists for admin and user pages.
+- Passwords are stored with password_hash().
+- User sessions are handled in app/helpers/auth.php.
+
+2. CRUD Operations
+
+Status: Implemented for core entities
+
+- Users: create, read, update, delete in public/admin/users.php.
+- Rooms: create, read, update, delete in public/admin/rooms.php.
+- Reservations: create, read, update, delete in public/admin/reservations.php.
+- Payments: create/read and summary reporting in public/admin/payments.php.
+- Guests: created and updated through reservation/user booking flows.
+
+3. Database Requirements
+
+Status: Implemented
+
+- Main SQL file: database/schema.sql.
+- Existing database seed/update file: database/seed_rooms.sql.
+- Current tables: users, guests, rooms, reservations, payments.
+- Primary keys are defined on all tables.
+- Foreign keys connect users to guests/reservations, guests to reservations, rooms to reservations, and reservations to payments.
+- Prepared statements are used through PDO in the model classes.
+- ERD documentation is in docs/database-erd.md.
+
+4. PHP OOP Implementation
+
+Status: Implemented
+
+Main classes:
+
+- Database
+- User
+- Guest
+- Room
+- Reservation
+- Payment
+
+OOP usage:
+
+- Constructors receive PDO connections in model classes.
+- Methods separate database logic from page handlers.
+- Files are separated by concern under app/config, app/helpers, and app/models.
+- public/includes/bootstrap.php loads configuration, helpers, and model classes.
+
+5. XML + DOM Integration
+
+Status: Implemented for room records
+
+- XML export is available in public/admin/rooms.php using rooms.php?export=xml.
+- XML import is available through the Rooms admin page upload form.
+- XML generation and parsing are implemented in app/models/Room.php.
+- DOMDocument is used for export/import.
+
+Expected room XML fields:
+
+<rooms>
+  <room>
+    <room_number>101</room_number>
+    <room_type>Imperial Deluxe</room_type>
+    <floor>1</floor>
+    <capacity_adults>2</capacity_adults>
+    <capacity_children>1</capacity_children>
+    <price_per_night>4500.00</price_per_night>
+    <status>Available</status>
+    <description>Room description</description>
+  </room>
+</rooms>
+
+6. UI Requirements
+
+Status: Implemented and still being improved
+
+- Public homepage and rooms page exist.
+- Admin dashboard and admin modules exist.
+- User booking dashboard exists.
+- Bootstrap is used for responsive layout.
+- External CSS files are used from public/assets/css.
+- Main site logo SVG is used as favicon and navbar branding.
+- Room pages include room image carousels.
+- Admin pages use a shared background image treatment.
+
+CURRENT ROOM INVENTORY
+
+The system uses three room types:
+
+- Imperial Deluxe: 12 rooms, default seed price PHP 4,500.00
+- Royal Executive: 12 rooms, default seed price PHP 7,500.00
+- Emperor Presidential: 12 rooms, default seed price PHP 12,500.00
+
+Room prices are stored in the database in rooms.price_per_night. They are not controlled by hardcoded public page values. Admins can update all rooms under one room type through the bulk price update form in public/admin/rooms.php.
+
+DASHBOARD FEATURES
+
+The admin dashboard currently includes:
+
+- User count
+- Customers this month
+- Revenue this month
+- Available rooms
+- Pending reservations
+- Upcoming check-outs
+- Monthly bookings and confirmed revenue chart
+- Reservation status chart
+- Room status chart
+- Payment status chart
+- Recent reservation table
+- Recent payment table
+
+OPEN / NEXT WORK
+
+- Add a dedicated check-in/check-out workflow page.
+- Add partial payment/balance tracking.
+- Add guest search and guest profile history screens.
+- Add richer reports for occupancy, revenue by room type, and booking trends.
+- Improve admin action buttons for reservation status transitions.
+- Add stronger client-side validation where helpful, while keeping server-side validation as the source of truth.

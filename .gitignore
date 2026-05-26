@@ -1,0 +1,49 @@
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# PHP / Composer
+/vendor/
+/composer.phar
+/.phpunit.result.cache
+/phpunit.xml.cache
+
+# JavaScript / frontend tooling
+/node_modules/
+/dist/
+/build/
+/coverage/
+
+# Local uploads, cache, and temp files
+/public/uploads/
+/public/exports/
+/exports/
+/storage/
+/cache/
+/tmp/
+*.tmp
+*.bak
+*.backup
+*.orig
+*.rej
+*-export.xml
+
+# Logs and local database artifacts
+*.log
+*.sqlite
+*.sqlite3
+*.sql.gz
+*.sql.bak
+*.dump
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*~
+
+# Codex / browser verification artifacts
+/.playwright-mcp/

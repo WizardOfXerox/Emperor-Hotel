@@ -1,0 +1,497 @@
+body{
+    margin: 0px;
+    font-size: 24px;
+    background-color: #020617;
+}
+
+
+/* NAVIGATION SECTION HERE! */
+
+/*NAVIGATION BAR*/
+nav{
+    top: 0;
+    z-index: 1000;
+    position:sticky;
+}
+
+/*COTAINER FOR NAVIGATION*/
+.container{
+    width: 100vw;
+    height: 75px;
+    display: flex;
+    padding: 2.5px;
+    align-items: center;
+    background-color: #f8fafc;
+    justify-content: space-between;
+}
+
+/*LOGO*/
+.logo img{
+    width: 70px;
+    height: 50px;
+    transition: 0.5s;
+    margin-left: 30px;
+    transform: scale(1);
+    border-radius: 7.5px;
+    display: inline-block;
+    border: 2px solid black;
+    background-color: black;
+}
+
+/*LOGO HOVER*/
+.logo img:hover{
+    transform: scale(1.1);
+}
+
+/*NAVIGATION BUTTON*/
+.navigation{
+    gap: 25px;
+    width: 500px;
+    height: 50px;
+    display: flex;
+    font-weight: bold;
+    align-items: center;
+    justify-content: center;
+}
+
+/*HOME BUTTON*/
+.home{
+    width: 125px;
+    height: 50px;
+    display: flex;
+    color: black;
+    transition: 0.5s;
+    font-size: 0.7em;
+    border-radius: 5px;
+    font-weight: normal;
+    transform: scale(1);
+    align-items: center;
+    text-decoration: none;
+    justify-content: center;
+    border: 2px solid black;
+    background-color: #f8fafc;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*HOME BUTTON HOVER*/
+.home:hover{
+    color: white;
+    font-weight: bold;
+    transform: scale(1.1);
+    background-color: black;
+}
+
+/*SUITES & ROOM BUTTON*/
+.suites_rooms{
+    width: 150px;
+    height: 50px;
+    display: flex;
+    transition: 0.5s;
+    color: #f8fafc;
+    font-size: 0.7em;
+    border-radius: 5px;
+    transform: scale(1);
+    font-weight: bold;
+    align-items: center;
+    text-decoration: none;
+    justify-content: center;
+    border: 2px solid black;
+    background-color: black;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*NAVIGATION CTA*/
+.cta{
+    width: 150px;
+    height: 50px;
+    display: flex;
+    margin-right: 30px;
+    align-items: center;
+    justify-content: center;
+}
+
+/*BOOK NOW BUTTON*/
+.log_in{
+    width: 150px;
+    height: 50px;
+    transition: 0.5s;
+    color: #fdd700;
+    font-size: 0.7em;
+    border-radius: 5px;
+    font-weight: normal;
+    align-items: center;
+    transform: scale(1);
+    display: inline-block;
+    justify-content: center;
+    background-color: black;
+    border: 2px solid black;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*BOOK NOW BUTTON HOVER*/
+.log_in:hover{
+    font-weight: bold;
+    transform: scale(1.1);
+    background-color: black;
+}
+
+
+/* HERO SECTION/DESCRIPTION HERE! */
+
+
+/*CONTAINER FOR HERO SECTION*/
+.hero{
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+}
+
+/*LINEAR GRADIENT FOR HERO IMG*/
+.hero::before{
+    inset: 0;
+    content: "";
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    background: linear-gradient(to top, black, transparent);
+}
+
+/*HERO IMAGE*/
+.hero img{
+    z-index: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    position: absolute;
+}
+
+/*HERO DESCRIPTION*/
+.hero_content{
+    gap: 10px;
+    z-index: 2;
+    width: 2000px;
+    height: 100px;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 150px;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+}
+
+/*HEADING 1*/
+.h1{
+    margin: 0px;
+    width: 2000px;
+    display: flex;
+    font-size: 5em;
+    color: #fdd700;
+    text-align: center;
+    line-height: 110px;
+    word-spacing: 25px;
+    letter-spacing: 8.5px;
+    justify-content: center;
+    font-family: 'DM Serif Display';
+}
+
+/*HEADING 3*/
+.h3{
+    margin: 0px;
+    width: 2000px;
+    display: flex;
+    font-size: 1em;
+    color: #f8fafc;
+    line-height: 50px;
+    text-align: center;
+    letter-spacing: 2.5px;
+    justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*BOOK NOW 2 BUTTON*/
+.home_2{
+    width: 150px;
+    height: 60px;
+    display: flex;
+    transition: 0.5s;
+    color: #f8fafc;
+    font-size: 0.7em;
+    margin-left: 10px;
+    border-radius: 5px;
+    font-weight: normal;
+    align-items: center;
+    transform: scale(1);
+    text-decoration: none;
+    justify-content: center;
+    border: 2px solid #f8fafc;
+    background-color: transparent;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*BOOK NOW 2 BUTTON HOVER*/
+.home_2:hover{
+    color: #fdd700;
+    font-weight: bold;
+    transform: scale(1.1);
+    background-color: #020617;
+    border: 2px solid #fdd700;
+}
+
+
+/* ROOMS SECTION/DESCRIPTION HERE! */
+
+/*ROOM CONTAINER*/
+.rooms{
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    background-color: #020617;
+    justify-content: space-around;
+}
+
+/*CARD 1*/
+.card_1{
+    margin: 0px;
+    width: 400px;
+    height: 600px;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    align-items: center;
+    border-radius: 10px;
+    justify-content: center;
+    background-color: #f8fafc;
+    border: 2px solid #f8fafc;
+}
+
+/*CARD 1 IMAGE*/
+.card_1 img{
+    width: 350px;
+    height: 250px;
+    margin-top: 0px;
+    border-radius: 5px;
+    display: inline-block;
+    background-color: #020617;
+}
+
+/*HEADING FOR ROOM NAME*/
+.h2_1{
+    width: 325px;
+    height: 70px;
+    font-size: 1.10em;
+    color: #020617;
+    text-align: left;
+    margin-top: -25px;
+    text-align: center;
+    letter-spacing: 1px;
+    display: inline-block;
+    background-color: transparent;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*DESCRIPTION FOR ROOM NAME*/
+.p_1{
+    width: 325px;
+    height: 100px;
+    color: #020617;
+    font-size: 0.75em;
+    margin-top: -85px;
+    text-align: center;
+    display: inline-block;
+    overflow-wrap: break-word;
+    background-color: transparent;
+    font-family: 'DM Sans', sans-serif;
+}
+
+
+/*VIEW SUITES BUTTON*/
+.view_suites_1{
+    width: 325px;
+    height: 75px;
+    transition: 1s;
+    font-size: 0.75em;
+    color: #fdd700;
+    margin-top: -10px;
+    text-align: center;
+    font-weight: normal;
+    transform: scale(1);
+    border-radius: 10px;
+    display: inline-block;
+    background-color:#020617;
+    border: 1px solid #020617;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*VIEW SUITES BUTTON HOVER*/
+.view_suites_1:hover{
+    color: #020617;
+    font-weight: bold;
+    transform: scale(1.1);
+    background-color:#fdd700;
+    border: 1px solid #fdd700;
+}
+
+/*ROOM 2 CONTAINER*/
+.card_2{
+    margin: 0px;
+    width: 400px;
+    height: 600px;
+    display: flex;
+    flex-wrap: wrap;    
+    position: relative;
+    align-items: center;
+    border-radius: 10px;
+    justify-content: center;
+    background-color: #f8fafc;
+}
+
+/*CARD 2 IMAGE*/
+.card_2 img{
+    width: 350px;
+    height: 250px;
+    margin-top: 0px;
+    border-radius: 5px;
+    display: inline-block;
+    background-color: #020617;
+}
+
+/*HEADING FOR ROOM NAME*/
+.h2_2{
+    width: 325px;
+    height: 70px;
+    font-size: 1.10em;
+    color: #020617;
+    text-align: left;
+    margin-top: -25px;
+    text-align: center;
+    letter-spacing: 1px;
+    display: inline-block;
+    background-color: transparent;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*DESCRIPTION FOR ROOM NAME*/
+.p_2{
+    width: 325px;
+    height: 100px;
+    color: #020617;
+    font-size: 0.75em;
+    margin-top: -85px;
+    text-align: center;
+    display: inline-block;
+    overflow-wrap: break-word;
+    background-color: transparent;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*VIEW SUITES BUTTON*/
+.view_suites_2{
+    width: 325px;
+    height: 75px;
+    transition: 1s;
+    font-size: 0.75em;
+    color: #fdd700;
+    margin-top: -10px;
+    text-align: center;
+    font-weight: normal;
+    transform: scale(1);
+    border-radius: 10px;
+    display: inline-block;
+    background-color:#020617;
+    border: 1px solid #020617;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*VIEW SUITES BUTTON HOVER*/
+.view_suites_2:hover{
+    color: #020617;
+    font-weight: bold;
+    transform: scale(1.1);
+    background-color:#fdd700;
+    border: 1px solid #fdd700;
+}
+
+/*ROOM 3 CONTAINER*/
+.card_3{
+    margin: 0px;
+    width: 400px;
+    height: 600px;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    align-items: center;
+    border-radius: 10px;
+    justify-content: center;
+    background-color: #f8fafc;
+}
+
+/*CARD 3 IMAGE*/
+.card_3 img{
+    width: 350px;
+    height: 250px;
+    margin-top: 0px;
+    border-radius: 5px;
+    display: inline-block;
+    background-color: #020617;
+}
+
+/*HEADING FOR ROOM NAME*/
+.h2_3{
+    width: 325px;
+    height: 70px;
+    color: #020617;
+    font-size: 1.10em;
+    margin-top: -25px;
+    text-align: center;
+    letter-spacing: 1px;
+    display: inline-block;
+    background-color: transparent;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*DESCRIPTION FOR ROOM NAME*/
+.p_3{
+    width: 325px;
+    height: 100px;
+    color: #020617;
+    font-size: 0.75em;
+    margin-top: -85px;
+    text-align: center;
+    display: inline-block;
+    overflow-wrap: break-word;
+    background-color: transparent;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*VIEW SUITES BUTTON*/
+.view_suites_3{
+    width: 325px;
+    height: 75px;
+    transition: 1s;
+    font-size: 0.75em;
+    color: #fdd700;
+    margin-top: -10px;
+    text-align: center;
+    transform: scale(1);
+    font-weight: normal;
+    border-radius: 10px;
+    display: inline-block;
+    background-color:#020617;
+    border: 1px solid #020617;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/*VIEW SUITES BUTTON HOVER*/
+.view_suites_3:hover{
+    color: #020617;
+    font-weight: bold;
+    transform: scale(1.1);
+    background-color:#fdd700;
+    border: 1px solid #fdd700;
+}
