@@ -4,13 +4,13 @@ Project name:
 Emperor Hotel Reservation and Management System
 
 Purpose:
-This project is a web-based hotel reservation and management system built with Core PHP, OOP, MySQL, XML + DOM, and Bootstrap-based responsive pages. Reservations are the core workflow, while the management modules support public hotel pages, user booking, admin walk-in operations, room inventory, check-in/check-out actions, guest history, payments, printable receipts, simulated transaction logs, users, and dashboard reporting.
+This project is a web-based hotel reservation and management system built with Core PHP, OOP, MySQL, room XML + DOM, and Bootstrap-based responsive pages. Reservations are the core workflow, while the management modules support public hotel pages, user booking, admin walk-in operations, room inventory, check-in/check-out actions, guest history, payments, printable receipts, simulated transaction logs, users, and dashboard reporting.
 
 TECH STACK
 
 - Core PHP with OOP model classes
 - MySQL database through PDO prepared statements
-- XML import/export using DOMDocument
+- Room XML import/export using DOMDocument
 - Bootstrap 5 for responsive layout
 - Local Chart.js 4.5.1 browser build for dashboard charts
 - External CSS files under public/assets/css
@@ -22,7 +22,7 @@ CURRENT FOLDER STRUCTURE
 - app/helpers/auth.php: Session, authentication, flash, escaping, and money helpers
 - app/models/User.php: User account CRUD and authentication
 - app/models/Guest.php: Guest profile CRUD, upsert helpers, search, and reservation history
-- app/models/Room.php: Room CRUD, room status, room prices, XML import/export, and room summaries
+- app/models/Room.php: Room CRUD, room status, room prices, room XML import/export, and room summaries
 - app/models/Reservation.php: Reservation CRUD, date-aware availability checking, manual room selection validation, front desk status actions, status syncing, dashboard summaries, operational alerts, occupancy reports, and reservation trend reports
 - app/models/Payment.php: Payment recording, automatic transaction references, simulated transaction logs, overpayment protection, payment status review, failed-payment alerts, payment summaries, and revenue reports
 - public/includes/room_catalog.php: Room catalog details and room type inclusions
@@ -37,8 +37,8 @@ CURRENT FOLDER STRUCTURE
 - public/auth/register.php: Registration page and handler
 - public/auth/logout.php: Logout handler
 - public/admin/dashboard.php: Admin dashboard with live summaries, operational alerts, payment activity, and Chart.js charts
-- public/admin/rooms.php: Admin room CRUD, bulk type price update, XML import/export
-- public/admin/reservations.php: Admin reservation CRUD with date-aware room filtering, same-room stay extension, grouped front desk action controls, and reservation cost tracker
+- public/admin/rooms.php: Admin room CRUD, bulk type price update, and room XML import/export
+- public/admin/reservations.php: Admin reservation CRUD with date-aware room filtering, same-room stay extension, modal-based front desk action controls, payment summaries, and reservation cost tracker
 - public/admin/payments.php: Admin payment recording, automatic payment references, payment cost tracker, simulated transactions, overpayment rules, transaction review, and summaries
 - public/admin/guests.php: Admin guest search and reservation history
 - public/admin/receipt.php: Printable reservation receipt and transaction summary
@@ -67,7 +67,7 @@ Status: Implemented for core entities
 
 - Users: create, read, update, delete in public/admin/users.php.
 - Rooms: create, read, update, delete in public/admin/rooms.php.
-- Reservations: create, read, update, delete, date-aware room filtering, same-room stay extension, and grouped front desk action controls in public/admin/reservations.php.
+- Reservations: create, read, update, delete, date-aware room filtering, same-room stay extension, and modal-based front desk action controls in public/admin/reservations.php.
 - Payments: create/read, automatic transaction reference generation, simulated transaction logging, overpayment protection, status review, cost tracking, and summary reporting in public/admin/payments.php.
 - Guests: created and updated through reservation/user booking flows, then searched and reviewed in public/admin/guests.php.
 
@@ -103,7 +103,7 @@ OOP usage:
 - Files are separated by concern under app/config, app/helpers, and app/models.
 - public/includes/bootstrap.php loads configuration, helpers, and model classes.
 
-5. XML + DOM Integration
+5. Room XML + DOM Integration
 
 Status: Implemented for room records
 
@@ -111,6 +111,7 @@ Status: Implemented for room records
 - XML import is available through the Rooms admin page upload form.
 - XML generation and parsing are implemented in app/models/Room.php.
 - DOMDocument is used for export/import.
+- XML support is intentionally limited to room records. Users, guests, reservations, and payments are managed through normal database CRUD pages.
 
 Expected room XML fields:
 
@@ -141,7 +142,7 @@ Status: Implemented and still being improved
 - Reservation forms include a cost tracker for room rate, nights, subtotal, room inclusions, and estimated total.
 - Admin reservation forms can check room availability by date range before selecting a room.
 - Admin reservation forms require a manual room-card choice so the selected room is clear before saving.
-- Reservation records include grouped front desk action controls for Confirm, Check In, Extend Stay, Check Out, Cancel, Receipt, Edit, Payment, and Delete.
+- Reservation records use one Manage button per row. The modal shows reservation details, payment totals, and controls for Confirm, Check In, Extend Stay, Check Out, Cancel, Receipt, Edit, Payment, and Delete.
 - Stay extensions check whether the same room is available for the added date range, then increase the reservation total so the added balance can be collected through Payments.
 - Reservation validation checks date format, past check-ins, overlapping room dates, room capacity, guest/room records, status values, and positive totals on the server side.
 - Payment recording is handled from public/admin/payments.php, where admins can create manual payments or simulated transactions without typing a transaction reference.

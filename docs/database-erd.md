@@ -223,9 +223,11 @@ Application rule:
 - Dashboard operational alerts use `reservations`, `rooms`, and `payments`.
 - Admin Reports use `reservations` for occupancy and reservation trend data, `payments` for confirmed revenue, and `rooms` for room type grouping.
 
-## XML + DOM Data Shape
+## Room XML + DOM Data Shape
 
 Room XML export/import is handled by `app/models/Room.php`.
+
+XML support is only implemented for room records. Users, guests, reservations, and payments are managed through the PHP pages and MySQL tables, not XML files.
 
 Expected structure:
 

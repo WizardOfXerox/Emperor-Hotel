@@ -11,7 +11,7 @@ This guide explains how the Emperor Hotel Reservation and Management System work
 
 ## 1. Simple Project Summary
 
-The Emperor Hotel Reservation and Management System is a web-based hotel reservation and front desk management system. It is built with Core PHP, MySQL, PDO, OOP model classes, Bootstrap, Chart.js, and XML/DOMDocument.
+The Emperor Hotel Reservation and Management System is a web-based hotel reservation and front desk management system. It is built with Core PHP, MySQL, PDO, OOP model classes, Bootstrap, Chart.js, and room XML/DOMDocument support.
 
 The system supports two main roles:
 
@@ -44,7 +44,7 @@ It can:
 - Print reservation receipts.
 - Search guest history.
 - Show dashboard charts and reports.
-- Import and export room records through XML.
+- Import and export room records through XML. XML is only used for room records, not every database table.
 
 It does not process real online payments yet. Online/card/bank payment modes are simulated for demonstration.
 
@@ -591,7 +591,7 @@ flowchart TD
     J --> K
 ```
 
-Admin reservation actions are grouped in the Booking Records table so the action column stays readable:
+Admin reservation actions are opened from one Manage button in the Booking Records table. The modal keeps the table readable while still showing the full reservation details, payment totals, and available actions:
 
 | Action | Meaning |
 | --- | --- |
@@ -1023,14 +1023,14 @@ Room statuses:
 | Cleaning | Room is temporarily blocked. |
 | Maintenance | Room is blocked for repair. |
 
-## 27. XML Import And Export
+## 27. Room XML Import And Export
 
 Files involved:
 
 - `public/admin/rooms.php`
 - `app/models/Room.php`
 
-The system uses PHP `DOMDocument` for XML.
+The system uses PHP `DOMDocument` for room XML import/export only. Other tables, such as users, guests, reservations, and payments, are managed through PHP CRUD pages and MySQL.
 
 Export flow:
 
@@ -1071,7 +1071,7 @@ Expected XML shape:
 Presentation explanation:
 
 ```text
-XML import/export is included to demonstrate file-based data exchange using PHP DOMDocument.
+Room XML import/export is included to demonstrate file-based data exchange using PHP DOMDocument without adding unnecessary XML workflows for every table.
 ```
 
 ## 28. Role-Based Access Control
@@ -1294,12 +1294,12 @@ Student-level characteristics:
 Advanced student-level features:
 
 - Date-aware room availability.
-- Auto room assignment.
+- Manual room-card selection.
 - Overpayment prevention.
 - Dashboard charts.
 - Reports.
 - Receipt printing.
-- XML import/export.
+- Room XML import/export.
 - Role-based pages.
 - Dynamic room prices.
 
@@ -1359,7 +1359,7 @@ The `Payment` model calculates confirmed and pending payments for a reservation.
 
 ### What is XML used for?
 
-XML is used for room import/export. Admins can export room records to XML or import room records from an XML file using PHP `DOMDocument`.
+XML is used for room import/export only. Admins can export room records to XML or import room records from an XML file using PHP `DOMDocument`.
 
 ### What is Chart.js used for?
 
@@ -1383,7 +1383,7 @@ Recommended presentation order:
 8. Log in as admin.
 9. Show dashboard summaries, alerts, and charts.
 10. Show room management and dynamic prices.
-11. Show reservation actions: confirm, check in, check out, cancel.
+11. Show the reservation Manage modal: confirm, check in, check out, cancel, payment, receipt, edit, extend stay, and delete.
 12. Show payments and admin review.
 13. Show guest history and receipt.
 14. Show reports.
@@ -1404,7 +1404,7 @@ We used OOP through model classes such as User, Guest, Room, Reservation, and Pa
 
 The most important logic is in the Reservation and Payment models. The Reservation model validates dates, checks overlapping bookings, checks room capacity, and requires a selected available room. The Payment model generates references, tracks pending and confirmed payments, and prevents overpayment.
 
-The system also demonstrates XML import/export using DOMDocument, dashboard charts using Chart.js, and role-based access using PHP sessions.
+The system also demonstrates room XML import/export using DOMDocument, dashboard charts using Chart.js, and role-based access using PHP sessions.
 
 It is not a production hotel system yet because payments are simulated and there is no real payment gateway, but it demonstrates the core concepts required for an OOP PHP hotel reservation project.
 ```

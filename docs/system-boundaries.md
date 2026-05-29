@@ -20,12 +20,12 @@ The system will provide these main functions:
 | User management | Allows user registration, login, logout, role-based access, and admin user CRUD. |
 | User booking | Allows logged-in users to create reservations from the user dashboard with full name, stay dates, guest count, room selection, room inclusions, a cost tracker, payment route selection, automatic pending cash payment references for cash, and a customer-safe simulated payment page for non-cash methods. |
 | Room management | Allows admins to create, view, edit, delete, import, export, and bulk update room prices. |
-| Reservation management | Allows admins to create, view, edit, delete, manage reservation records, manually select available room cards, extend active stays when the same room is available, check room availability by date range, use grouped front desk action controls, and automatically confirm fully paid pending reservations. |
+| Reservation management | Allows admins to create, view, edit, delete, manage reservation records, manually select available room cards, extend active stays when the same room is available, check room availability by date range, use modal-based front desk action controls, and automatically confirm fully paid pending reservations. |
 | Guest management | Allows admins to search guests by name, phone, or email and view reservation/payment history. |
 | Payment management | Allows customers to submit simulated non-cash payments for their own reservations and allows admins to generate automatic pending cash payment references for cash reservations, route card/bank/online methods to the Payments page, record payments, create simulated transactions, automatically generate transaction references, enforce overpayment rules, view cost/balance tracking, view summaries, and review transaction logs. |
 | Receipt printing | Allows admins to open and print reservation receipts with guest, stay, payment, balance, and transaction details. |
 | Dashboard reporting | Shows summary cards, operational alerts, recent records, Chart.js visual reports, and a dedicated Reports page for occupancy, revenue, and reservation trends. |
-| XML import/export | Allows room records to be exported and imported using XML with PHP DOMDocument. |
+| Room XML import/export | Allows room records to be exported and imported using XML with PHP DOMDocument. Other tables use normal PHP/MySQL CRUD pages. |
 | Database storage | Stores users, guests, rooms, reservations, and payments in MySQL. |
 
 ## What The System Will Not Do
