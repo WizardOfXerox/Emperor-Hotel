@@ -340,6 +340,8 @@ Presentation explanation:
 
 ```text
 The Payment model controls the transaction logic. Pending and confirmed payments are counted as active, and the model prevents their total from becoming higher than the reservation total.
+
+When confirmed payments reach the full reservation total, the Payment model automatically changes a Pending reservation to Confirmed. This keeps the reservation table from showing a manual Confirm button after the booking is already paid.
 ```
 
 ## 8. Database Tables
@@ -531,7 +533,7 @@ flowchart TD
     H --> I[Create or update guest profile]
     I --> J[Create reservation as Pending]
     J --> K{Payment mode}
-    K -->|Cash| L[Create pending cashier reference]
+    K -->|Cash| L[Create automatic pending cash payment reference]
     K -->|Non-cash| M[Redirect to customer payment page]
     L --> N[User sees booking history below the form]
     M --> N
@@ -547,7 +549,7 @@ What the user form collects:
 | Adults and children | Used for capacity validation. |
 | Phone | Stored in the guest profile. |
 | Room inclusions | Shows what is already included with the selected room type. |
-| Payment mode | Decides whether cash reference is generated or payment page is opened. |
+| Payment mode | Decides whether an automatic cash payment reference is generated or the payment page is opened. |
 
 Important behavior:
 
@@ -556,7 +558,7 @@ Important behavior:
 - User room cards use a three-card desktop layout for easier scanning.
 - Green/red availability indicators tell the user which rooms are available.
 - Room totals are calculated in the cost tracker.
-- Cash creates a pending cashier payment reference.
+- Cash creates an automatic pending cash payment reference for the full reservation total.
 - Credit card, debit card, bank transfer, online payment, and other non-cash modes go to `public/user/payment.php`.
 
 ## 13. Admin Walk-In Reservation Flow
@@ -583,13 +585,13 @@ flowchart TD
     E --> F[Save guest record]
     F --> G[Save reservation]
     G --> H{Payment mode}
-    H -->|Cash| I[Generate pending cashier reference]
+    H -->|Cash| I[Generate automatic pending cash payment reference]
     H -->|Non-cash| J[Redirect to Payments page]
     I --> K[Reservation list updates]
     J --> K
 ```
 
-Admin reservation actions:
+Admin reservation actions are grouped in the Booking Records table so the action column stays readable:
 
 | Action | Meaning |
 | --- | --- |
@@ -602,6 +604,8 @@ Admin reservation actions:
 | Check Out | Marks the reservation checked out and room available again. |
 | Cancel | Cancels the reservation and releases the room. |
 | Receipt | Opens the printable receipt page. |
+
+The action area is split into rows for front desk status actions, document/payment links, stay extension, and delete. This keeps the table easier to read even when a reservation has several available actions.
 
 ## 14. Date-Aware Room Availability
 
@@ -756,11 +760,11 @@ Payment statuses:
 flowchart TD
     A[Reservation submitted with Cash] --> B[System creates Pending payment]
     B --> C[System generates PAY reference]
-    C --> D[Customer pays cashier using reference]
+    C --> D[Customer pays cashier using payment reference]
     D --> E[Admin confirms payment]
 ```
 
-Cash does not go to the customer payment page. It creates a cashier reference.
+Cash does not go to the customer payment page. It creates an automatic pending cash payment reference that the customer can show to the cashier.
 
 ### Non-Cash Flow
 
@@ -795,7 +799,7 @@ Meaning:
 
 | Prefix | Meaning |
 | --- | --- |
-| `PAY` | Manual payment or cashier reference. |
+| `PAY` | Manual payment or automatic pending cash payment reference. |
 | `SIM` | Simulated transaction. |
 
 The reservation ID is padded in the reference so it is easier to trace.
@@ -825,6 +829,10 @@ Pending + Confirmed payments cannot exceed the reservation total.
 ```
 
 Failed and refunded payments stay in the transaction log, but they do not reduce the payable balance.
+
+Only Pending transactions are editable in the payment review table. Once a transaction is Confirmed, Failed, or Refunded, it becomes a locked history record.
+
+If the confirmed payment total fully covers a Pending reservation, the system automatically marks the reservation as Confirmed.
 
 Example:
 
@@ -1342,6 +1350,8 @@ No. The payment system is simulated. It records payment data, statuses, balances
 ### Why do pending payments need admin review?
 
 Pending or simulated payments are not automatically trusted. The admin reviews them and changes the status to Confirmed, Failed, or Refunded.
+
+After review, the transaction is locked. This keeps confirmed paid records from being accidentally changed later.
 
 ### How do you prevent overpayment?
 

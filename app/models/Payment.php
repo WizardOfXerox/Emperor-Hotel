@@ -98,7 +98,14 @@ class Payment
             'notes' => trim((string) ($data['notes'] ?? '')),
         ]);
 
-        return $saved ? (int) $this->db->lastInsertId() : 0;
+        if (!$saved) {
+            return 0;
+        }
+
+        $paymentId = (int) $this->db->lastInsertId();
+        $this->syncFullyPaidReservation($reservationId);
+
+        return $paymentId;
     }
 
     public function all(): array
@@ -150,6 +157,10 @@ class Payment
             throw new RuntimeException('Transaction not found.');
         }
 
+        if ($payment['payment_status'] !== 'Pending') {
+            throw new RuntimeException('Only pending transactions can be reviewed. Confirmed, failed, and refunded transactions are locked.');
+        }
+
         $this->assertPaymentWillNotOverpay((int) $payment['reservation_id'], $amount, $paymentStatus, $paymentId);
 
         $statement = $this->db->prepare(
@@ -163,7 +174,49 @@ class Payment
             'payment_id' => $paymentId,
         ]);
 
+        $this->syncFullyPaidReservation((int) $payment['reservation_id']);
+
         return true;
+    }
+
+    public function syncFullyPaidReservation(int $reservationId): bool
+    {
+        $totals = $this->totalsForReservation($reservationId);
+
+        if ((float) $totals['confirmed_amount'] + 0.01 < (float) $totals['reservation_total']) {
+            return false;
+        }
+
+        $statement = $this->db->prepare(
+            "SELECT reservation_id, room_id, status
+             FROM reservations
+             WHERE reservation_id = :reservation_id
+             LIMIT 1"
+        );
+        $statement->execute(['reservation_id' => $reservationId]);
+        $reservation = $statement->fetch();
+
+        if (!$reservation || $reservation['status'] !== 'Pending') {
+            return false;
+        }
+
+        $updateReservation = $this->db->prepare(
+            "UPDATE reservations
+             SET status = 'Confirmed'
+             WHERE reservation_id = :reservation_id"
+        );
+        $updated = $updateReservation->execute(['reservation_id' => $reservationId]);
+
+        if ($updated) {
+            $updateRoom = $this->db->prepare(
+                "UPDATE rooms
+                 SET status = 'Reserved'
+                 WHERE room_id = :room_id"
+            );
+            $updateRoom->execute(['room_id' => (int) $reservation['room_id']]);
+        }
+
+        return $updated;
     }
 
     public function find(int $paymentId): ?array

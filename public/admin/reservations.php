@@ -10,18 +10,8 @@ require_once __DIR__ . '/../includes/room_selection.php';
 requireAuth('../auth/login.php');
 requireRole('admin', '../user/dashboard.php');
 
-function buildReservationTotal(array $room, string $checkIn, string $checkOut, string $submittedTotal): float
+function buildReservationTotal(array $room, string $checkIn, string $checkOut): float
 {
-    if (trim($submittedTotal) !== '') {
-        $manualTotal = (float) $submittedTotal;
-
-        if ($manualTotal <= 0) {
-            throw new RuntimeException('Manual reservation total must be greater than zero.');
-        }
-
-        return $manualTotal;
-    }
-
     $checkInTimestamp = strtotime($checkIn);
     $checkOutTimestamp = strtotime($checkOut);
 
@@ -33,25 +23,6 @@ function buildReservationTotal(array $room, string $checkIn, string $checkOut, s
     $nights = max(1, (int) floor($seconds / 86400));
 
     return $nights * (float) $room['price_per_night'];
-}
-
-function buildWalkInPaymentAmount(float $reservationTotal, string $submittedAmount): float
-{
-    if (trim($submittedAmount) === '') {
-        return $reservationTotal;
-    }
-
-    $paymentAmount = (float) $submittedAmount;
-
-    if ($paymentAmount <= 0) {
-        throw new RuntimeException('Walk-in payment amount must be greater than zero.');
-    }
-
-    if ($paymentAmount > $reservationTotal + 0.01) {
-        throw new RuntimeException('Walk-in payment cannot exceed the reservation total.');
-    }
-
-    return $paymentAmount;
 }
 
 function minimumExtensionCheckOut(string $currentCheckOut): string
@@ -145,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'check_out' => $checkOut,
             'adults' => $adults,
             'children' => $children,
-            'total_amount' => buildReservationTotal($room, $checkIn, $checkOut, (string) ($_POST['total_amount'] ?? '')),
+            'total_amount' => buildReservationTotal($room, $checkIn, $checkOut),
             'status' => (string) ($_POST['status'] ?? 'Pending'),
         ];
 
@@ -163,26 +134,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $reservationId = $reservationModel->createAndGetId($payload);
 
             if ($paymentMethod === 'Cash') {
-                $paymentAmount = buildWalkInPaymentAmount((float) $payload['total_amount'], (string) ($_POST['payment_amount'] ?? ''));
-                $paymentNotes = trim((string) ($_POST['payment_notes'] ?? ''));
-
-                if ($paymentNotes === '') {
-                    $paymentNotes = 'Cash cashier reference generated during reservation creation.';
-                }
-
                 $paymentId = $paymentModel->createAndGetId([
                     'reservation_id' => $reservationId,
-                    'amount' => $paymentAmount,
+                    'amount' => (float) $payload['total_amount'],
                     'payment_method' => 'Cash',
                     'currency' => 'PHP',
                     'payment_status' => 'Pending',
                     'is_simulated' => false,
-                    'notes' => $paymentNotes,
+                    'notes' => 'Automatic pending cash payment reference generated during reservation creation.',
                 ]);
                 $payment = $paymentModel->find($paymentId);
                 $reference = (string) ($payment['transaction_reference'] ?? ('Reservation #' . $reservationId));
 
-                setFlash('success', 'Reservation created. Cashier payment reference: ' . $reference . '.');
+                setFlash('success', 'Reservation created. Payment reference: ' . $reference . '.');
                 redirect('reservations.php');
             }
 
@@ -228,7 +192,7 @@ $rooms = $availabilityDatesValid
     : $roomModel->all();
 $reservations = $reservationModel->all();
 
-renderAdminLayoutStart('Reservations', 'reservations', $currentAdmin, ['../assets/css/admin/reservations.css']);
+renderAdminLayoutStart('Reservations', 'reservations', $currentAdmin, ['../assets/css/admin/reservations.css?v=20260530-actions']);
 ?>
 <section class="row g-4">
     <div class="col-xl-5">
@@ -318,10 +282,6 @@ renderAdminLayoutStart('Reservations', 'reservations', $currentAdmin, ['../asset
                     <label class="form-label">Room Inclusions</label>
                     <?php renderRoomInclusionPreview($editReservation['room_type'] ?? null); ?>
                 </div>
-                <div>
-                    <label class="form-label" for="total_amount">Total Amount <span class="text-light-emphasis small">(leave blank to auto-calculate)</span></label>
-                    <input class="form-control" id="total_amount" name="total_amount" type="number" step="0.01" value="<?php echo e($editReservation['total_amount'] ?? ''); ?>" data-total-override>
-                </div>
                 <?php renderReservationCostTracker(); ?>
                 <?php if (!$editReservation): ?>
                     <div class="panel-card p-3">
@@ -334,16 +294,7 @@ renderAdminLayoutStart('Reservations', 'reservations', $currentAdmin, ['../asset
                                     <option value="<?php echo e($method); ?>"><?php echo e($method); ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <div class="form-text" data-payment-route-message>Cash creates a cashier reference and stays on this page. Card or online methods continue to the Payments page.</div>
-                        </div>
-                        <div class="mt-3" data-cash-reference-fields>
-                            <label class="form-label" for="payment_amount">Cash Reference Amount <span class="text-light-emphasis small">(leave blank for full reservation total)</span></label>
-                            <input class="form-control" id="payment_amount" name="payment_amount" type="number" min="0.01" step="0.01" data-inline-payment-amount>
-                            <div class="form-text">Cash reservations are saved as Pending until the cashier confirms the payment.</div>
-                        </div>
-                        <div class="mt-3" data-cash-reference-fields>
-                            <label class="form-label" for="payment_notes">Cash Reference Notes</label>
-                            <textarea class="form-control" id="payment_notes" name="payment_notes" rows="2" placeholder="Optional cashier note"></textarea>
+                            <div class="form-text" data-payment-route-message>Cash creates an automatic pending payment reference for the full reservation total. Card or online methods continue to the Payments page.</div>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -364,7 +315,7 @@ renderAdminLayoutStart('Reservations', 'reservations', $currentAdmin, ['../asset
                 <span class="badge-soft"><?php echo e(count($reservations)); ?> reservations</span>
             </div>
             <div class="table-responsive">
-                <table class="table table-dark-soft align-middle mb-0">
+                <table class="table table-dark-soft align-middle mb-0 booking-records-table">
                     <thead>
                         <tr>
                             <th>Guest</th>
@@ -372,7 +323,7 @@ renderAdminLayoutStart('Reservations', 'reservations', $currentAdmin, ['../asset
                             <th>Stay</th>
                             <th>Status</th>
                             <th>Total</th>
-                            <th class="text-end">Actions</th>
+                            <th class="reservation-actions-column">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -389,18 +340,25 @@ renderAdminLayoutStart('Reservations', 'reservations', $currentAdmin, ['../asset
                                 <td><?php echo e($reservation['check_in']); ?> to <?php echo e($reservation['check_out']); ?></td>
                                 <td><span class="badge-soft"><?php echo e($reservation['status']); ?></span></td>
                                 <td><?php echo e(formatMoney((float) $reservation['total_amount'])); ?></td>
-                                <td class="text-end">
-                                    <div class="front-desk-actions justify-content-end">
-                                        <?php foreach ($reservationModel->availableFrontDeskActions($reservation) as $actionKey => $actionLabel): ?>
-                                            <form method="post" class="d-inline">
-                                                <input type="hidden" name="action" value="<?php echo e($actionKey); ?>">
-                                                <input type="hidden" name="reservation_id" value="<?php echo e($reservation['reservation_id']); ?>">
-                                                <button class="btn btn-sm <?php echo $actionKey === 'cancel' ? 'btn-outline-danger' : 'btn-outline-warning'; ?>" type="submit"><?php echo e($actionLabel); ?></button>
-                                            </form>
-                                        <?php endforeach; ?>
-                                        <a class="btn btn-sm btn-outline-light" href="receipt.php?reservation_id=<?php echo e($reservation['reservation_id']); ?>">Receipt</a>
-                                        <a class="btn btn-sm btn-outline-light" href="reservations.php?edit=<?php echo e($reservation['reservation_id']); ?>&check_in=<?php echo e($reservation['check_in']); ?>&check_out=<?php echo e($reservation['check_out']); ?>">Edit</a>
-                                        <a class="btn btn-sm btn-warning" href="payments.php?reservation_id=<?php echo e($reservation['reservation_id']); ?>">Payment</a>
+                                <td class="reservation-actions-cell">
+                                    <div class="front-desk-actions" aria-label="Reservation actions">
+                                        <?php $frontDeskActions = $reservationModel->availableFrontDeskActions($reservation); ?>
+                                        <?php if ($frontDeskActions): ?>
+                                            <div class="reservation-action-row">
+                                                <?php foreach ($frontDeskActions as $actionKey => $actionLabel): ?>
+                                                    <form method="post" class="d-inline">
+                                                        <input type="hidden" name="action" value="<?php echo e($actionKey); ?>">
+                                                        <input type="hidden" name="reservation_id" value="<?php echo e($reservation['reservation_id']); ?>">
+                                                        <button class="btn btn-sm <?php echo $actionKey === 'cancel' ? 'btn-outline-danger' : 'btn-outline-warning'; ?>" type="submit"><?php echo e($actionLabel); ?></button>
+                                                    </form>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <div class="reservation-action-row">
+                                            <a class="btn btn-sm btn-outline-light" href="receipt.php?reservation_id=<?php echo e($reservation['reservation_id']); ?>">Receipt</a>
+                                            <a class="btn btn-sm btn-outline-light" href="reservations.php?edit=<?php echo e($reservation['reservation_id']); ?>&check_in=<?php echo e($reservation['check_in']); ?>&check_out=<?php echo e($reservation['check_out']); ?>">Edit</a>
+                                            <a class="btn btn-sm btn-warning" href="payments.php?reservation_id=<?php echo e($reservation['reservation_id']); ?>">Payment</a>
+                                        </div>
                                         <?php if ($canExtendStay): ?>
                                             <form method="post" class="extend-stay-form" title="Extend stay in the same room">
                                                 <input type="hidden" name="action" value="extend_stay">
@@ -418,11 +376,13 @@ renderAdminLayoutStart('Reservations', 'reservations', $currentAdmin, ['../asset
                                                 <button class="btn btn-sm btn-outline-warning" type="submit">Extend</button>
                                             </form>
                                         <?php endif; ?>
-                                        <form method="post" class="d-inline">
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="reservation_id" value="<?php echo e($reservation['reservation_id']); ?>">
-                                            <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
-                                        </form>
+                                        <div class="reservation-action-row reservation-action-row--danger">
+                                            <form method="post" class="d-inline">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="reservation_id" value="<?php echo e($reservation['reservation_id']); ?>">
+                                                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -437,21 +397,13 @@ renderAdminLayoutStart('Reservations', 'reservations', $currentAdmin, ['../asset
 document.querySelectorAll("[data-reservation-payment-method]").forEach((methodSelect) => {
     const form = methodSelect.closest("form");
     const message = form ? form.querySelector("[data-payment-route-message]") : null;
-    const cashFields = form ? form.querySelectorAll("[data-cash-reference-fields]") : [];
 
     const syncPaymentRoute = () => {
         const isCash = methodSelect.value === "Cash";
 
-        cashFields.forEach((field) => {
-            field.hidden = !isCash;
-            field.querySelectorAll("input, textarea, select").forEach((input) => {
-                input.disabled = !isCash;
-            });
-        });
-
         if (message) {
             message.textContent = isCash
-                ? "Cash creates a pending cashier reference and stays on this page."
+                ? "Cash creates an automatic pending payment reference for the full reservation total."
                 : "This method will open the Payments page after the reservation is created.";
         }
     };

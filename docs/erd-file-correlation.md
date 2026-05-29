@@ -82,8 +82,8 @@ erDiagram
 | `users` | `app/models/User.php` | `public/auth/login.php`, `public/auth/register.php`, `public/admin/users.php`, `public/admin/dashboard.php` | Login, registration, admin user CRUD, dashboard user counts. |
 | `guests` | `app/models/Guest.php` | `public/admin/guests.php`, `public/admin/reservations.php`, `public/user/dashboard.php` | Guest records, walk-in guest search, guest history, reservation guest details. |
 | `rooms` | `app/models/Room.php` | `public/admin/rooms.php`, `public/admin/reservations.php`, `public/user/dashboard.php`, `public/site/home.php`, `public/site/rooms.php`, `public/admin/dashboard.php`, `public/admin/reports.php` | Room inventory, room status, price per night, XML import/export, public room prices, dashboard room status, report grouping. |
-| `reservations` | `app/models/Reservation.php` | `public/admin/reservations.php`, `public/user/dashboard.php`, `public/admin/dashboard.php`, `public/admin/guests.php`, `public/admin/receipt.php`, `public/user/payment.php`, `public/admin/reports.php`, `public/admin/room-availability.php`, `public/user/room-availability.php` | Booking records, date validation, date-aware room availability, best-room assignment, status flow, check-in/check-out, dashboard alerts, reports. |
-| `payments` | `app/models/Payment.php` | `public/admin/payments.php`, `public/user/payment.php`, `public/admin/reservations.php`, `public/admin/receipt.php`, `public/admin/dashboard.php`, `public/admin/reports.php` | Payment logs, generated references, cashier references, simulated payments, payment review, balances, dashboard revenue, revenue reports. |
+| `reservations` | `app/models/Reservation.php` | `public/admin/reservations.php`, `public/user/dashboard.php`, `public/admin/dashboard.php`, `public/admin/guests.php`, `public/admin/receipt.php`, `public/user/payment.php`, `public/admin/reports.php`, `public/admin/room-availability.php`, `public/user/room-availability.php` | Booking records, date validation, date-aware room availability, manual room selection, status flow, check-in/check-out, dashboard alerts, reports. |
+| `payments` | `app/models/Payment.php` | `public/admin/payments.php`, `public/user/payment.php`, `public/admin/reservations.php`, `public/admin/receipt.php`, `public/admin/dashboard.php`, `public/admin/reports.php` | Payment logs, generated references, automatic pending cash payment references, simulated payments, payment review, balances, dashboard revenue, revenue reports. |
 
 ## File To ERD Table Map
 
@@ -94,12 +94,12 @@ erDiagram
 | `public/auth/logout.php` | None directly | Session only | Ends the PHP session; it does not touch database tables directly. |
 | `public/site/home.php` | `rooms` | Read | Shows public room cards, static room-type inclusions, and starting prices. |
 | `public/site/rooms.php` | `rooms` | Read | Shows room details, static room-type inclusions, prices, and carousel images. |
-| `public/user/dashboard.php` | `users`, `guests`, `rooms`, `reservations`, `payments` | Read/write | Lets logged-in users create reservations through the two-column booking form, pick room cards, view booking history, choose payment route, and generate cash references. |
+| `public/user/dashboard.php` | `users`, `guests`, `rooms`, `reservations`, `payments` | Read/write | Lets logged-in users create reservations through the two-column booking form, pick room cards, view booking history, choose payment route, and generate automatic pending cash payment references. |
 | `public/user/payment.php` | `reservations`, `payments` | Read/write | Lets customers submit simulated non-cash payments for their own reservations. |
 | `public/user/room-availability.php` | `rooms`, `reservations` | Read | Returns date-aware room availability JSON for the user booking form. |
 | `public/admin/dashboard.php` | `users`, `rooms`, `reservations`, `payments` | Read | Shows KPI cards, recent reservations, payment activity, and Chart.js reports. |
 | `public/admin/rooms.php` | `rooms` | Read/write | Handles room CRUD, bulk price updates, and XML import/export. |
-| `public/admin/reservations.php` | `guests`, `rooms`, `reservations`, `payments` | Read/write | Handles walk-in reservation creation, edits, deletes, date availability, same-room stay extension, front desk actions, and cash references. |
+| `public/admin/reservations.php` | `guests`, `rooms`, `reservations`, `payments` | Read/write | Handles walk-in reservation creation, edits, deletes, date availability, same-room stay extension, grouped front desk action controls, and automatic pending cash payment references. |
 | `public/admin/payments.php` | `reservations`, `payments` | Read/write | Records manual payments, simulated transactions, generated references, and admin payment status review. |
 | `public/admin/guests.php` | `guests`, `reservations`, `payments`, `rooms` | Read | Searches guests and shows reservation/payment history. |
 | `public/admin/receipt.php` | `reservations`, `payments`, `guests`, `rooms` | Read | Shows printable receipt details and transaction history. |
@@ -170,6 +170,6 @@ flowchart LR
 | Guest data | `Guest.php` owns guest lookup, upsert, and guest history queries. |
 | Room data | `Room.php` owns room CRUD, status summaries, type summaries, bulk price updates, and XML import/export. |
 | Room inclusion text | `public/includes/room_catalog.php` owns simple room-type inclusions used by public pages and reservation forms. |
-| Reservation data | `Reservation.php` owns date validation, overlap checks, best-room assignment, reservation CRUD, status changes, room status syncing, dashboard alerts, and occupancy/trend reports. |
+| Reservation data | `Reservation.php` owns date validation, overlap checks, manual room selection validation, reservation CRUD, status changes, room status syncing, dashboard alerts, and occupancy/trend reports. |
 | Payment data | `Payment.php` owns generated references, payment totals, overpayment rules, payment status updates, failed-payment alerts, revenue summaries, and revenue reports. |
 | Styling | CSS files do not own data. `app.css` holds shared styling, while page-specific CSS files stay beside their page group under `public/assets/css/`. |

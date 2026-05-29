@@ -202,6 +202,7 @@ Relationships:
 Application rule:
 
 - Pending and confirmed payment amounts are checked by the PHP `Payment` model so their active total cannot exceed the reservation total.
+- Fully paid pending reservations are automatically promoted to `Confirmed` after confirmed payments cover the reservation total.
 
 ## Relationship Rules
 

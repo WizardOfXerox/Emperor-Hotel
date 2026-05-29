@@ -352,12 +352,10 @@ document.querySelectorAll("[data-cost-tracker]").forEach((tracker) => {
     const update = () => {
         const selectedInput = form.querySelector(".room-choice-input:checked");
         const selectedCard = selectedInput ? selectedInput.closest("[data-room-card]") : null;
-        const totalOverride = form.querySelector("[data-total-override]");
         const nights = calculateNights();
         const price = selectedCard ? Number(selectedCard.dataset.roomPrice || 0) : 0;
         const subtotal = price * nights;
-        const overrideValue = totalOverride && totalOverride.value.trim() !== "" ? Number(totalOverride.value) : null;
-        const total = overrideValue !== null && !Number.isNaN(overrideValue) ? overrideValue : subtotal;
+        const total = subtotal;
 
         text("[data-cost-room]", selectedCard ? `Room ${selectedCard.dataset.roomNumber} - ${selectedCard.dataset.roomType}` : "Choose a room");
         text("[data-cost-rate]", money(price));
@@ -373,8 +371,6 @@ document.querySelectorAll("[data-cost-tracker]").forEach((tracker) => {
                 note.textContent = "Choose a room to start the estimate.";
             } else if (nights === 0) {
                 note.textContent = "Select valid check-in and check-out dates to calculate nights.";
-            } else if (overrideValue !== null && !Number.isNaN(overrideValue)) {
-                note.textContent = "Manual total override is being used for this reservation.";
             } else {
                 note.textContent = "Estimate is based on the selected room rate and number of nights.";
             }

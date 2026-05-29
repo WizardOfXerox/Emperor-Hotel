@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 (float) ($_POST['amount'] ?? 0),
                 (string) ($_POST['payment_status'] ?? 'Pending')
             );
-            setFlash('success', 'Transaction review updated.');
+            setFlash('success', 'Transaction review updated. Fully paid pending reservations are confirmed automatically.');
             redirect('payments.php');
         }
 
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'notes' => $notes,
         ]);
 
-        setFlash('success', $isSimulated ? 'Simulated transaction recorded.' : 'Payment recorded.');
+        setFlash('success', $isSimulated ? 'Simulated transaction recorded.' : 'Payment recorded. Fully paid pending reservations are confirmed automatically.');
         redirect('payments.php');
     } catch (Throwable $exception) {
         setFlash('error', $exception->getMessage());
@@ -255,6 +255,7 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                             </tr>
                         <?php endif; ?>
                         <?php foreach ($payments as $payment): ?>
+                            <?php $isReviewLocked = $payment['payment_status'] !== 'Pending'; ?>
                             <tr>
                                 <td>
                                     <div>#<?php echo e($payment['reservation_id']); ?> - Room <?php echo e($payment['room_number']); ?></div>
@@ -273,25 +274,29 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                                 <td><?php echo e(formatMoney((float) $payment['amount'])); ?></td>
                                 <td><?php echo e(date('Y-m-d', strtotime($payment['payment_date']))); ?></td>
                                 <td>
-                                    <form method="post" class="payment-review-form">
-                                        <input type="hidden" name="action" value="update_status">
-                                        <input type="hidden" name="payment_id" value="<?php echo e($payment['payment_id']); ?>">
-                                        <input
-                                            class="form-control form-control-sm payment-review-amount"
-                                            name="amount"
-                                            type="number"
-                                            min="0.01"
-                                            step="0.01"
-                                            value="<?php echo e(number_format((float) $payment['amount'], 2, '.', '')); ?>"
-                                            aria-label="Transaction amount"
-                                        >
-                                        <select class="form-select form-select-sm" name="payment_status" aria-label="Update transaction status">
-                                            <?php foreach (Payment::statuses() as $status): ?>
-                                                <option value="<?php echo e($status); ?>" <?php echo $payment['payment_status'] === $status ? 'selected' : ''; ?>><?php echo e($status); ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                        <button class="btn btn-sm btn-outline-light" type="submit">Update</button>
-                                    </form>
+                                    <?php if ($isReviewLocked): ?>
+                                        <span class="text-light-emphasis small">Locked after <?php echo e(strtolower((string) $payment['payment_status'])); ?></span>
+                                    <?php else: ?>
+                                        <form method="post" class="payment-review-form">
+                                            <input type="hidden" name="action" value="update_status">
+                                            <input type="hidden" name="payment_id" value="<?php echo e($payment['payment_id']); ?>">
+                                            <input
+                                                class="form-control form-control-sm payment-review-amount"
+                                                name="amount"
+                                                type="number"
+                                                min="0.01"
+                                                step="0.01"
+                                                value="<?php echo e(number_format((float) $payment['amount'], 2, '.', '')); ?>"
+                                                aria-label="Transaction amount"
+                                            >
+                                            <select class="form-select form-select-sm" name="payment_status" aria-label="Update transaction status">
+                                                <?php foreach (Payment::statuses() as $status): ?>
+                                                    <option value="<?php echo e($status); ?>" <?php echo $payment['payment_status'] === $status ? 'selected' : ''; ?>><?php echo e($status); ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <button class="btn btn-sm btn-outline-light" type="submit">Update</button>
+                                        </form>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

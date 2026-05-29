@@ -119,12 +119,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'currency' => 'PHP',
                     'payment_status' => 'Pending',
                     'is_simulated' => false,
-                    'notes' => 'Cash cashier reference generated from customer booking.',
+                    'notes' => 'Automatic pending cash payment reference generated from customer booking.',
                 ]);
                 $payment = $paymentModel->find($paymentId);
                 $reference = (string) ($payment['transaction_reference'] ?? ('Reservation #' . $reservationId));
 
-                setFlash('success', 'Reservation submitted. Cashier payment reference: ' . $reference . '. Please pay this at the cashier.');
+                setFlash('success', 'Reservation submitted. Payment reference: ' . $reference . '. Please pay this at the cashier.');
                 redirect('dashboard.php');
             }
 
@@ -207,7 +207,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                         <option value="<?php echo e($method); ?>"><?php echo e($method); ?></option>
                     <?php endforeach; ?>
                 </select>
-                <div class="form-text" data-customer-payment-route-message>Cash creates a cashier reference to pay at the hotel. Card or online methods continue to the payment page.</div>
+                <div class="form-text" data-customer-payment-route-message>Cash creates an automatic pending payment reference to show at the cashier. Card or online methods continue to the payment page.</div>
             </div>
             <button class="btn btn-warning fw-semibold" type="submit">Submit Reservation</button>
         </div>
@@ -307,7 +307,7 @@ document.querySelectorAll("[data-customer-payment-method]").forEach((methodSelec
         }
 
         message.textContent = methodSelect.value === "Cash"
-            ? "Cash creates a pending cashier reference you can pay at the hotel."
+            ? "Cash creates an automatic pending payment reference to show at the cashier."
             : "This method opens the customer payment page after your reservation is created.";
     };
 

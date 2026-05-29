@@ -38,7 +38,7 @@ CURRENT FOLDER STRUCTURE
 - public/auth/logout.php: Logout handler
 - public/admin/dashboard.php: Admin dashboard with live summaries, operational alerts, payment activity, and Chart.js charts
 - public/admin/rooms.php: Admin room CRUD, bulk type price update, XML import/export
-- public/admin/reservations.php: Admin reservation CRUD with date-aware room filtering, same-room stay extension, front desk actions, and reservation cost tracker
+- public/admin/reservations.php: Admin reservation CRUD with date-aware room filtering, same-room stay extension, grouped front desk action controls, and reservation cost tracker
 - public/admin/payments.php: Admin payment recording, automatic payment references, payment cost tracker, simulated transactions, overpayment rules, transaction review, and summaries
 - public/admin/guests.php: Admin guest search and reservation history
 - public/admin/receipt.php: Printable reservation receipt and transaction summary
@@ -67,7 +67,7 @@ Status: Implemented for core entities
 
 - Users: create, read, update, delete in public/admin/users.php.
 - Rooms: create, read, update, delete in public/admin/rooms.php.
-- Reservations: create, read, update, delete, date-aware room filtering, same-room stay extension, and front desk actions in public/admin/reservations.php.
+- Reservations: create, read, update, delete, date-aware room filtering, same-room stay extension, and grouped front desk action controls in public/admin/reservations.php.
 - Payments: create/read, automatic transaction reference generation, simulated transaction logging, overpayment protection, status review, cost tracking, and summary reporting in public/admin/payments.php.
 - Guests: created and updated through reservation/user booking flows, then searched and reviewed in public/admin/guests.php.
 
@@ -141,7 +141,7 @@ Status: Implemented and still being improved
 - Reservation forms include a cost tracker for room rate, nights, subtotal, room inclusions, and estimated total.
 - Admin reservation forms can check room availability by date range before selecting a room.
 - Admin reservation forms require a manual room-card choice so the selected room is clear before saving.
-- Reservation records include front desk action buttons for Confirm, Check In, Extend Stay, Check Out, and Cancel.
+- Reservation records include grouped front desk action controls for Confirm, Check In, Extend Stay, Check Out, Cancel, Receipt, Edit, Payment, and Delete.
 - Stay extensions check whether the same room is available for the added date range, then increase the reservation total so the added balance can be collected through Payments.
 - Reservation validation checks date format, past check-ins, overlapping room dates, room capacity, guest/room records, status values, and positive totals on the server side.
 - Payment recording is handled from public/admin/payments.php, where admins can create manual payments or simulated transactions without typing a transaction reference.
@@ -204,6 +204,8 @@ PAYMENT FLOW
 - Simulated transactions are forced to Pending for admin review.
 - Walk-in cash/card payments accepted at the counter can be marked Confirmed immediately.
 - Pending simulated transactions should be reviewed by an admin and changed to Confirmed, Failed, or Refunded as needed.
+- Confirmed, Failed, and Refunded transaction logs are locked after review so paid/history records are not accidentally edited.
+- When confirmed payments cover the full reservation total, a Pending reservation is automatically promoted to Confirmed.
 
 OPEN / NEXT WORK
 
