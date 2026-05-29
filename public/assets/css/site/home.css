@@ -1,230 +1,216 @@
-body{
-    margin: 0px;
-    font-size: 24px;
-    background-color: #020617;
+/* Home page only. Mirrors the supplied static reference with scoped, responsive CSS. */
+
+body.home-showcase-page {
+    margin: 0;
+    overflow-x: hidden;
+    color: #f8fafc;
+    background: #020617;
+    font-family: 'DM Sans', sans-serif;
 }
 
-
-/* NAVIGATION SECTION HERE! */
-
-
-/*NAVIGATION BAR*/
-nav{
+.home-nav {
     top: 0;
     z-index: 1000;
-    position:sticky;
+    position: sticky;
 }
 
-/*COTAINER FOR NAVIGATION*/
-.container{
-    width: 100vw;
-    height: 75px;
+.home-nav__container {
+    width: 100%;
+    min-height: 75px;
     display: flex;
-    padding: 2.5px;
+    gap: 24px;
+    padding: 2.5px 30px;
     align-items: center;
+    box-sizing: border-box;
     background-color: #f8fafc;
+    position: relative;
     justify-content: space-between;
 }
 
-/*LOGO*/
-.logo img{
+.home-nav__logo img {
     width: 70px;
     height: 50px;
     transition: 0.5s;
-    margin-left: 30px;
     transform: scale(1);
     border-radius: 7.5px;
     display: inline-block;
     border: 2px solid #020617;
     background-color: #020617;
+    object-fit: contain;
 }
 
-/*LOGO HOVER*/
-.logo img:hover{    
+.home-nav__logo img:hover {
     transform: scale(1.1);
 }
 
-/*NAVIGATION BUTTON*/
-.navigation{
+.home-nav__links,
+.home-nav__auth {
     gap: 25px;
+    display: flex;
+    min-height: 50px;
+    align-items: center;
+    justify-content: center;
+}
+
+.home-nav__links {
+    position: absolute;
+    left: 50%;
     width: 500px;
-    height: 50px;
-    display: flex;
-    font-weight: bold;
-    align-items: center;
-    justify-content: center;
+    transform: translateX(-50%);
 }
 
-/*HOME BUTTON*/
-.home{
-    width: 125px;
+.home-nav__link,
+.home-nav__cta {
     height: 50px;
-    display: flex;
-    transition: 0.5s;
-    color: #f8fafc;
-    font-size: 0.7em;
-    font-weight: bold;
-    border-radius: 5px;
-    transform: scale(1);
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    transition: 0.5s;
+    font-size: 17px;
+    border-radius: 5px;
+    font-weight: 500;
+    transform: scale(1);
     text-decoration: none;
     border: 2px solid #020617;
-    justify-content: center;
-    background-color: #020617;
     font-family: 'DM Sans', sans-serif;
 }
 
-/*SUITES & ROOM BUTTON*/
-.suites_rooms{
+.home-nav__link {
     width: 150px;
-    height: 50px;
-    display: flex;
-    transition: 0.5s;
     color: #020617;
-    font-size: 0.7em;
-    border-radius: 5px;
-    transform: scale(1);
-    font-weight: normal;
-    align-items: center;
-    text-decoration: none;
-    justify-content: center;
-    border: 2px solid #020617;
     background-color: #f8fafc;
-    font-family: 'DM Sans', sans-serif;
 }
 
-/*SUITES & ROOM BUTTON HOVER*/
-.suites_rooms:hover{
+.home-nav__link:hover {
     color: #f8fafc;
-    font-weight: bold;
-    transform: scale(1.1);
-    background-color: black;
+    font-weight: 700;
+    transform: scale(1.08);
+    background-color: #020617;
 }
 
-/*NAVIGATION CTA*/
-.cta{
-    width: 150px;
-    height: 50px;
-    display: flex;
-    margin-right: 30px;
-    align-items: center;
-    justify-content: center;
+.home-nav__link--active {
+    color: #f8fafc;
+    font-weight: 700;
+    background-color: #020617;
 }
 
-/*BOOK NOW BUTTON*/
-.book_now{
+.home-nav__cta {
     width: 150px;
-    height: 50px;
-    transition: 0.5s;
+}
+
+.home-nav__cta--primary {
     color: #fdd700;
-    font-size: 0.7em;
-    border-radius: 5px;
-    font-weight: normal;
-    align-items: center;
-    transform: scale(1);
-    display: inline-block;
-    justify-content: center;
-    background-color: #020617;
-    border: 2px solid #020617;
-    font-family: 'DM Sans', sans-serif;
-}
-
-/*BOOK NOW BUTTON HOVER*/
-.book_now:hover{
-    font-weight: bold;
-    transform: scale(1.1);
     background-color: #020617;
 }
 
+.home-nav__cta--secondary {
+    color: #020617;
+    background-color: #f8fafc;
+}
 
-/* HERO SECTION/DESCRIPTION HERE! */
+.home-nav__cta:hover {
+    font-weight: 700;
+    transform: scale(1.08);
+}
 
+.home-nav__cta--primary:hover {
+    color: #fdd700;
+    background-color: #020617;
+}
 
-/*CONTAINER FOR HERO SECTION*/
-.hero{
-    width: 100vw;
-    height: 100vh;
+.home-nav__cta--secondary:hover {
+    color: #f8fafc;
+    background-color: #020617;
+}
+
+.home-flash {
+    position: fixed;
+    top: 92px;
+    left: 50%;
+    width: min(680px, calc(100vw - 32px));
+    z-index: 1001;
+    transform: translateX(-50%);
+}
+
+.home-hero {
+    width: 100%;
+    min-height: calc(100vh - 75px);
     display: flex;
     position: relative;
+    overflow: hidden;
     align-items: center;
     justify-content: center;
+    background: #020617;
 }
 
-/*LINEAR GRADIENT FOR HERO IMG*/
-.hero::before{
+.home-hero::before {
     inset: 0;
     content: "";
     z-index: 1;
-    width: 100vw;
-    height: 100vh;
     position: absolute;
-    background: linear-gradient(to top, black, transparent);
+    background: linear-gradient(to top, #000000, rgba(0, 0, 0, 0.1));
 }
 
-/*HERO IMAGE*/
-.hero img{
+.home-hero img {
+    inset: 0;
     z-index: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     position: absolute;
 }
 
-/*HERO DESCRIPTION*/
-.hero_content{
-    gap: 10px;
+.home-hero__content {
     z-index: 2;
-    width: 2000px;
-    height: 100px;
+    width: min(1500px, calc(100% - 48px));
     display: flex;
+    gap: 10px;
     flex-wrap: wrap;
-    margin-top: 150px;
-    position: absolute;
+    margin-top: 0;
+    position: relative;
     align-items: center;
+    transform: translateY(190px);
     justify-content: center;
 }
 
-/*HEADING 1*/
-.h1{
-    margin: 0px;
-    width: 2000px;
+.home-hero__content h1 {
+    width: 100%;
+    margin: 0;
     display: flex;
-    font-size: 5em;
     color: #fdd700;
+    font-size: clamp(72px, 8.4vw, 150px);
     text-align: center;
-    line-height: 110px;
+    line-height: 0.95;
     word-spacing: 25px;
     letter-spacing: 8.5px;
     justify-content: center;
-    font-family: 'DM Serif Display';
+    font-family: 'DM Serif Display', serif;
 }
 
-/*HEADING 3*/
-.h3{
-    margin: 0px;
-    width: 2000px;
+.home-hero__content p {
+    width: 100%;
+    margin: 0;
     display: flex;
-    font-size: 1em;
     color: #f8fafc;
+    font-size: clamp(20px, 1.8vw, 24px);
     line-height: 50px;
     text-align: center;
     letter-spacing: 2.5px;
     justify-content: center;
+    font-weight: 700;
     font-family: 'DM Sans', sans-serif;
 }
 
-/*SUITES & ROOM 2 BUTTON*/
-.suites_rooms_2{
+.home-hero__content a {
     width: 150px;
     height: 60px;
     display: flex;
     transition: 0.5s;
     color: #f8fafc;
-    font-size: 0.7em;
+    font-size: 17px;
     border-radius: 5px;
-    margin-right: 10px;
     transform: scale(1);
-    font-weight: normal;
+    font-weight: 500;
     align-items: center;
     text-decoration: none;
     justify-content: center;
@@ -233,14 +219,94 @@ nav{
     font-family: 'DM Sans', sans-serif;
 }
 
-/*SUITES & ROOM 2 BUTTON HOVER*/
-.suites_rooms_2:hover{
+.home-hero__content a:hover {
     color: #fdd700;
-    font-weight: bold;
+    font-weight: 700;
     transform: scale(1.1);
     background-color: #020617;
-    border: 2px solid #fdd700;
+    border-color: #fdd700;
 }
 
+@media (max-width: 960px) {
+    .home-nav__container {
+        padding: 10px 18px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
 
+    .home-nav__links {
+        position: static;
+        width: 100%;
+        transform: none;
+        justify-content: flex-start;
+    }
 
+    .home-nav__auth {
+        position: absolute;
+        top: 14px;
+        right: 18px;
+        gap: 10px;
+    }
+
+    .home-nav__cta {
+        width: auto;
+        min-width: 116px;
+        padding: 0 14px;
+        font-size: 14px;
+    }
+
+    .home-hero {
+        min-height: 680px;
+    }
+
+    .home-hero__content {
+        transform: translateY(70px);
+    }
+}
+
+@media (max-width: 640px) {
+    .home-nav__container {
+        gap: 12px;
+    }
+
+    .home-nav__logo img {
+        width: 58px;
+        height: 42px;
+    }
+
+    .home-nav__links,
+    .home-nav__auth {
+        width: 100%;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .home-nav__auth {
+        position: static;
+    }
+
+    .home-nav__link,
+    .home-nav__cta {
+        width: auto;
+        min-width: 120px;
+        height: 44px;
+        padding: 0 14px;
+        font-size: 14px;
+    }
+
+    .home-hero {
+        min-height: 620px;
+    }
+
+    .home-hero__content h1 {
+        font-size: clamp(54px, 16vw, 86px);
+        word-spacing: 8px;
+        letter-spacing: 4px;
+    }
+
+    .home-hero__content p {
+        font-size: 16px;
+        line-height: 1.5;
+    }
+}

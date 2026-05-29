@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/layout.php';
+require_once __DIR__ . '/../includes/room_catalog.php';
 
 requireAuth('../auth/login.php');
 requireRole('admin', '../user/dashboard.php');
@@ -13,7 +14,7 @@ $currentAdmin = currentUser();
 $roomModel = new Room($db);
 $editRoom = null;
 $roomTypes = Room::types();
-$roomStatuses = ['Available', 'Reserved', 'Occupied', 'Cleaning', 'Maintenance'];
+$roomStatuses = Room::statuses();
 
 if (isset($_GET['export']) && $_GET['export'] === 'xml') {
     header('Content-Type: application/xml; charset=UTF-8');
@@ -77,7 +78,7 @@ $rooms = $roomModel->all();
 $summary = $roomModel->statusSummary();
 $typeSummary = $roomModel->typeSummary();
 
-renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin);
+renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/rooms.css']);
 ?>
 <section class="stats-grid mb-4">
     <article class="stat-tile">
@@ -123,17 +124,17 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin);
                     </div>
                     <div class="col-6">
                         <label class="form-label" for="price_per_night">Price / Night</label>
-                        <input class="form-control" id="price_per_night" name="price_per_night" type="number" step="0.01" value="<?php echo e($editRoom['price_per_night'] ?? '0.00'); ?>" required>
+                        <input class="form-control" id="price_per_night" name="price_per_night" type="number" min="0.01" step="0.01" value="<?php echo e($editRoom['price_per_night'] ?? '0.00'); ?>" required>
                     </div>
                 </div>
                 <div class="row g-3">
                     <div class="col-6">
                         <label class="form-label" for="capacity_adults">Adults</label>
-                        <input class="form-control" id="capacity_adults" name="capacity_adults" type="number" value="<?php echo e($editRoom['capacity_adults'] ?? 2); ?>" required>
+                        <input class="form-control" id="capacity_adults" name="capacity_adults" type="number" min="1" value="<?php echo e($editRoom['capacity_adults'] ?? 2); ?>" required>
                     </div>
                     <div class="col-6">
                         <label class="form-label" for="capacity_children">Children</label>
-                        <input class="form-control" id="capacity_children" name="capacity_children" type="number" value="<?php echo e($editRoom['capacity_children'] ?? 1); ?>" required>
+                        <input class="form-control" id="capacity_children" name="capacity_children" type="number" min="0" value="<?php echo e($editRoom['capacity_children'] ?? 1); ?>" required>
                     </div>
                 </div>
                 <div>
@@ -188,7 +189,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin);
                                 id="rate_<?php echo e($rateInfo['total'] . '_' . str_replace(' ', '_', strtolower($type))); ?>"
                                 name="price_per_night"
                                 type="number"
-                                min="0"
+                                min="0.01"
                                 step="0.01"
                                 value="<?php echo e(number_format($currentPrice, 2, '.', '')); ?>"
                                 required

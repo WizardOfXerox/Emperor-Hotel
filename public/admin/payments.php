@@ -12,87 +12,187 @@ $db = Database::connect();
 $currentAdmin = currentUser();
 $paymentModel = new Payment($db);
 $reservationModel = new Reservation($db);
+$selectedReservationId = (int) ($_GET['reservation_id'] ?? ($_POST['reservation_id'] ?? 0));
+$selectedPaymentMethod = (string) ($_GET['payment_method'] ?? ($_POST['payment_method'] ?? ''));
+
+if (!in_array($selectedPaymentMethod, Payment::methods(), true)) {
+    $selectedPaymentMethod = '';
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = (string) ($_POST['action'] ?? 'create_payment');
+
     try {
+        if ($action === 'update_status') {
+            $paymentModel->updateReview(
+                (int) ($_POST['payment_id'] ?? 0),
+                (float) ($_POST['amount'] ?? 0),
+                (string) ($_POST['payment_status'] ?? 'Pending')
+            );
+            setFlash('success', 'Transaction review updated.');
+            redirect('payments.php');
+        }
+
+        $reservationId = (int) ($_POST['reservation_id'] ?? 0);
+        $isSimulated = isset($_POST['is_simulated']);
+        $notes = trim((string) ($_POST['notes'] ?? ''));
+        $paymentStatus = $isSimulated ? 'Pending' : (string) ($_POST['payment_status'] ?? 'Confirmed');
+
+        if ($isSimulated && $notes === '') {
+            $notes = 'Simulated transaction from Payments page. No real money was processed.';
+        }
+
         $paymentModel->create([
-            'reservation_id' => (int) ($_POST['reservation_id'] ?? 0),
+            'reservation_id' => $reservationId,
             'amount' => (float) ($_POST['amount'] ?? 0),
             'payment_method' => (string) ($_POST['payment_method'] ?? 'Cash'),
             'currency' => (string) ($_POST['currency'] ?? 'PHP'),
-            'payment_status' => (string) ($_POST['payment_status'] ?? 'Pending'),
-            'transaction_reference' => (string) ($_POST['transaction_reference'] ?? ''),
-            'notes' => (string) ($_POST['notes'] ?? ''),
+            'payment_status' => $paymentStatus,
+            'is_simulated' => $isSimulated,
+            'notes' => $notes,
         ]);
-        setFlash('success', 'Payment recorded.');
+
+        setFlash('success', $isSimulated ? 'Simulated transaction recorded.' : 'Payment recorded.');
         redirect('payments.php');
     } catch (Throwable $exception) {
         setFlash('error', $exception->getMessage());
-        redirect('payments.php');
+        $query = [];
+
+        if ($selectedReservationId > 0) {
+            $query['reservation_id'] = $selectedReservationId;
+        }
+
+        if ($selectedPaymentMethod !== '') {
+            $query['payment_method'] = $selectedPaymentMethod;
+        }
+
+        redirect('payments.php' . ($query ? '?' . http_build_query($query) : ''));
     }
 }
 
 $payments = $paymentModel->all();
 $reservations = $reservationModel->all();
+$paymentTotals = $paymentModel->totalsByReservation();
 $summaryRows = $paymentModel->summaryByStatus();
 
-renderAdminLayoutStart('Payments', 'payments', $currentAdmin);
+renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/admin/payments.css']);
 ?>
 <section class="row g-4">
     <div class="col-xl-4">
         <div class="panel-card p-4 h-100">
             <p class="eyebrow mb-1">Payment Entry</p>
-            <h3 class="mb-3">Record Payment</h3>
+            <h3 class="mb-2">Record Payment or Simulation</h3>
+            <p class="muted-copy">Choose a reservation first. The tracker shows the reservation total, confirmed payment, pending logs, and balance.</p>
+
+            <?php if (!$reservations): ?>
+                <div class="alert alert-warning">Create a reservation before recording a payment.</div>
+            <?php endif; ?>
+
             <form method="post" class="d-grid gap-3">
+                <input type="hidden" name="action" value="create_payment">
                 <div>
                     <label class="form-label" for="reservation_id">Reservation</label>
-                    <select class="form-select" id="reservation_id" name="reservation_id" required>
+                    <select class="form-select" id="reservation_id" name="reservation_id" required data-payment-reservation <?php echo !$reservations ? 'disabled' : ''; ?>>
+                        <option value="">Choose a reservation</option>
                         <?php foreach ($reservations as $reservation): ?>
-                            <option value="<?php echo e($reservation['reservation_id']); ?>">
-                                <?php echo e('#' . $reservation['reservation_id'] . ' • ' . $reservation['first_name'] . ' ' . $reservation['last_name'] . ' • Room ' . $reservation['room_number']); ?>
+                            <?php
+                                $reservationId = (int) $reservation['reservation_id'];
+                                $totals = $paymentTotals[$reservationId] ?? [
+                                    'logged_amount' => 0.0,
+                                    'confirmed_amount' => 0.0,
+                                    'pending_amount' => 0.0,
+                                ];
+                                $reservationTotal = (float) $reservation['total_amount'];
+                                $balanceDue = max(0, $reservationTotal - (float) $totals['confirmed_amount']);
+                                $activeBalanceDue = max(0, $reservationTotal - (float) $totals['confirmed_amount'] - (float) $totals['pending_amount']);
+                            ?>
+                            <option
+                                value="<?php echo e($reservationId); ?>"
+                                data-total="<?php echo e(number_format($reservationTotal, 2, '.', '')); ?>"
+                                data-confirmed="<?php echo e(number_format((float) $totals['confirmed_amount'], 2, '.', '')); ?>"
+                                data-pending="<?php echo e(number_format((float) $totals['pending_amount'], 2, '.', '')); ?>"
+                                data-logged="<?php echo e(number_format((float) $totals['logged_amount'], 2, '.', '')); ?>"
+                                data-balance="<?php echo e(number_format($balanceDue, 2, '.', '')); ?>"
+                                data-active-balance="<?php echo e(number_format($activeBalanceDue, 2, '.', '')); ?>"
+                                data-guest="<?php echo e($reservation['first_name'] . ' ' . $reservation['last_name']); ?>"
+                                data-room="<?php echo e('Room ' . $reservation['room_number'] . ' - ' . $reservation['room_type']); ?>"
+                                data-stay="<?php echo e($reservation['check_in'] . ' to ' . $reservation['check_out']); ?>"
+                                data-status="<?php echo e($reservation['status']); ?>"
+                                <?php echo $selectedReservationId === $reservationId ? 'selected' : ''; ?>
+                            >
+                                <?php echo e('#' . $reservationId . ' - ' . $reservation['first_name'] . ' ' . $reservation['last_name'] . ' - Room ' . $reservation['room_number']); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
+
+                <div class="cost-tracker" data-payment-cost-tracker>
+                    <div class="cost-tracker__head">
+                        <div>
+                            <p class="eyebrow mb-1">Cost Tracker</p>
+                            <h4 class="mb-0">Reservation Balance</h4>
+                        </div>
+                        <span class="badge-soft" data-payment-status>Choose reservation</span>
+                    </div>
+                    <div class="cost-tracker__grid">
+                        <div><span>Guest</span><strong data-payment-guest>Choose a reservation</strong></div>
+                        <div><span>Room</span><strong data-payment-room>Choose a room</strong></div>
+                        <div><span>Stay</span><strong data-payment-stay>Choose dates</strong></div>
+                        <div><span>Reservation total</span><strong data-payment-total>PHP 0.00</strong></div>
+                        <div><span>Confirmed paid</span><strong data-payment-confirmed>PHP 0.00</strong></div>
+                        <div><span>Pending logs</span><strong data-payment-pending>PHP 0.00</strong></div>
+                        <div class="cost-tracker__total"><span>Balance due</span><strong data-payment-balance>PHP 0.00</strong></div>
+                        <div><span>Remaining payable</span><strong data-payment-active-balance>PHP 0.00</strong></div>
+                    </div>
+                    <p class="muted-copy small mb-0">Confirmed payments reduce the balance. Pending payments reserve part of the balance until reviewed.</p>
+                </div>
+
                 <div>
                     <label class="form-label" for="amount">Amount</label>
-                    <input class="form-control" id="amount" name="amount" type="number" step="0.01" required>
+                    <input class="form-control" id="amount" name="amount" type="number" min="0.01" step="0.01" required data-payment-amount <?php echo !$reservations ? 'disabled' : ''; ?>>
+                    <div class="form-text" data-payment-entry-note>Choose a reservation to fill the maximum payable amount.</div>
                 </div>
                 <div class="row g-3">
                     <div class="col-6">
                         <label class="form-label" for="payment_method">Method</label>
-                        <select class="form-select" id="payment_method" name="payment_method">
-                            <?php foreach (['Cash', 'Credit Card', 'Debit Card', 'Bank Transfer', 'Other'] as $method): ?>
-                                <option value="<?php echo e($method); ?>"><?php echo e($method); ?></option>
+                        <select class="form-select" id="payment_method" name="payment_method" <?php echo !$reservations ? 'disabled' : ''; ?>>
+                            <?php foreach (Payment::methods() as $method): ?>
+                                <option value="<?php echo e($method); ?>" <?php echo $selectedPaymentMethod === $method ? 'selected' : ''; ?>><?php echo e($method); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-6">
                         <label class="form-label" for="currency">Currency</label>
-                        <select class="form-select" id="currency" name="currency">
-                            <?php foreach (['PHP', 'USD', 'EUR'] as $currency): ?>
+                        <select class="form-select" id="currency" name="currency" <?php echo !$reservations ? 'disabled' : ''; ?>>
+                            <?php foreach (Payment::currencies() as $currency): ?>
                                 <option value="<?php echo e($currency); ?>"><?php echo e($currency); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
                 <div>
-                    <label class="form-label" for="payment_status">Status</label>
-                    <select class="form-select" id="payment_status" name="payment_status">
-                        <?php foreach (['Pending', 'Confirmed', 'Failed', 'Refunded'] as $status): ?>
-                            <option value="<?php echo e($status); ?>"><?php echo e($status); ?></option>
+                    <label class="form-label" for="payment_status">Status / Review Decision</label>
+                    <select class="form-select" id="payment_status" name="payment_status" <?php echo !$reservations ? 'disabled' : ''; ?>>
+                        <?php foreach (Payment::statuses() as $status): ?>
+                            <option value="<?php echo e($status); ?>" <?php echo $status === 'Confirmed' ? 'selected' : ''; ?>><?php echo e($status); ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <div class="form-text">Use Confirmed for accepted walk-in cash/card payments. Use Pending for transactions that still need admin review.</div>
                 </div>
-                <div>
-                    <label class="form-label" for="transaction_reference">Reference</label>
-                    <input class="form-control" id="transaction_reference" name="transaction_reference" type="text">
+                <div class="form-check">
+                    <input class="form-check-input" id="is_simulated" name="is_simulated" type="checkbox" value="1" <?php echo !$reservations ? 'disabled' : ''; ?>>
+                    <label class="form-check-label" for="is_simulated">Create simulated transaction</label>
+                    <div class="form-text">No real money is processed. Simulated transactions are saved as Pending for admin review.</div>
+                </div>
+                <div class="panel-card p-3">
+                    <p class="eyebrow mb-1">Auto Reference</p>
+                    <p class="muted-copy small mb-0">A reference like <strong>PAY-00001-YYYYMMDDHHMMSS</strong> or <strong>SIM-00001-YYYYMMDDHHMMSS</strong> will be generated when this transaction is saved.</p>
                 </div>
                 <div>
                     <label class="form-label" for="notes">Notes</label>
-                    <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    <textarea class="form-control" id="notes" name="notes" rows="3" <?php echo !$reservations ? 'disabled' : ''; ?>></textarea>
                 </div>
-                <button class="btn btn-warning fw-semibold" type="submit">Save Payment</button>
+                <button class="btn btn-warning fw-semibold" type="submit" <?php echo !$reservations ? 'disabled' : ''; ?>>Save Transaction</button>
             </form>
         </div>
     </div>
@@ -110,6 +210,11 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin);
                         </tr>
                     </thead>
                     <tbody>
+                        <?php if (!$summaryRows): ?>
+                            <tr>
+                                <td colspan="3" class="text-light-emphasis">No payment summaries yet.</td>
+                            </tr>
+                        <?php endif; ?>
                         <?php foreach ($summaryRows as $summary): ?>
                             <tr>
                                 <td><span class="badge-soft"><?php echo e($summary['payment_status']); ?></span></td>
@@ -126,9 +231,9 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin);
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
                     <p class="eyebrow mb-1">Transactions</p>
-                    <h3 class="mb-0">Payment History</h3>
+                    <h3 class="mb-0">Transaction Report Log</h3>
                 </div>
-                <span class="badge-soft"><?php echo e(count($payments)); ?> payments</span>
+                <span class="badge-soft"><?php echo e(count($payments)); ?> transactions</span>
             </div>
             <div class="table-responsive">
                 <table class="table table-dark-soft align-middle mb-0">
@@ -136,21 +241,58 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin);
                         <tr>
                             <th>Reservation</th>
                             <th>Guest</th>
-                            <th>Method</th>
+                            <th>Method / Reference</th>
                             <th>Status</th>
                             <th>Amount</th>
                             <th>Date</th>
+                            <th>Review</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <?php if (!$payments): ?>
+                            <tr>
+                                <td colspan="7" class="text-light-emphasis">No transaction logs yet.</td>
+                            </tr>
+                        <?php endif; ?>
                         <?php foreach ($payments as $payment): ?>
                             <tr>
-                                <td>#<?php echo e($payment['reservation_id']); ?> • Room <?php echo e($payment['room_number']); ?></td>
+                                <td>
+                                    <div>#<?php echo e($payment['reservation_id']); ?> - Room <?php echo e($payment['room_number']); ?></div>
+                                    <small class="text-light-emphasis">Reservation total: <?php echo e(formatMoney((float) $payment['total_amount'])); ?></small>
+                                    <div><a class="small text-warning" href="receipt.php?reservation_id=<?php echo e($payment['reservation_id']); ?>">View receipt</a></div>
+                                </td>
                                 <td><?php echo e($payment['first_name'] . ' ' . $payment['last_name']); ?></td>
-                                <td><?php echo e($payment['payment_method']); ?></td>
+                                <td>
+                                    <div><?php echo e($payment['payment_method']); ?></div>
+                                    <small class="text-light-emphasis"><?php echo e($payment['transaction_reference'] ?: 'No reference'); ?></small>
+                                    <?php if ($payment['notes']): ?>
+                                        <div><small class="text-light-emphasis"><?php echo e($payment['notes']); ?></small></div>
+                                    <?php endif; ?>
+                                </td>
                                 <td><span class="badge-soft"><?php echo e($payment['payment_status']); ?></span></td>
                                 <td><?php echo e(formatMoney((float) $payment['amount'])); ?></td>
                                 <td><?php echo e(date('Y-m-d', strtotime($payment['payment_date']))); ?></td>
+                                <td>
+                                    <form method="post" class="payment-review-form">
+                                        <input type="hidden" name="action" value="update_status">
+                                        <input type="hidden" name="payment_id" value="<?php echo e($payment['payment_id']); ?>">
+                                        <input
+                                            class="form-control form-control-sm payment-review-amount"
+                                            name="amount"
+                                            type="number"
+                                            min="0.01"
+                                            step="0.01"
+                                            value="<?php echo e(number_format((float) $payment['amount'], 2, '.', '')); ?>"
+                                            aria-label="Transaction amount"
+                                        >
+                                        <select class="form-select form-select-sm" name="payment_status" aria-label="Update transaction status">
+                                            <?php foreach (Payment::statuses() as $status): ?>
+                                                <option value="<?php echo e($status); ?>" <?php echo $payment['payment_status'] === $status ? 'selected' : ''; ?>><?php echo e($status); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <button class="btn btn-sm btn-outline-light" type="submit">Update</button>
+                                    </form>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -159,4 +301,132 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin);
         </div>
     </div>
 </section>
+<script>
+document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
+    const form = tracker.closest("form");
+
+    if (!form) {
+        return;
+    }
+
+    const reservationSelect = form.querySelector("[data-payment-reservation]");
+    const amountInput = form.querySelector("[data-payment-amount]");
+    const simulatedInput = form.querySelector("#is_simulated");
+    const notesInput = form.querySelector("#notes");
+    const statusInput = form.querySelector("#payment_status");
+    const methodInput = form.querySelector("#payment_method");
+    const currencyInput = form.querySelector("#currency");
+    const submitButton = form.querySelector("button[type='submit']");
+    const entryNote = form.querySelector("[data-payment-entry-note]");
+    const paymentEntryFields = [amountInput, methodInput, currencyInput, statusInput, simulatedInput, notesInput, submitButton].filter(Boolean);
+    const money = (amount) => `PHP ${Number(amount || 0).toLocaleString("en-PH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    })}`;
+    const text = (selector, value) => {
+        const element = tracker.querySelector(selector);
+
+        if (element) {
+            element.textContent = value;
+        }
+    };
+    const setPaymentEntryState = (enabled, note) => {
+        paymentEntryFields.forEach((field) => {
+            field.disabled = !enabled;
+        });
+
+        if (entryNote) {
+            entryNote.textContent = note;
+            entryNote.classList.toggle("text-warning", !enabled);
+        }
+    };
+
+    const updateTracker = () => {
+        const option = reservationSelect && reservationSelect.value ? reservationSelect.selectedOptions[0] : null;
+
+        if (!option) {
+            text("[data-payment-status]", "Choose reservation");
+            text("[data-payment-guest]", "Choose a reservation");
+            text("[data-payment-room]", "Choose a room");
+            text("[data-payment-stay]", "Choose dates");
+            text("[data-payment-total]", money(0));
+            text("[data-payment-confirmed]", money(0));
+            text("[data-payment-pending]", money(0));
+            text("[data-payment-balance]", money(0));
+            text("[data-payment-active-balance]", money(0));
+            if (amountInput) {
+                amountInput.value = "";
+                amountInput.removeAttribute("max");
+                amountInput.dataset.autofilled = "true";
+            }
+            setPaymentEntryState(false, "Choose a reservation before recording a payment.");
+            return;
+        }
+
+        const balance = Number(option.dataset.balance || 0);
+        const activeBalance = Number(option.dataset.activeBalance || 0);
+        const pending = Number(option.dataset.pending || 0);
+
+        text("[data-payment-status]", option.dataset.status || "Reservation");
+        text("[data-payment-guest]", option.dataset.guest || "Guest");
+        text("[data-payment-room]", option.dataset.room || "Room");
+        text("[data-payment-stay]", option.dataset.stay || "Stay dates");
+        text("[data-payment-total]", money(option.dataset.total));
+        text("[data-payment-confirmed]", money(option.dataset.confirmed));
+        text("[data-payment-pending]", money(option.dataset.pending));
+        text("[data-payment-balance]", money(balance));
+        text("[data-payment-active-balance]", money(activeBalance));
+
+        if (amountInput && (amountInput.dataset.autofilled !== "false")) {
+            amountInput.value = activeBalance > 0 ? activeBalance.toFixed(2) : "0.00";
+            amountInput.max = activeBalance.toFixed(2);
+            amountInput.dataset.autofilled = "true";
+        }
+
+        if (activeBalance <= 0) {
+            const note = pending > 0
+                ? "No new payment can be added because pending transaction(s) already reserve the remaining balance. Review or adjust the existing transaction below."
+                : "No new payment can be added because this reservation has no remaining payable balance.";
+            setPaymentEntryState(false, note);
+            return;
+        }
+
+        setPaymentEntryState(true, `You can record up to ${money(activeBalance)} for this reservation.`);
+    };
+
+    if (amountInput) {
+        amountInput.addEventListener("input", () => {
+            amountInput.dataset.autofilled = "false";
+        });
+    }
+
+    if (reservationSelect) {
+        reservationSelect.addEventListener("change", () => {
+            if (amountInput) {
+                amountInput.dataset.autofilled = "true";
+            }
+
+            updateTracker();
+        });
+    }
+
+    if (simulatedInput) {
+        simulatedInput.addEventListener("change", () => {
+            if (simulatedInput.checked) {
+                if (statusInput) {
+                    statusInput.value = "Pending";
+                }
+
+                if (notesInput && notesInput.value.trim() === "") {
+                    notesInput.value = "Simulated transaction. No real money was processed.";
+                }
+            } else if (statusInput && statusInput.value === "Pending") {
+                statusInput.value = "Confirmed";
+            }
+        });
+    }
+
+    updateTracker();
+});
+</script>
 <?php renderAdminLayoutEnd(); ?>

@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php');
 }
 
-renderHeader('Log In');
+renderHeader('Log In', ['../assets/css/auth/login.css']);
 ?>
 <main class="auth-wrapper">
     <section class="auth-card">

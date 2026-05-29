@@ -14,10 +14,16 @@ flowchart TD
     E -->|No| F[Register or Login]
     E -->|Yes| G[User Dashboard]
     F --> G
-    G --> H[Choose room and booking dates]
-    H --> I[Submit reservation]
-    I --> J[Reservation saved as Pending]
-    J --> K[User views reservation list]
+    G --> H[Enter stay details and choose room card]
+    H --> I[Select booking dates and guest count]
+    I --> I1[Review cost tracker and submit reservation]
+    I1 --> J[Reservation saved as Pending]
+    J --> J1{Payment Mode}
+    J1 -->|Cash| J2[Generate Cashier Reference]
+    J1 -->|Card / Bank / Online| J3[Open Customer Payment Page]
+    J3 --> J4[Submit Simulated Payment for Admin Review]
+    J2 --> K[User views reservation list]
+    J4 --> K
 
     F --> L{Admin account?}
     L -->|Yes| M[Admin Dashboard]
@@ -26,8 +32,10 @@ flowchart TD
     M --> N[Manage Rooms]
     M --> O[Manage Reservations]
     M --> P[Manage Payments]
-    M --> Q[Manage Users]
+    M --> Q[Manage Guests]
+    M --> U[Manage Users]
     M --> R[View Dashboard Charts]
+    M --> T[Open Reports]
 
     N --> N1[Create Room]
     N --> N2[Edit Room]
@@ -35,17 +43,35 @@ flowchart TD
     N --> N4[Update Room Type Price]
     N --> N5[Import or Export XML]
 
-    O --> O1[Create Reservation]
+    O --> O1[Check Dates and Create Reservation]
     O --> O2[Edit Reservation]
     O --> O3[Delete Reservation]
+    O --> O4[Confirm / Check In / Extend Stay / Check Out / Cancel]
+    O --> O5[Open Printable Receipt]
+    O --> O6{Payment Mode}
+    O6 --> O7[Cash: Generate Cashier Reference]
+    O6 --> O8[Card / Bank / Online: Open Payments Page]
+    O --> O9[Select Room Card Manually]
 
     P --> P1[Record Payment]
-    P --> P2[View Payment History]
+    P --> P2[View Transaction Report Log]
     P --> P3[View Payment Status Summary]
+    P --> P4[Create Simulated Transaction]
+    P --> P5[Review Pending Transactions]
+    P --> P6[Prevent Overpayment]
 
-    Q --> Q1[Create User]
-    Q --> Q2[Edit User]
-    Q --> Q3[Delete User]
+    Q --> Q1[Search Guest]
+    Q --> Q2[View Guest Reservation History]
+    Q --> Q3[Book Again or Print Receipt]
+
+    U --> U1[Create User]
+    U --> U2[Edit User]
+    U --> U3[Delete User]
+
+    T --> T1[Filter Date Range]
+    T --> T2[View Occupancy Report]
+    T --> T3[View Revenue Report]
+    T --> T4[View Reservation Trend Report]
 ```
 
 ## Guest Flow
@@ -63,13 +89,15 @@ flowchart TD
 ```mermaid
 flowchart TD
     A[User logs in] --> B[User Dashboard]
-    B --> C[View available rooms]
-    C --> D[Enter check-in and check-out dates]
-    D --> E[Submit booking form]
+    B --> C[Enter full name, dates, guests, and payment route]
+    C --> C1[Choose a room from the room selection panel]
+    C1 --> D[Review room inclusions]
+    D --> D1[Review reservation cost tracker]
+    D1 --> E[Submit booking form]
     E --> F{Room available?}
     F -->|Yes| G[Reservation is saved]
     F -->|No| H[Show availability error]
-    G --> I[Reservation appears in user's reservation list]
+    G --> I[Reservation appears in booking history below the form]
 ```
 
 ## Admin Flow
@@ -78,26 +106,44 @@ flowchart TD
 flowchart TD
     A[Admin logs in] --> B[Admin Dashboard]
     B --> C[View KPI cards and charts]
+    B --> C1[Review operational alerts]
     B --> D[Rooms Module]
     B --> E[Reservations Module]
     B --> F[Payments Module]
-    B --> G[Users Module]
+    B --> G[Guests Module]
+    B --> H[Users Module]
+    B --> I[Reports Module]
 
     D --> D1[Add or edit rooms]
     D --> D2[Delete rooms]
     D --> D3[Bulk update room prices]
     D --> D4[Import or export room XML]
 
-    E --> E1[Add reservation]
-    E --> E2[Edit reservation]
-    E --> E3[Delete reservation]
+    E --> E1[Check date-aware room availability]
+    E --> E2[Add reservation]
+    E --> E3[Confirm, check in, extend stay, check out, or cancel]
+    E --> E4[Open printable receipt]
+    E --> E5[Edit reservation]
+    E --> E6[Delete reservation]
+    E --> E7[Select room card manually]
 
-    F --> F1[Record payment]
+    F --> F1[Record payment or simulated transaction]
     F --> F2[Review payment history]
+    F --> F3[Update transaction status]
+    F --> F4[Prevent pending/confirmed overpayment]
 
-    G --> G1[Add user]
-    G --> G2[Edit user]
-    G --> G3[Delete user]
+    G --> G1[Search guests]
+    G --> G2[View guest history]
+    G --> G3[Book again or open receipt]
+
+    H --> H1[Add user]
+    H --> H2[Edit user]
+    H --> H3[Delete user]
+
+    I --> I1[Filter report date range]
+    I --> I2[Review occupancy by room type]
+    I --> I3[Review revenue by room type or payment method]
+    I --> I4[Review daily reservation trends]
 ```
 
 ## Page Route Summary
@@ -110,8 +156,12 @@ flowchart TD
 | Register | `public/auth/register.php` | Guest |
 | Logout | `public/auth/logout.php` | Logged-in users |
 | User Dashboard | `public/user/dashboard.php` | Registered user |
+| User Payment | `public/user/payment.php` | Registered user |
 | Admin Dashboard | `public/admin/dashboard.php` | Admin |
 | Admin Rooms | `public/admin/rooms.php` | Admin |
 | Admin Reservations | `public/admin/reservations.php` | Admin |
 | Admin Payments | `public/admin/payments.php` | Admin |
+| Admin Guests | `public/admin/guests.php` | Admin |
+| Admin Receipt | `public/admin/receipt.php` | Admin |
+| Admin Reports | `public/admin/reports.php` | Admin |
 | Admin Users | `public/admin/users.php` | Admin |

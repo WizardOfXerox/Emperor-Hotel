@@ -1,10 +1,10 @@
 PROJECT OVERVIEW
 
 Project name:
-Emperor Hotel Reservation System
+Emperor Hotel Reservation and Management System
 
 Purpose:
-This project is a web-based hotel reservation system built with Core PHP, OOP, MySQL, XML + DOM, and Bootstrap-based responsive pages. It supports public hotel pages, user booking, admin operations, room inventory, reservations, payments, users, and dashboard reporting.
+This project is a web-based hotel reservation and management system built with Core PHP, OOP, MySQL, XML + DOM, and Bootstrap-based responsive pages. Reservations are the core workflow, while the management modules support public hotel pages, user booking, admin walk-in operations, room inventory, check-in/check-out actions, guest history, payments, printable receipts, simulated transaction logs, users, and dashboard reporting.
 
 TECH STACK
 
@@ -21,26 +21,31 @@ CURRENT FOLDER STRUCTURE
 - app/config/database.php: Database connection class
 - app/helpers/auth.php: Session, authentication, flash, escaping, and money helpers
 - app/models/User.php: User account CRUD and authentication
-- app/models/Guest.php: Guest profile CRUD and upsert helpers
+- app/models/Guest.php: Guest profile CRUD, upsert helpers, search, and reservation history
 - app/models/Room.php: Room CRUD, room status, room prices, XML import/export, and room summaries
-- app/models/Reservation.php: Reservation CRUD, availability checking, status syncing, dashboard summaries
-- app/models/Payment.php: Payment recording and payment summaries
+- app/models/Reservation.php: Reservation CRUD, date-aware availability checking, manual room selection validation, front desk status actions, status syncing, dashboard summaries, operational alerts, occupancy reports, and reservation trend reports
+- app/models/Payment.php: Payment recording, automatic transaction references, simulated transaction logs, overpayment protection, payment status review, failed-payment alerts, payment summaries, and revenue reports
+- public/includes/room_catalog.php: Room catalog details and room type inclusions
 - database/schema.sql: Main database schema plus initial room seed data
 - database/seed_rooms.sql: Safe seed/update script for existing databases
 - docs/database-erd.md: ERD and database documentation
 - docs/dashboard-feature-tracker.md: Current dashboard/admin feature tracker
 - docs/technology-stack.md: Technologies, libraries, assets, and runtime notes
 - public/site/home.php: Public homepage
-- public/site/rooms.php: Public room details and room inventory page
+- public/site/rooms.php: Public room details page with suite galleries and dynamic starting prices
 - public/auth/login.php: Login page and handler
 - public/auth/register.php: Registration page and handler
 - public/auth/logout.php: Logout handler
-- public/admin/dashboard.php: Admin dashboard with live summaries and Chart.js charts
+- public/admin/dashboard.php: Admin dashboard with live summaries, operational alerts, payment activity, and Chart.js charts
 - public/admin/rooms.php: Admin room CRUD, bulk type price update, XML import/export
-- public/admin/reservations.php: Admin reservation CRUD
-- public/admin/payments.php: Admin payment recording and summaries
+- public/admin/reservations.php: Admin reservation CRUD with date-aware room filtering, same-room stay extension, front desk actions, and reservation cost tracker
+- public/admin/payments.php: Admin payment recording, automatic payment references, payment cost tracker, simulated transactions, overpayment rules, transaction review, and summaries
+- public/admin/guests.php: Admin guest search and reservation history
+- public/admin/receipt.php: Printable reservation receipt and transaction summary
+- public/admin/reports.php: Admin reports for occupancy, confirmed revenue, and reservation trends
 - public/admin/users.php: Admin user CRUD
-- public/user/dashboard.php: User booking dashboard
+- public/user/dashboard.php: User booking dashboard with side-by-side stay details and room selection, plus booking history below
+- public/assets/css/admin/reports.css: Page-specific admin report styles
 - public/assets/vendor/chartjs/chart.umd.min.js: Local Chart.js browser file
 
 IMPLEMENTED REQUIREMENT STATUS
@@ -62,9 +67,9 @@ Status: Implemented for core entities
 
 - Users: create, read, update, delete in public/admin/users.php.
 - Rooms: create, read, update, delete in public/admin/rooms.php.
-- Reservations: create, read, update, delete in public/admin/reservations.php.
-- Payments: create/read and summary reporting in public/admin/payments.php.
-- Guests: created and updated through reservation/user booking flows.
+- Reservations: create, read, update, delete, date-aware room filtering, same-room stay extension, and front desk actions in public/admin/reservations.php.
+- Payments: create/read, automatic transaction reference generation, simulated transaction logging, overpayment protection, status review, cost tracking, and summary reporting in public/admin/payments.php.
+- Guests: created and updated through reservation/user booking flows, then searched and reviewed in public/admin/guests.php.
 
 3. Database Requirements
 
@@ -129,6 +134,20 @@ Status: Implemented and still being improved
 - Public homepage and rooms page exist.
 - Admin dashboard and admin modules exist.
 - User booking dashboard exists.
+- Reservation forms use room cards grouped by room type instead of long room dropdowns.
+- The user booking dashboard places stay details and payment options beside the room selection panel, while booking history is shown below the form.
+- Room cards use the yellow badge for the room number and show the room type as the main card title.
+- Reservation forms collect full name, stay dates, guest count, room selection, and payment mode.
+- Reservation forms include a cost tracker for room rate, nights, subtotal, room inclusions, and estimated total.
+- Admin reservation forms can check room availability by date range before selecting a room.
+- Admin reservation forms require a manual room-card choice so the selected room is clear before saving.
+- Reservation records include front desk action buttons for Confirm, Check In, Extend Stay, Check Out, and Cancel.
+- Stay extensions check whether the same room is available for the added date range, then increase the reservation total so the added balance can be collected through Payments.
+- Reservation validation checks date format, past check-ins, overlapping room dates, room capacity, guest/room records, status values, and positive totals on the server side.
+- Payment recording is handled from public/admin/payments.php, where admins can create manual payments or simulated transactions without typing a transaction reference.
+- Printable receipts are generated from public/admin/receipt.php.
+- Room types are simple categories: Imperial Deluxe, Royal Executive, and Emperor Presidential.
+- Room type inclusions are shown as plain catalog descriptions instead of a separate inclusion management feature.
 - Bootstrap is used for responsive layout.
 - External CSS files are used from public/assets/css.
 - Main site logo SVG is used as favicon and navbar branding.
@@ -145,6 +164,14 @@ The system uses three room types:
 
 Room prices are stored in the database in rooms.price_per_night. They are not controlled by hardcoded public page values. Admins can update all rooms under one room type through the bulk price update form in public/admin/rooms.php.
 
+Room type inclusions are stored as simple PHP catalog text. The default inclusions are:
+
+- Imperial Deluxe: Complimentary breakfast set
+- Royal Executive: Breakfast buffet plus priority Wi-Fi
+- Emperor Presidential: Breakfast buffet, car shuttle, and late checkout
+
+Room type inclusions are descriptive only. The reservation total is based on room price per night multiplied by the number of nights.
+
 DASHBOARD FEATURES
 
 The admin dashboard currently includes:
@@ -155,18 +182,33 @@ The admin dashboard currently includes:
 - Available rooms
 - Pending reservations
 - Upcoming check-outs
+- Operational alert watchlist for overdue pending reservations, today's check-outs, negative availability, and failed payments
 - Monthly bookings and confirmed revenue chart
 - Reservation status chart
 - Room status chart
 - Payment status chart
 - Recent reservation table
 - Recent payment table
+- Transaction report log through the Payments module
+- Guest search/history through the Guests module
+- Printable receipt links from reservations, guests, and payments
+- Dedicated Reports page for occupancy, confirmed revenue by room type/payment method, and daily reservation trends
+
+PAYMENT FLOW
+
+- Reservations store the booking total.
+- The Payments page is the source for manual payment entries and simulated transaction records.
+- Transaction references are generated automatically when a payment is saved. Manual payments use a PAY prefix and simulated transactions use a SIM prefix.
+- The Payments page cost tracker shows reservation total, confirmed paid amount, pending logs, balance due, and remaining payable amount.
+- Active Pending and Confirmed transactions cannot exceed the reservation total.
+- Simulated transactions are forced to Pending for admin review.
+- Walk-in cash/card payments accepted at the counter can be marked Confirmed immediately.
+- Pending simulated transactions should be reviewed by an admin and changed to Confirmed, Failed, or Refunded as needed.
 
 OPEN / NEXT WORK
 
-- Add a dedicated check-in/check-out workflow page.
-- Add partial payment/balance tracking.
-- Add guest search and guest profile history screens.
-- Add richer reports for occupancy, revenue by room type, and booking trends.
-- Improve admin action buttons for reservation status transitions.
+- Add a separate arrivals/departures board if front desk staff need a focused daily operations page.
+- Add editable guest profile details from the Guests page.
+- Add refund adjustment handling for payment records.
+- Add CSV/PDF export for reports if required by the instructor or front desk workflow.
 - Add stronger client-side validation where helpful, while keeping server-side validation as the source of truth.

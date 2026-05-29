@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect('login.php');
 }
 
-renderHeader('Register');
+renderHeader('Register', ['../assets/css/auth/register.css']);
 ?>
 <main class="auth-wrapper">
     <section class="auth-card">

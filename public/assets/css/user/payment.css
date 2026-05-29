@@ -1,0 +1,20 @@
+.payment-page .cost-tracker {
+    margin-bottom: 1.5rem;
+}
+
+.payment-page__simulation-note {
+    border-color: rgba(253, 215, 0, 0.2);
+    background:
+        linear-gradient(135deg, rgba(253, 215, 0, 0.12), rgba(15, 23, 42, 0.94) 58%),
+        rgba(15, 23, 42, 0.94);
+}
+
+.payment-page__history .table-responsive {
+    border: 1px solid rgba(248, 250, 252, 0.08);
+    border-radius: 18px;
+    background: rgba(2, 6, 23, 0.24);
+}
+
+.payment-page__history small {
+    overflow-wrap: anywhere;
+}

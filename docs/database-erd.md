@@ -7,6 +7,10 @@ Main SQL files:
 - `database/schema.sql`: creates the database, creates all tables, and inserts the initial 36 room records.
 - `database/seed_rooms.sql`: updates/seeds room inventory for an existing database without dropping tables.
 
+Related documentation:
+
+- `docs/erd-file-correlation.md`: maps each ERD table to the PHP models, pages, includes, and UI files that use it.
+
 ## ERD Diagram
 
 ```mermaid
@@ -58,7 +62,6 @@ erDiagram
         date check_out
         int adults
         int children
-        string addons
         decimal total_amount
         enum status
         datetime created_at
@@ -141,6 +144,18 @@ Default seed prices:
 Note:
 Prices are stored in the database. The admin Rooms page can bulk update the price for all rooms under a selected room type.
 
+### Room type inclusions
+
+Room inclusions are intentionally not stored in a separate table. They are simple PHP catalog text in `public/includes/room_catalog.php`, which keeps the student project easier to explain.
+
+Default room-type inclusions:
+
+- Imperial Deluxe: Complimentary breakfast set
+- Royal Executive: Breakfast buffet plus priority Wi-Fi
+- Emperor Presidential: Breakfast buffet, car shuttle, and late checkout
+
+These inclusions are descriptive only. Reservation totals are calculated from the room price and number of nights.
+
 ### reservations
 
 Purpose:
@@ -154,7 +169,6 @@ Important fields:
 - `room_id`: required assigned room
 - `check_in`, `check_out`: booking dates
 - `adults`, `children`: party size
-- `addons`: optional add-on text
 - `total_amount`: booking total
 - `status`: allowed values are `Pending`, `Confirmed`, `Checked-in`, `Checked-out`, `Cancelled`
 
@@ -174,16 +188,20 @@ Important fields:
 - `payment_id`: primary key
 - `reservation_id`: required reservation
 - `amount`: payment amount
-- `payment_method`: `Cash`, `Credit Card`, `Debit Card`, `Bank Transfer`, or `Other`
+- `payment_method`: `Cash`, `Credit Card`, `Debit Card`, `Bank Transfer`, `Online Payment`, or `Other`
 - `currency`: `PHP`, `USD`, or `EUR`
 - `payment_status`: `Pending`, `Confirmed`, `Failed`, or `Refunded`
-- `transaction_reference`: optional external reference
+- `transaction_reference`: system-generated payment reference, using `PAY-` for manual payments and `SIM-` for simulated transactions
 - `notes`: optional payment notes
 
 Relationships:
 
 - One reservation can have many payments.
 - Deleting a reservation cascades to related payments.
+
+Application rule:
+
+- Pending and confirmed payment amounts are checked by the PHP `Payment` model so their active total cannot exceed the reservation total.
 
 ## Relationship Rules
 
@@ -201,6 +219,8 @@ Relationships:
 - Room status chart uses grouped `rooms.status`.
 - Reservation status chart uses grouped `reservations.status`.
 - Payment status chart uses grouped `payments.payment_status`.
+- Dashboard operational alerts use `reservations`, `rooms`, and `payments`.
+- Admin Reports use `reservations` for occupancy and reservation trend data, `payments` for confirmed revenue, and `rooms` for room type grouping.
 
 ## XML + DOM Data Shape
 
@@ -232,3 +252,17 @@ For a fresh database:
 For an existing database that already has the tables:
 
 1. Import `database/seed_rooms.sql` to normalize the three room types and seed/update the 36 room records.
+
+## ERD To File Correlation
+
+Use `docs/erd-file-correlation.md` when you need to trace a table to the exact PHP model, admin page, customer page, shared include, or UI file that uses it.
+
+Quick ownership guide:
+
+| Table | Main model | Main pages |
+| --- | --- | --- |
+| `users` | `app/models/User.php` | `public/auth/login.php`, `public/auth/register.php`, `public/admin/users.php` |
+| `guests` | `app/models/Guest.php` | `public/admin/guests.php`, `public/admin/reservations.php`, `public/user/dashboard.php` |
+| `rooms` | `app/models/Room.php` | `public/admin/rooms.php`, `public/site/home.php`, `public/site/rooms.php`, reservation forms |
+| `reservations` | `app/models/Reservation.php` | `public/admin/reservations.php`, `public/user/dashboard.php`, availability endpoints, receipts |
+| `payments` | `app/models/Payment.php` | `public/admin/payments.php`, `public/user/payment.php`, `public/admin/receipt.php`, dashboard |

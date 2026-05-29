@@ -10,6 +10,8 @@ class Room
         'Emperor Presidential',
     ];
 
+    private const ROOM_STATUSES = ['Available', 'Reserved', 'Occupied', 'Cleaning', 'Maintenance'];
+
     public function __construct(private PDO $db)
     {
     }
@@ -17,6 +19,11 @@ class Room
     public static function types(): array
     {
         return self::ROOM_TYPES;
+    }
+
+    public static function statuses(): array
+    {
+        return self::ROOM_STATUSES;
     }
 
     public function all(): array
@@ -59,10 +66,12 @@ class Room
         }
 
         $this->assertRoomType((string) ($data['room_type'] ?? ''));
+        $this->assertRoomStatus((string) ($data['status'] ?? ''));
+        $this->validateRoomNumbers($data);
         $pricePerNight = (float) ($data['price_per_night'] ?? -1);
 
-        if ($pricePerNight < 0) {
-            throw new RuntimeException('Room price cannot be negative.');
+        if ($pricePerNight <= 0) {
+            throw new RuntimeException('Room price must be greater than zero.');
         }
 
         $statement = $this->db->prepare(
@@ -89,10 +98,12 @@ class Room
         }
 
         $this->assertRoomType((string) ($data['room_type'] ?? ''));
+        $this->assertRoomStatus((string) ($data['status'] ?? ''));
+        $this->validateRoomNumbers($data);
         $pricePerNight = (float) ($data['price_per_night'] ?? -1);
 
-        if ($pricePerNight < 0) {
-            throw new RuntimeException('Room price cannot be negative.');
+        if ($pricePerNight <= 0) {
+            throw new RuntimeException('Room price must be greater than zero.');
         }
 
         $statement = $this->db->prepare(
@@ -125,8 +136,8 @@ class Room
     {
         $this->assertRoomType($roomType);
 
-        if ($pricePerNight < 0) {
-            throw new RuntimeException('Room price cannot be negative.');
+        if ($pricePerNight <= 0) {
+            throw new RuntimeException('Room price must be greater than zero.');
         }
 
         $statement = $this->db->prepare(
@@ -201,6 +212,24 @@ class Room
             ],
             $statuses
         );
+    }
+
+    public function roomsByStatus(string $status, int $limit = 5): array
+    {
+        $this->assertRoomStatus($status);
+
+        $statement = $this->db->prepare(
+            'SELECT *
+             FROM rooms
+             WHERE status = :status
+             ORDER BY floor ASC, room_number ASC
+             LIMIT :limit'
+        );
+        $statement->bindValue(':status', $status);
+        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $statement->execute();
+
+        return $statement->fetchAll();
     }
 
     public function typeSummary(): array
@@ -318,6 +347,32 @@ class Room
     {
         if (!in_array($roomType, self::ROOM_TYPES, true)) {
             throw new RuntimeException('Please choose a valid room type.');
+        }
+    }
+
+    private function assertRoomStatus(string $status): void
+    {
+        if (!in_array($status, self::ROOM_STATUSES, true)) {
+            throw new RuntimeException('Please choose a valid room status.');
+        }
+    }
+
+    private function validateRoomNumbers(array $data): void
+    {
+        $floor = (int) ($data['floor'] ?? 0);
+        $capacityAdults = (int) ($data['capacity_adults'] ?? 0);
+        $capacityChildren = (int) ($data['capacity_children'] ?? 0);
+
+        if ($floor < 1) {
+            throw new RuntimeException('Room floor must be at least 1.');
+        }
+
+        if ($capacityAdults < 1) {
+            throw new RuntimeException('Room adult capacity must be at least 1.');
+        }
+
+        if ($capacityChildren < 0) {
+            throw new RuntimeException('Room child capacity cannot be negative.');
         }
     }
 }

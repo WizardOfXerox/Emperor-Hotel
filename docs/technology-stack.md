@@ -1,10 +1,10 @@
 # Technology Stack and Libraries
 
-This document lists the main technologies, libraries, browser assets, and PHP features used in the Emperor Hotel Reservation System.
+This document lists the main technologies, libraries, browser assets, and PHP features used in the Emperor Hotel Reservation and Management System.
 
 ## Summary
 
-The project is a Core PHP/MySQL hotel reservation system. It does not require Node.js, npm, Vite, React, Laravel, Composer, or a frontend build step.
+The project is a Core PHP/MySQL hotel reservation and management system. It does not require Node.js, npm, Vite, React, Laravel, Composer, or a frontend build step.
 
 The frontend uses Bootstrap, Bootstrap Icons, Google Fonts, Chart.js, custom CSS, and local images. All browser libraries are stored inside the project so the app can run offline in XAMPP after the repository files are available.
 
@@ -34,10 +34,11 @@ The frontend uses Bootstrap, Bootstrap Icons, Google Fonts, Chart.js, custom CSS
 
 | Asset | Location | Purpose |
 | --- | --- | --- |
-| Main CSS | `public/assets/css/app.css` | Shared public/admin styling |
-| Dashboard CSS | `public/assets/css/admin/dashboard.css` | Dashboard-specific chart and legacy dashboard styles |
-| Auth CSS | `public/assets/css/auth/login.css`, `public/assets/css/auth/register.css` | Login/register styling |
-| Site CSS | `public/assets/css/site/home.css`, `public/assets/css/site/rooms.css` | Older site-specific CSS assets kept for page styling/reference |
+| Shared CSS | `public/assets/css/app.css` | Shared layout, navigation, panels, forms, tables, room picker, room inclusions, and cost tracker styles used by multiple pages |
+| Admin page CSS | `public/assets/css/admin/*.css` | Admin page-specific styling for dashboard, rooms, reservations, payments, guests, reports, receipt, and users |
+| Auth page CSS | `public/assets/css/auth/login.css`, `public/assets/css/auth/register.css` | Login/register page-specific styling |
+| Site page CSS | `public/assets/css/site/home.css`, `public/assets/css/site/rooms.css` | Public home and rooms page-specific styling |
+| User page CSS | `public/assets/css/user/dashboard.css`, `public/assets/css/user/payment.css` | Customer booking dashboard, side-by-side room selection layout, booking history, and customer payment page styling |
 | Hotel logo SVG | `public/assets/images/branding/emperors-hotel-logo.svg` | Favicon and site branding |
 | Home hero image | `public/assets/images/home/hero.jpg` | Public hero and admin background image |
 | Room images | `public/assets/images/rooms/**` | Room hero images and carousel images |
@@ -85,6 +86,19 @@ Data flow:
 3. PHP passes chart data to JavaScript using `json_encode()`.
 4. Chart.js renders charts in browser `<canvas>` elements.
 
+## CSS Organization
+
+`public/assets/css/app.css` is reserved for styles used by more than one page. Page-only styling should live in a matching page CSS file and be loaded through the `$extraStylesheets` argument in `renderHeader()`, `renderSiteLayoutStart()`, or `renderAdminLayoutStart()`.
+
+Current page-specific CSS groups:
+
+| Page Group | CSS Files |
+| --- | --- |
+| Public site pages | `public/assets/css/site/home.css`, `public/assets/css/site/rooms.css` |
+| Auth pages | `public/assets/css/auth/login.css`, `public/assets/css/auth/register.css` |
+| User pages | `public/assets/css/user/dashboard.css`, `public/assets/css/user/payment.css` |
+| Admin pages | `public/assets/css/admin/dashboard.css`, `public/assets/css/admin/rooms.css`, `public/assets/css/admin/reservations.css`, `public/assets/css/admin/payments.css`, `public/assets/css/admin/guests.css`, `public/assets/css/admin/reports.css`, `public/assets/css/admin/receipt.css`, `public/assets/css/admin/users.css` |
+
 ## Bootstrap Usage
 
 Bootstrap is stored locally in `public/assets/vendor/bootstrap/`.
@@ -122,18 +136,6 @@ Fonts:
 The local stylesheet is `public/assets/vendor/fonts/google-fonts.css`.
 
 The font files are stored in `public/assets/vendor/fonts/files/`.
-
-## No Node.js Requirement
-
-This project does not need Node.js because:
-
-- PHP renders pages directly.
-- Chart.js is loaded as a browser script.
-- Bootstrap is loaded as CSS/JS assets.
-- No frontend bundler is used.
-- No package manager workflow is required.
-
-If future work adds npm tooling, document it here before making it part of the setup.
 
 ## Offline Readiness
 

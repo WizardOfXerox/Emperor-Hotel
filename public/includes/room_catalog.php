@@ -14,8 +14,11 @@ function roomCatalog(): array
                 '../assets/images/rooms/imperial-deluxe/carousel/3.jpg',
             ],
             'tagline' => 'Where smart comfort meets timeless elegance.',
-            'details' => 'A polished room made for guests who want a warm luxury feel without excess. It balances comfort, clean design, and practical amenities for both short stays and business visits.',
+            'details' => 'A polished room made for guests who want a warm luxury feel without excess. It includes a complimentary breakfast set and balances comfort, clean design, and practical amenities for both short stays and business visits.',
             'ideal_for' => 'Couples, solo travelers, and business guests',
+            'included_perks' => [
+                'Complimentary breakfast set',
+            ],
             'features' => [
                 'Plush king-size bed with premium linen',
                 'Dedicated work desk and lounge corner',
@@ -32,8 +35,12 @@ function roomCatalog(): array
                 '../assets/images/rooms/royal-executive-suite/carousel/3.jpg',
             ],
             'tagline' => 'Where leadership meets intelligent luxury.',
-            'details' => 'Designed for guests who need more space, more privacy, and a stronger executive feel. This suite gives a more elevated stay with room to work, meet, and relax.',
+            'details' => 'Designed for guests who need more space, privacy, and a stronger executive feel. It includes breakfast buffet service and priority Wi-Fi for a more comfortable work-ready stay.',
             'ideal_for' => 'Executives, long-stay guests, and premium business trips',
+            'included_perks' => [
+                'Breakfast buffet',
+                'Priority Wi-Fi',
+            ],
             'features' => [
                 'Expanded sleeping and sitting area',
                 'Executive desk setup for productivity',
@@ -50,14 +57,33 @@ function roomCatalog(): array
                 '../assets/images/rooms/emperor-presidential-suite/carousel/3.jpg',
             ],
             'tagline' => 'Where absolute luxury becomes personal.',
-            'details' => 'The signature stay experience of Emperor Hotel. This suite is meant to feel grand, private, and memorable, with larger spaces and a more dramatic luxury atmosphere.',
+            'details' => 'The signature stay experience of Emperor Hotel. It includes breakfast buffet service, car shuttle assistance, and late checkout for VIP stays, celebrations, and elevated comfort.',
             'ideal_for' => 'VIP guests, family celebrations, and luxury stays',
+            'included_perks' => [
+                'Breakfast buffet',
+                'Car shuttle',
+                'Late checkout',
+            ],
             'features' => [
                 'Large master bed and elegant lounge space',
                 'Premium suite layout with statement interiors',
                 'Dining and hosting-friendly room flow',
-                'Top-tier comfort for special occasions and private stays',
+                'Premium comfort for special occasions and private stays',
             ],
         ],
     ];
+}
+
+function roomIncludedPerksForType(string $roomType): array
+{
+    $catalog = roomCatalog();
+
+    return array_values($catalog[$roomType]['included_perks'] ?? []);
+}
+
+function roomIncludedPerksText(string $roomType): string
+{
+    $perks = roomIncludedPerksForType($roomType);
+
+    return $perks ? implode(', ', $perks) : 'Standard room amenities';
 }

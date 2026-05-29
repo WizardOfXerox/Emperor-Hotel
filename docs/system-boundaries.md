@@ -2,13 +2,13 @@
 
 ## System Name
 
-Emperor Hotel Reservation System
+Emperor Hotel Reservation and Management System
 
 ## System Context
 
-The Emperor Hotel Reservation System is a web-based hotel reservation and admin management system. It is designed for a local XAMPP environment using Core PHP, MySQL, and browser-based pages.
+The Emperor Hotel Reservation and Management System is a web-based hotel reservation and front desk management system. It is designed for a local XAMPP environment using Core PHP, MySQL, and browser-based pages.
 
-The system supports public hotel browsing, user registration and login, customer reservations, admin room management, admin reservation management, payment recording, user management, and dashboard reporting.
+The system supports public hotel browsing, user registration and login, customer reservations, side-by-side customer room selection, admin walk-in reservation management, date-aware room availability, check-in/check-out actions, guest search/history, payment recording, printable receipts, user management, operational alerts, and dashboard/reporting pages.
 
 ## What The System Will Do
 
@@ -16,13 +16,15 @@ The system will provide these main functions:
 
 | Area | Included Features |
 | --- | --- |
-| Public website | Shows the hotel homepage, room/suite details, room images, room prices, and available room inventory. |
+| Public website | Shows the hotel homepage, room/suite details, room images, room prices, and simple room-type inclusions. |
 | User management | Allows user registration, login, logout, role-based access, and admin user CRUD. |
-| User booking | Allows logged-in users to create reservations from the user dashboard. |
+| User booking | Allows logged-in users to create reservations from the user dashboard with full name, stay dates, guest count, room selection, room inclusions, a cost tracker, payment route selection, cashier references for cash, and a customer-safe simulated payment page for non-cash methods. |
 | Room management | Allows admins to create, view, edit, delete, import, export, and bulk update room prices. |
-| Reservation management | Allows admins to create, view, edit, delete, and manage reservation records. |
-| Payment management | Allows admins to record payments and view payment summaries. |
-| Dashboard reporting | Shows summary cards, recent records, and Chart.js visual reports for bookings, rooms, reservations, and payments. |
+| Reservation management | Allows admins to create, view, edit, delete, manage reservation records, manually select available room cards, extend active stays when the same room is available, check room availability by date range, and use confirm/check-in/check-out/cancel actions. |
+| Guest management | Allows admins to search guests by name, phone, or email and view reservation/payment history. |
+| Payment management | Allows customers to submit simulated non-cash payments for their own reservations and allows admins to generate cashier references for cash reservations, route card/bank/online methods to the Payments page, record payments, create simulated transactions, automatically generate transaction references, enforce overpayment rules, view cost/balance tracking, view summaries, and review transaction logs. |
+| Receipt printing | Allows admins to open and print reservation receipts with guest, stay, payment, balance, and transaction details. |
+| Dashboard reporting | Shows summary cards, operational alerts, recent records, Chart.js visual reports, and a dedicated Reports page for occupancy, revenue, and reservation trends. |
 | XML import/export | Allows room records to be exported and imported using XML with PHP DOMDocument. |
 | Database storage | Stores users, guests, rooms, reservations, and payments in MySQL. |
 
@@ -35,9 +37,9 @@ The system is not intended to support these features in the current version:
 | No mobile app version | The project is a web application only. It does not include Android, iOS, Flutter, or React Native. |
 | No standalone offline mode | The browser assets are local, but the system still needs PHP, MySQL, and XAMPP running. It cannot work as a disconnected standalone app. |
 | No real-time collaboration | The system does not include live multi-user editing, WebSockets, or shared real-time task lists. |
-| No online payment gateway | Payments are recorded manually by admins. There is no Stripe, PayPal, GCash, Maya, or bank API integration yet. |
+| No online payment gateway | Online payment is only a selectable internal method that routes to the simulated/manual Payments page. There is no Stripe, PayPal, GCash, Maya, or bank API integration yet. |
 | No email/SMS notifications | The system does not currently send booking confirmations, payment reminders, or deadline notifications. |
-| No automated room assignment | Rooms are selected manually. Automatic best-room matching is a future feature. |
+| No full housekeeping workflow | Rooms can be marked Cleaning or Maintenance, but there is no dedicated housekeeping staff workflow or task assignment module yet. |
 | No dedicated profile update page | Admins can update user records, but there is no separate self-service profile edit page for normal users yet. |
 | No React/Tailwind frontend | The project uses PHP-rendered pages, Bootstrap, and custom CSS instead of React.js and Tailwind CSS. |
 | No PostgreSQL database | The project uses MySQL/MariaDB through XAMPP, not PostgreSQL. |
@@ -53,7 +55,7 @@ The system is not intended to support these features in the current version:
 | Icons | Bootstrap Icons 1.11.3 | Provides icons for admin navigation and UI indicators. |
 | Charts | Chart.js 4.5.1 | Renders admin dashboard charts. |
 | Fonts | Local Google Fonts files | Provides DM Sans and DM Serif Display typography without runtime CDN dependency. |
-| Styling | Custom CSS | Provides project-specific public, admin, and auth page design. |
+| Styling | Shared and page-specific custom CSS | Keeps reusable styles in `public/assets/css/app.css` and page-only styles in grouped CSS folders. |
 | XML | PHP DOMDocument | Handles room XML import and export. |
 | Local Server | XAMPP | Provides Apache/PHP/MySQL development environment. |
 
@@ -67,10 +69,10 @@ The system is not intended to support these features in the current version:
 | Public pages | `public/site/*.php` | Shows public hotel pages. |
 | Auth pages | `public/auth/*.php` | Handles login, registration, and logout. |
 | User dashboard | `public/user/dashboard.php` | Allows logged-in users to create and view reservations. |
-| Admin pages | `public/admin/*.php` | Provides dashboard, rooms, reservations, payments, and user management. |
-| Shared layout | `public/includes/layout.php` | Renders common page header, navigation, admin shell, and scripts. |
+| Admin pages | `public/admin/*.php` | Provides dashboard, rooms, reservations, payments, guest history, reports, receipts, and user management. |
+| Shared layout | `public/includes/layout.php` | Renders common page header, navigation, admin shell, scripts, and page-specific CSS links. |
 | Database scripts | `database/*.sql` | Creates and seeds the database. |
-| Assets | `public/assets/**` | Stores CSS, images, local libraries, logo, and fonts. |
+| Assets | `public/assets/**` | Stores shared CSS, page-specific CSS, images, local libraries, logo, and fonts. |
 | Docs | `docs/*.md` | Stores project documentation. |
 
 ## Deployment Environment

@@ -90,7 +90,7 @@ if (isset($_GET['edit'])) {
 
 $users = $userModel->all();
 
-renderAdminLayoutStart('Users', 'users', $currentAdmin);
+renderAdminLayoutStart('Users', 'users', $currentAdmin, ['../assets/css/admin/users.css']);
 ?>
 <section class="row g-4">
     <div class="col-xl-4">

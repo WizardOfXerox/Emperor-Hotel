@@ -96,3 +96,13 @@ function formatMoney(float $amount): string
 {
     return 'PHP ' . number_format($amount, 2);
 }
+
+function splitFullName(string $fullName): array
+{
+    $parts = preg_split('/\s+/', trim($fullName)) ?: [];
+
+    return [
+        'first_name' => $parts[0] ?? $fullName,
+        'last_name' => count($parts) > 1 ? implode(' ', array_slice($parts, 1)) : 'Guest',
+    ];
+}

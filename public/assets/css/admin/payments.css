@@ -1,0 +1,24 @@
+.admin-page--payments [data-payment-cost-tracker] {
+    margin: 1rem 0;
+}
+
+.admin-page--payments .table small {
+    overflow-wrap: anywhere;
+}
+
+.admin-page--payments .payment-review-form {
+    align-items: center;
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: minmax(7rem, 0.8fr) minmax(8rem, 1fr) auto;
+}
+
+.admin-page--payments .payment-review-amount {
+    min-width: 7rem;
+}
+
+@media (max-width: 768px) {
+    .admin-page--payments .payment-review-form {
+        grid-template-columns: 1fr;
+    }
+}

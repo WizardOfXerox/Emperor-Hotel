@@ -35,8 +35,70 @@ class Guest
         return $guest ?: null;
     }
 
+    public function search(string $term = ''): array
+    {
+        $term = trim($term);
+        $params = [];
+        $where = '';
+
+        if ($term !== '') {
+            $where = "WHERE CONCAT(g.first_name, ' ', g.last_name) LIKE :term
+                      OR g.email LIKE :term
+                      OR g.phone LIKE :term";
+            $params['term'] = '%' . $term . '%';
+        }
+
+        $statement = $this->db->prepare(
+            "SELECT g.*,
+                    COALESCE(stats.reservation_count, 0) AS reservation_count,
+                    stats.last_stay,
+                    COALESCE(stats.total_spent, 0) AS total_spent
+             FROM guests g
+             LEFT JOIN (
+                SELECT guest_id,
+                       COUNT(*) AS reservation_count,
+                       MAX(check_out) AS last_stay,
+                       SUM(total_amount) AS total_spent
+                FROM reservations
+                GROUP BY guest_id
+             ) stats ON stats.guest_id = g.guest_id
+             {$where}
+             ORDER BY g.created_at DESC"
+        );
+        $statement->execute($params);
+
+        return $statement->fetchAll();
+    }
+
+    public function reservationHistory(int $guestId): array
+    {
+        $statement = $this->db->prepare(
+            "SELECT r.*,
+                    rm.room_number,
+                    rm.room_type,
+                    COALESCE(payments.confirmed_paid, 0) AS confirmed_paid,
+                    COALESCE(payments.pending_paid, 0) AS pending_paid
+             FROM reservations r
+             INNER JOIN rooms rm ON rm.room_id = r.room_id
+             LEFT JOIN (
+                SELECT reservation_id,
+                       SUM(CASE WHEN payment_status = 'Confirmed' THEN amount ELSE 0 END) AS confirmed_paid,
+                       SUM(CASE WHEN payment_status = 'Pending' THEN amount ELSE 0 END) AS pending_paid
+                FROM payments
+                GROUP BY reservation_id
+             ) payments ON payments.reservation_id = r.reservation_id
+             WHERE r.guest_id = :guest_id
+             ORDER BY r.created_at DESC"
+        );
+        $statement->execute(['guest_id' => $guestId]);
+
+        return $statement->fetchAll();
+    }
+
     public function create(array $data): int
     {
+        $this->validateGuestData($data);
+
         $statement = $this->db->prepare(
             'INSERT INTO guests (user_id, first_name, last_name, phone, email) VALUES (:user_id, :first_name, :last_name, :phone, :email)'
         );
@@ -53,6 +115,8 @@ class Guest
 
     public function update(int $guestId, array $data): bool
     {
+        $this->validateGuestData($data);
+
         $statement = $this->db->prepare(
             'UPDATE guests SET user_id = :user_id, first_name = :first_name, last_name = :last_name, phone = :phone, email = :email WHERE guest_id = :guest_id'
         );
@@ -122,5 +186,29 @@ class Guest
         }
 
         return $this->create($data);
+    }
+
+    private function validateGuestData(array $data): void
+    {
+        $firstName = trim((string) ($data['first_name'] ?? ''));
+        $lastName = trim((string) ($data['last_name'] ?? ''));
+        $email = trim((string) ($data['email'] ?? ''));
+        $phone = trim((string) ($data['phone'] ?? ''));
+
+        if ($firstName === '' || $lastName === '') {
+            throw new RuntimeException('Guest first name and last name are required.');
+        }
+
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new RuntimeException('Please enter a valid guest email address.');
+        }
+
+        if (strlen($email) > 150) {
+            throw new RuntimeException('Guest email is too long.');
+        }
+
+        if (strlen($phone) > 30) {
+            throw new RuntimeException('Guest phone number is too long.');
+        }
     }
 }

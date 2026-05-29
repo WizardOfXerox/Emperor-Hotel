@@ -54,6 +54,8 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
         'rooms' => ['label' => 'Rooms', 'href' => 'rooms.php', 'icon' => 'bi-door-open'],
         'reservations' => ['label' => 'Reservations', 'href' => 'reservations.php', 'icon' => 'bi-calendar-check'],
         'payments' => ['label' => 'Payments', 'href' => 'payments.php', 'icon' => 'bi-credit-card-2-back'],
+        'guests' => ['label' => 'Guests', 'href' => 'guests.php', 'icon' => 'bi-person-lines-fill'],
+        'reports' => ['label' => 'Reports', 'href' => 'reports.php', 'icon' => 'bi-graph-up-arrow'],
         'users' => ['label' => 'Users', 'href' => 'users.php', 'icon' => 'bi-people'],
     ];
 
@@ -104,9 +106,9 @@ function renderAdminLayoutEnd(): void
     echo '</body></html>';
 }
 
-function renderSiteLayoutStart(string $title, ?array $user = null, string $sitePrefix = ''): void
+function renderSiteLayoutStart(string $title, ?array $user = null, string $sitePrefix = '', array $extraStylesheets = []): void
 {
-    renderHeader($title);
+    renderHeader($title, $extraStylesheets);
 
     echo '<nav class="site-nav">';
     echo '<div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">';

@@ -1,0 +1,43 @@
+.availability-filter-card {
+    display: grid;
+    gap: 0.8rem;
+    padding: 1rem;
+    border: 1px solid rgba(253, 215, 0, 0.18);
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.76);
+}
+
+.front-desk-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.extend-stay-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem;
+    border: 1px solid rgba(253, 215, 0, 0.18);
+    border-radius: 0.75rem;
+    background: rgba(15, 23, 42, 0.72);
+}
+
+.extend-stay-form .form-control {
+    max-width: 9.3rem;
+}
+
+.admin-page--reservations .table small {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+    .extend-stay-form {
+        width: 100%;
+    }
+
+    .extend-stay-form .form-control {
+        flex: 1;
+        max-width: none;
+    }
+}

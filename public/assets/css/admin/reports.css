@@ -1,0 +1,19 @@
+.report-filter-card {
+    background:
+        linear-gradient(135deg, rgba(253, 215, 0, 0.12), rgba(15, 23, 42, 0.92) 52%),
+        rgba(15, 23, 42, 0.92);
+}
+
+.admin-page--reports .stat-value {
+    font-size: clamp(1.45rem, 2vw, 2rem);
+}
+
+.admin-page--reports .table small,
+.admin-page--reports .table td {
+    overflow-wrap: anywhere;
+}
+
+.report-trend-table {
+    max-height: 420px;
+    overflow-y: auto;
+}

@@ -1,0 +1,205 @@
+.user-booking-form {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.8fr) minmax(520px, 1.2fr);
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.user-booking-details,
+.user-booking-room-panel {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+}
+
+.user-booking-room-panel {
+    padding: 1rem;
+    border: 1px solid rgba(253, 215, 0, 0.18);
+    border-radius: 20px;
+    background:
+        linear-gradient(135deg, rgba(253, 215, 0, 0.08), rgba(15, 23, 42, 0.9) 42%),
+        rgba(2, 6, 23, 0.36);
+}
+
+.user-booking-room-panel .room-picker__viewport {
+    max-height: 640px;
+}
+
+.user-booking-room-panel .room-choice-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.user-booking-room-panel .room-choice-card__room-number {
+    white-space: nowrap;
+}
+
+.booking-history-panel {
+    margin-top: 1rem;
+}
+
+.booking-history-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.1rem;
+}
+
+.booking-history-empty {
+    grid-column: 1 / -1;
+    padding: 1rem;
+    border: 1px dashed rgba(253, 215, 0, 0.35);
+    border-radius: 18px;
+    color: rgba(248, 250, 252, 0.72);
+    background: rgba(2, 6, 23, 0.45);
+}
+
+.booking-history-card {
+    position: relative;
+    display: grid;
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid rgba(253, 215, 0, 0.32);
+    border-radius: 20px;
+    background:
+        linear-gradient(135deg, rgba(253, 215, 0, 0.13), rgba(15, 23, 42, 0.97) 38%),
+        #0f172a;
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.24);
+}
+
+.booking-history-card::before {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 5px;
+    content: "";
+    background: #fdd700;
+}
+
+.booking-history-card__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1rem 0.9rem 1.25rem;
+    border-bottom: 1px solid rgba(248, 250, 252, 0.1);
+}
+
+.booking-history-card__room {
+    display: grid;
+    gap: 0.15rem;
+}
+
+.booking-history-card__room strong {
+    color: #fdd700;
+    font-size: 1.02rem;
+}
+
+.booking-history-card__room span {
+    color: #f8fafc;
+    font-weight: 700;
+}
+
+.booking-history-card__meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    border-bottom: 1px solid rgba(248, 250, 252, 0.1);
+}
+
+.booking-history-card__meta > div {
+    display: grid;
+    align-content: start;
+    gap: 0.25rem;
+    min-width: 0;
+    padding: 0.9rem 1rem;
+    border-right: 1px solid rgba(248, 250, 252, 0.1);
+    background: rgba(2, 6, 23, 0.28);
+}
+
+.booking-history-card__meta > div:last-child {
+    border-right: 0;
+}
+
+.booking-history-card__meta span {
+    color: rgba(248, 250, 252, 0.58);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.booking-history-card__meta strong {
+    color: #f8fafc;
+    font-size: 0.92rem;
+    line-height: 1.35;
+}
+
+.booking-history-card__meta small {
+    color: rgba(248, 250, 252, 0.64);
+    font-size: 0.78rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.booking-history-card__reference {
+    padding-top: 0.15rem;
+}
+
+.booking-history-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+    background: rgba(2, 6, 23, 0.36);
+}
+
+@media (max-width: 1199px) {
+    .user-booking-form {
+        grid-template-columns: 1fr;
+    }
+
+    .user-booking-room-panel .room-picker__viewport {
+        max-height: 520px;
+    }
+}
+
+@media (max-width: 899px) {
+    .user-booking-room-panel .room-choice-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .user-booking-panel,
+    .booking-history-panel {
+        padding: 1.1rem !important;
+    }
+
+    .user-booking-room-panel {
+        padding: 0.85rem;
+    }
+
+    .booking-history-list {
+        grid-template-columns: 1fr;
+    }
+
+    .user-booking-room-panel .room-choice-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-history-card__top {
+        flex-direction: column;
+    }
+
+    .booking-history-card__meta {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-history-card__meta > div {
+        border-right: 0;
+        border-bottom: 1px solid rgba(248, 250, 252, 0.1);
+    }
+
+    .booking-history-card__meta > div:last-child {
+        border-bottom: 0;
+    }
+}

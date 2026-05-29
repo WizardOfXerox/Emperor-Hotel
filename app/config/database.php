@@ -12,7 +12,7 @@ class Database
             return self::$connection;
         }
 
-        $host = getenv('DB_HOST') ?: '127.0.0.1';
+        $host = getenv('DB_HOST') ?: 'localhost';
         $database = getenv('DB_NAME') ?: 'emperors_hotel_db';
         $username = getenv('DB_USER') ?: 'root';
         $password = getenv('DB_PASS') ?: '';

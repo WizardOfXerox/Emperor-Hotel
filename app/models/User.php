@@ -44,6 +44,10 @@ class User
             throw new RuntimeException('Full name, email, and password are required.');
         }
 
+        $this->validateEmail((string) $data['email']);
+        $this->validatePassword((string) $data['password']);
+        $this->assertEmailIsAvailable((string) $data['email']);
+
         $role = in_array($data['role'], ['admin', 'user'], true) ? $data['role'] : 'user';
 
         $statement = $this->db->prepare(
@@ -79,10 +83,15 @@ class User
             throw new RuntimeException('Full name and email are required.');
         }
 
+        $this->validateEmail((string) $data['email']);
+        $this->assertEmailIsAvailable((string) $data['email'], $userId);
+
         $role = in_array($data['role'], ['admin', 'user'], true) ? $data['role'] : 'user';
         $password = trim((string) ($data['password'] ?? ''));
 
         if ($password !== '') {
+            $this->validatePassword($password);
+
             $statement = $this->db->prepare(
                 'UPDATE users SET full_name = :full_name, email = :email, role = :role, password_hash = :password_hash WHERE user_id = :user_id'
             );
@@ -113,5 +122,40 @@ class User
         $statement = $this->db->prepare('DELETE FROM users WHERE user_id = :user_id');
 
         return $statement->execute(['user_id' => $userId]);
+    }
+
+    private function validateEmail(string $email): void
+    {
+        $email = trim($email);
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new RuntimeException('Please enter a valid email address.');
+        }
+
+        if (strlen($email) > 150) {
+            throw new RuntimeException('Email address is too long.');
+        }
+    }
+
+    private function validatePassword(string $password): void
+    {
+        if (strlen($password) < 6) {
+            throw new RuntimeException('Password must be at least 6 characters long.');
+        }
+    }
+
+    private function assertEmailIsAvailable(string $email, ?int $ignoreUserId = null): void
+    {
+        $existingUser = $this->findByEmail(trim($email));
+
+        if (!$existingUser) {
+            return;
+        }
+
+        if ($ignoreUserId !== null && (int) $existingUser['user_id'] === $ignoreUserId) {
+            return;
+        }
+
+        throw new RuntimeException('That email address is already registered.');
     }
 }

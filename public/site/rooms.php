@@ -8,163 +8,351 @@ require_once __DIR__ . '/../includes/room_catalog.php';
 
 $user = currentUser();
 $catalog = roomCatalog();
-$rooms = [];
+$db = null;
 $roomStats = [];
 $roomDataUnavailable = false;
 
 try {
     $db = Database::connect();
     $roomModel = new Room($db);
-    $rooms = $roomModel->all();
     $roomStats = $roomModel->typeSummary();
 } catch (Throwable) {
     $roomDataUnavailable = true;
 }
 
-renderSiteLayoutStart('Emperor Hotel | Suites and Rooms', $user);
+$reservationHref = '../auth/login.php';
+$reservationLabel = 'LOG IN TO RESERVE';
+$authLinks = [
+    [
+        'href' => '../auth/login.php',
+        'label' => 'LOG IN',
+        'variant' => 'primary',
+    ],
+    [
+        'href' => '../auth/register.php',
+        'label' => 'REGISTER',
+        'variant' => 'secondary',
+    ],
+];
+
+if ($user) {
+    $isAdmin = $user['role'] === 'admin';
+    $reservationHref = $isAdmin ? '../admin/reservations.php' : '../user/dashboard.php';
+    $reservationLabel = $isAdmin ? 'MANAGE RESERVATIONS' : 'RESERVE NOW';
+    $authLinks = [
+        [
+            'href' => $isAdmin ? '../admin/dashboard.php' : '../user/dashboard.php',
+            'label' => 'DASHBOARD',
+            'variant' => 'primary',
+        ],
+        [
+            'href' => '../auth/logout.php',
+            'label' => 'LOG OUT',
+            'variant' => 'secondary',
+        ],
+    ];
+}
+
+$roomPresentation = [
+    'Imperial Deluxe' => [
+        'category' => 'STANDARD ROOM',
+        'heading' => 'IMPERIAL DELUXE',
+        'tagline' => 'Where Smart Comfort Meets Timeless Elegance',
+        'cards' => [
+            [
+                'title' => 'Smart Living',
+                'items' => [
+                    'Smart bedside lighting control',
+                    'Automated curtain system',
+                    'Digital climate control',
+                    'Wireless charging station',
+                ],
+            ],
+            [
+                'title' => 'Comfort & Design',
+                'items' => [
+                    'King-size premium bed',
+                    'Layered luxury bedding',
+                    'Executive workspace',
+                    'Floor-to-ceiling skyline windows',
+                ],
+            ],
+            [
+                'title' => 'Signature Design',
+                'items' => [
+                    'Charcoal textured walls',
+                    'Walnut wood paneling',
+                    'Brushed gold accents',
+                    'Black marble furnishings',
+                ],
+            ],
+        ],
+    ],
+    'Royal Executive' => [
+        'category' => 'FAMILY ROOM',
+        'heading' => 'ROYAL EXECUTIVE',
+        'tagline' => 'Where Leadership Meets Intelligent Luxury',
+        'cards' => [
+            [
+                'title' => 'Smart Executive',
+                'items' => [
+                    'Voice-controlled room assistant',
+                    'Programmable mood lighting',
+                    'Motorized blackout curtains',
+                    'Digital privacy glass controls',
+                ],
+            ],
+            [
+                'title' => 'Comfort & Space',
+                'items' => [
+                    'Spacious king-size premium bed',
+                    'Dedicated executive workspace',
+                    'Separate private lounge',
+                    'Floor-to-ceiling skyline windows',
+                    'Premium in-room minibar',
+                ],
+            ],
+            [
+                'title' => 'Signature Design',
+                'items' => [
+                    'Charcoal stone walls',
+                    'Walnut wood paneling',
+                    'Brushed gold accents',
+                    'Black marble furnishings',
+                ],
+            ],
+        ],
+    ],
+    'Emperor Presidential' => [
+        'category' => 'SIGNATURE ROOM',
+        'heading' => 'EMPEROR PRESIDENTIAL',
+        'tagline' => 'Where Absolute Luxury Becomes Personal',
+        'cards' => [
+            [
+                'title' => 'Smart Future',
+                'items' => [
+                    'Full AI room orchestration hub',
+                    'Biometric private suite access',
+                    'Digital concierge display',
+                    'Intelligent climate zoning',
+                    'Personalized scene presets',
+                    'Switchable smart glass walls',
+                ],
+            ],
+            [
+                'title' => 'Comfort & Space',
+                'items' => [
+                    'Master king-size premium bed',
+                    'Private executive office',
+                    'Exclusive lounge area',
+                    'Private dining space',
+                    'Designer walk-in wardrobe',
+                    'Private signature bar',
+                ],
+            ],
+            [
+                'title' => 'Signature Design',
+                'items' => [
+                    'Double-height luxury ceiling',
+                    'Panoramic skyline glass walls',
+                    'Charcoal stone walls',
+                    'Walnut wood paneling',
+                    'Brushed gold accents',
+                    'Black marble furnishings',
+                ],
+            ],
+        ],
+    ],
+];
+
+renderHeader('Suites & Rooms | Emperor Hotel', ['../assets/css/site/rooms.css'], 'rooms-showcase-page');
 ?>
-<section class="rooms-page-hero" style="background-image: linear-gradient(180deg, rgba(2, 6, 23, 0.24), rgba(2, 6, 23, 0.85)), url('../assets/images/rooms/hero.jpg');">
-    <div class="rooms-page-hero__content">
-        <p class="eyebrow">Suites & Rooms</p>
-        <h1 class="site-hero__title">Explore the three signature room types of Emperor Hotel.</h1>
-        <p class="site-hero__text">
-            Browse each suite through its own image carousel, highlights, and stay details before choosing your room.
-        </p>
+<nav class="rooms-nav" aria-label="Primary navigation">
+    <div class="rooms-nav__container">
+        <a class="rooms-nav__logo" href="home.php" aria-label="Emperor Hotel home">
+            <img src="../assets/images/branding/emperors-hotel-logo.svg" alt="Emperor Hotel logo">
+        </a>
+
+        <div class="rooms-nav__links">
+            <a class="rooms-nav__link" href="home.php">HOME</a>
+            <a class="rooms-nav__link rooms-nav__link--active" href="rooms.php">SUITES & ROOM</a>
+        </div>
+
+        <div class="rooms-nav__auth">
+            <?php foreach ($authLinks as $link): ?>
+                <a class="rooms-nav__cta rooms-nav__cta--<?php echo e($link['variant']); ?>" href="<?php echo e($link['href']); ?>"><?php echo e($link['label']); ?></a>
+            <?php endforeach; ?>
+        </div>
     </div>
-</section>
+</nav>
 
-<?php if ($roomDataUnavailable): ?>
-    <section class="site-section site-section--notice">
-        <p class="mb-0">Live room availability is temporarily unavailable. The suite gallery and room details are still available below.</p>
+<main>
+    <div class="rooms-flash">
+        <?php renderFlashBlock(); ?>
+    </div>
+
+    <section class="rooms-hero">
+        <img src="../assets/images/rooms/hero.jpg" alt="Luxury suite interior at Emperor Hotel">
+        <div class="rooms-hero__content">
+            <h1>EMPEROR'S HOTEL</h1>
+            <p>SUITES & ROOMS SECTION</p>
+            <a href="home.php">HOME</a>
+        </div>
     </section>
-<?php endif; ?>
 
-<section class="site-section">
-    <?php $index = 0; ?>
+    <?php if ($roomDataUnavailable): ?>
+        <section class="rooms-notice">
+            <p>Room pricing is temporarily unavailable. The gallery and room details are still available below.</p>
+        </section>
+    <?php endif; ?>
+
     <?php foreach ($catalog as $roomType => $roomInfo): ?>
         <?php
-            $carouselId = 'roomCarousel' . $index;
+            $presentation = $roomPresentation[$roomType] ?? [
+                'category' => strtoupper($roomType),
+                'heading' => strtoupper($roomType),
+                'tagline' => $roomInfo['tagline'],
+                'cards' => [],
+            ];
+            $includedPerks = roomIncludedPerksText($roomType);
             $stats = $roomStats[$roomType] ?? [
                 'available' => 0,
                 'total' => 0,
                 'lowest_price' => 0.0,
             ];
+            $priceText = 'PRICE NOT SET';
+
+            if ($roomDataUnavailable) {
+                $priceText = 'PRICING UNAVAILABLE';
+            } elseif ((float) $stats['lowest_price'] > 0) {
+                $priceText = formatMoney((float) $stats['lowest_price']) . ' / NIGHT';
+            }
         ?>
-        <article class="room-detail-block <?php echo $index % 2 === 1 ? 'room-detail-block--reverse' : ''; ?>">
-            <div class="room-carousel-shell">
-                <div id="<?php echo e($carouselId); ?>" class="carousel slide carousel-fade room-carousel" data-bs-ride="carousel">
+        <section class="rooms">
+            <div class="container-carousel">
+                <div class="carousel" data-carousel>
+                    <button class="carousel-control prev" type="button" data-carousel-prev aria-label="Previous <?php echo e($roomType); ?> image">&#10094;</button>
+
+                    <?php foreach ($roomInfo['carousel'] as $slideIndex => $imagePath): ?>
+                        <div class="carousel-slide <?php echo $slideIndex === 0 ? 'is-active' : ''; ?>">
+                            <img src="<?php echo e($imagePath); ?>" alt="<?php echo e($roomType . ' room view ' . ($slideIndex + 1)); ?>">
+                        </div>
+                    <?php endforeach; ?>
+
+                    <button class="carousel-control next" type="button" data-carousel-next aria-label="Next <?php echo e($roomType); ?> image">&#10095;</button>
+
                     <div class="carousel-indicators">
                         <?php foreach ($roomInfo['carousel'] as $slideIndex => $_): ?>
                             <button
+                                class="carousel-indicator <?php echo $slideIndex === 0 ? 'is-active' : ''; ?>"
                                 type="button"
-                                data-bs-target="#<?php echo e($carouselId); ?>"
-                                data-bs-slide-to="<?php echo e($slideIndex); ?>"
-                                class="<?php echo $slideIndex === 0 ? 'active' : ''; ?>"
-                                aria-current="<?php echo $slideIndex === 0 ? 'true' : 'false'; ?>"
-                                aria-label="Slide <?php echo e($slideIndex + 1); ?>"
+                                data-carousel-indicator="<?php echo e($slideIndex); ?>"
+                                aria-label="Show <?php echo e($roomType); ?> image <?php echo e($slideIndex + 1); ?>"
                             ></button>
                         <?php endforeach; ?>
                     </div>
-                    <div class="carousel-inner">
-                        <?php foreach ($roomInfo['carousel'] as $slideIndex => $imagePath): ?>
-                            <div class="carousel-item <?php echo $slideIndex === 0 ? 'active' : ''; ?>">
-                                <img src="<?php echo e($imagePath); ?>" class="d-block w-100" alt="<?php echo e($roomType . ' image ' . ($slideIndex + 1)); ?>">
+                </div>
+            </div>
+
+            <div class="container-content">
+                <div class="content">
+                    <h2><?php echo e($presentation['category']); ?></h2>
+                    <h1><?php echo e($presentation['heading']); ?></h1>
+                    <p><?php echo e($presentation['tagline']); ?></p>
+                    <p class="room-inclusion-line">
+                        Comes with: <?php echo e($includedPerks); ?>.
+                    </p>
+                </div>
+
+                <div class="container-card">
+                    <?php foreach ($presentation['cards'] as $card): ?>
+                        <article class="card">
+                            <div class="card-content">
+                                <p><?php echo e($card['title']); ?></p>
+                                <hr>
+                                <ul>
+                                    <?php foreach ($card['items'] as $item): ?>
+                                        <li><?php echo e($item); ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
                             </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#<?php echo e($carouselId); ?>" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#<?php echo e($carouselId); ?>" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="room-detail-copy">
-                <p class="eyebrow mb-2"><?php echo e($roomType); ?></p>
-                <h2 class="section-title mb-3"><?php echo e($roomInfo['tagline']); ?></h2>
-                <p class="muted-copy mb-3"><?php echo e($roomInfo['details']); ?></p>
-
-                <div class="room-detail-meta">
-                    <?php if ($roomDataUnavailable): ?>
-                        <span class="badge-soft">Live pricing unavailable</span>
-                    <?php elseif ($stats['total'] > 0): ?>
-                        <span class="badge-soft"><?php echo e($stats['available']); ?> available</span>
-                        <span class="badge-soft"><?php echo e($stats['total']); ?> total rooms</span>
-                        <span class="badge-soft">Starts at <?php echo e(formatMoney((float) $stats['lowest_price'])); ?></span>
-                    <?php else: ?>
-                        <span class="badge-soft">No room records yet</span>
-                    <?php endif; ?>
-                </div>
-
-                <div class="room-detail-info-grid">
-                    <div class="detail-info-card">
-                        <h3>Ideal For</h3>
-                        <p class="muted-copy mb-0"><?php echo e($roomInfo['ideal_for']); ?></p>
-                    </div>
-                    <div class="detail-info-card">
-                        <h3>Room Highlights</h3>
-                        <ul class="detail-list">
-                            <?php foreach ($roomInfo['features'] as $feature): ?>
-                                <li><?php echo e($feature); ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="d-flex flex-wrap gap-2 mt-4">
-                    <?php if ($user): ?>
-                        <a class="btn btn-warning fw-semibold" href="<?php echo e($user['role'] === 'admin' ? '../admin/reservations.php' : '../user/dashboard.php'); ?>">Book This Room</a>
-                    <?php else: ?>
-                        <a class="btn btn-warning fw-semibold" href="../auth/login.php">Log In to Book</a>
-                    <?php endif; ?>
-                    <a class="btn btn-outline-light" href="home.php">Back to Home</a>
-                </div>
-            </div>
-        </article>
-        <?php $index++; ?>
-    <?php endforeach; ?>
-</section>
-
-<?php if ($rooms): ?>
-    <section class="site-section site-section--soft">
-        <div class="section-head">
-            <div>
-                <p class="eyebrow mb-2">Live Inventory</p>
-                <h2 class="section-title mb-2">Current room records in the system</h2>
-                <p class="muted-copy mb-0">This section reflects the actual room entries stored in the database.</p>
-            </div>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table table-dark-soft align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Room</th>
-                        <th>Type</th>
-                        <th>Floor</th>
-                        <th>Capacity</th>
-                        <th>Rate</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($rooms as $room): ?>
-                        <tr>
-                            <td><?php echo e($room['room_number']); ?></td>
-                            <td><?php echo e($room['room_type']); ?></td>
-                            <td><?php echo e($room['floor']); ?></td>
-                            <td><?php echo e($room['capacity_adults']); ?> adults / <?php echo e($room['capacity_children']); ?> children</td>
-                            <td><?php echo e(formatMoney((float) $room['price_per_night'])); ?></td>
-                            <td><span class="badge-soft"><?php echo e($room['status']); ?></span></td>
-                        </tr>
+                        </article>
                     <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    </section>
-<?php endif; ?>
-<?php renderSiteLayoutEnd(); ?>
+                </div>
+
+                <div class="room-actions">
+                    <div class="room-price"><?php echo e($priceText); ?></div>
+                    <a class="room-home-link room-home-link--primary" href="<?php echo e($reservationHref); ?>"><?php echo e($reservationLabel); ?></a>
+                </div>
+            </div>
+        </section>
+    <?php endforeach; ?>
+</main>
+
+<script>
+    const carousels = Array.from(document.querySelectorAll("[data-carousel]"));
+
+    carousels.forEach((carousel) => {
+        const slides = Array.from(carousel.querySelectorAll(".carousel-slide"));
+        const indicators = Array.from(carousel.querySelectorAll("[data-carousel-indicator]"));
+        const previousButton = carousel.querySelector("[data-carousel-prev]");
+        const nextButton = carousel.querySelector("[data-carousel-next]");
+        let currentSlide = 0;
+        let autoSlideId = null;
+
+        const showSlide = (index) => {
+            slides.forEach((slide, slideIndex) => {
+                slide.classList.toggle("is-active", slideIndex === index);
+            });
+
+            indicators.forEach((indicator, indicatorIndex) => {
+                indicator.classList.toggle("is-active", indicatorIndex === index);
+            });
+
+            currentSlide = index;
+        };
+
+        const moveSlide = (step) => {
+            const nextSlide = (currentSlide + step + slides.length) % slides.length;
+            showSlide(nextSlide);
+        };
+
+        const stopAutoSlide = () => {
+            if (autoSlideId) {
+                window.clearInterval(autoSlideId);
+            }
+        };
+
+        const startAutoSlide = () => {
+            stopAutoSlide();
+            autoSlideId = window.setInterval(() => {
+                moveSlide(1);
+            }, 5000);
+        };
+
+        previousButton.addEventListener("click", () => {
+            moveSlide(-1);
+            startAutoSlide();
+        });
+
+        nextButton.addEventListener("click", () => {
+            moveSlide(1);
+            startAutoSlide();
+        });
+
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener("click", () => {
+                showSlide(index);
+                startAutoSlide();
+            });
+        });
+
+        carousel.addEventListener("mouseenter", stopAutoSlide);
+        carousel.addEventListener("mouseleave", startAutoSlide);
+
+        showSlide(0);
+        startAutoSlide();
+    });
+</script>
+</body>
+</html>

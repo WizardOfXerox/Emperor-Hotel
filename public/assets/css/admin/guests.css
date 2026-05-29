@@ -1,0 +1,7 @@
+.admin-page--guests .table small {
+    overflow-wrap: anywhere;
+}
+
+.admin-page--guests form[method="get"] {
+    align-items: stretch;
+}

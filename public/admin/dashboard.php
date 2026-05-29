@@ -32,6 +32,13 @@ $revenueThisMonth = $paymentModel->revenueThisMonth();
 $reservationStatusChart = dashboardChartPayload($reservationModel->statusBreakdown(), 'status', 'total');
 $roomStatusChart = dashboardChartPayload($roomModel->statusBreakdown(), 'status', 'total');
 $paymentStatusChart = dashboardChartPayload($paymentModel->summaryByStatus(), 'payment_status', 'total_count');
+$operationalAlerts = $reservationModel->operationalAlerts();
+$maintenanceRooms = $roomModel->roomsByStatus('Maintenance', 5);
+$failedPayments = $paymentModel->failedPayments(5);
+$totalAlertCount = count($operationalAlerts['overdue_checkouts'])
+    + count($operationalAlerts['overbooking_conflicts'])
+    + count($maintenanceRooms)
+    + count($failedPayments);
 $dashboardChartData = [
     'monthly' => [
         'labels' => array_map(static fn (array $row): string => (string) $row['month_label'], $monthlyPerformance),
@@ -44,7 +51,7 @@ $dashboardChartData = [
 ];
 $dashboardChartJson = json_encode($dashboardChartData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 
-renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/admin/dashboard.css']);
+renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/admin/dashboard.css?v=chart-size-1']);
 ?>
 <section class="stats-grid mb-4">
     <article class="stat-tile">
@@ -77,6 +84,73 @@ renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/
         <div class="stat-value"><?php echo e($reservationSummary['upcoming_checkouts']); ?></div>
         <p class="muted-copy mb-0">Scheduled within the next three days</p>
     </article>
+</section>
+
+<section class="dashboard-alert-panel panel-card p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
+        <div>
+            <p class="eyebrow mb-1">Front Desk Alerts</p>
+            <h3 class="mb-0">Operational Watchlist</h3>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <span class="badge-soft"><?php echo e($totalAlertCount); ?> active alerts</span>
+            <a class="btn btn-outline-light btn-sm" href="reports.php">Open Reports</a>
+        </div>
+    </div>
+    <?php if ($totalAlertCount === 0): ?>
+        <div class="dashboard-alert-empty">No overdue check-outs, failed payments, maintenance rooms, or overlap conflicts need attention right now.</div>
+    <?php else: ?>
+        <div class="dashboard-alert-grid">
+            <article class="dashboard-alert-card">
+                <div>
+                    <p class="eyebrow mb-1">Overdue Check-outs</p>
+                    <strong><?php echo e(count($operationalAlerts['overdue_checkouts'])); ?></strong>
+                </div>
+                <?php if (!$operationalAlerts['overdue_checkouts']): ?>
+                    <small>No checked-in guests are past their check-out date.</small>
+                <?php endif; ?>
+                <?php foreach ($operationalAlerts['overdue_checkouts'] as $alert): ?>
+                    <small>Room <?php echo e($alert['room_number']); ?> - <?php echo e($alert['first_name'] . ' ' . $alert['last_name']); ?>, due <?php echo e($alert['check_out']); ?></small>
+                <?php endforeach; ?>
+            </article>
+            <article class="dashboard-alert-card">
+                <div>
+                    <p class="eyebrow mb-1">Failed Payments</p>
+                    <strong><?php echo e(count($failedPayments)); ?></strong>
+                </div>
+                <?php if (!$failedPayments): ?>
+                    <small>No failed payment logs are currently visible.</small>
+                <?php endif; ?>
+                <?php foreach ($failedPayments as $payment): ?>
+                    <small><?php echo e($payment['first_name'] . ' ' . $payment['last_name']); ?> - <?php echo e(formatMoney((float) $payment['amount'])); ?> for Room <?php echo e($payment['room_number']); ?></small>
+                <?php endforeach; ?>
+            </article>
+            <article class="dashboard-alert-card">
+                <div>
+                    <p class="eyebrow mb-1">Maintenance Rooms</p>
+                    <strong><?php echo e(count($maintenanceRooms)); ?></strong>
+                </div>
+                <?php if (!$maintenanceRooms): ?>
+                    <small>No rooms are marked for maintenance.</small>
+                <?php endif; ?>
+                <?php foreach ($maintenanceRooms as $room): ?>
+                    <small>Room <?php echo e($room['room_number']); ?> - <?php echo e($room['room_type']); ?></small>
+                <?php endforeach; ?>
+            </article>
+            <article class="dashboard-alert-card">
+                <div>
+                    <p class="eyebrow mb-1">Overlap Conflicts</p>
+                    <strong><?php echo e(count($operationalAlerts['overbooking_conflicts'])); ?></strong>
+                </div>
+                <?php if (!$operationalAlerts['overbooking_conflicts']): ?>
+                    <small>No overlapping active reservations were detected.</small>
+                <?php endif; ?>
+                <?php foreach ($operationalAlerts['overbooking_conflicts'] as $conflict): ?>
+                    <small>Room <?php echo e($conflict['room_number']); ?> - <?php echo e($conflict['conflict_pairs']); ?> conflict pair(s)</small>
+                <?php endforeach; ?>
+            </article>
+        </div>
+    <?php endif; ?>
 </section>
 
 <section class="row g-4 mb-4">

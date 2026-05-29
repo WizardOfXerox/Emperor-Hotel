@@ -4,8 +4,22 @@ declare(strict_types=1);
 
 class Reservation
 {
+    private const STATUSES = ['Pending', 'Confirmed', 'Checked-in', 'Checked-out', 'Cancelled'];
+
+    private const FRONT_DESK_ACTIONS = [
+        'confirm' => 'Confirmed',
+        'check_in' => 'Checked-in',
+        'check_out' => 'Checked-out',
+        'cancel' => 'Cancelled',
+    ];
+
     public function __construct(private PDO $db)
     {
+    }
+
+    public static function statuses(): array
+    {
+        return self::STATUSES;
     }
 
     public function all(): array
@@ -57,15 +71,29 @@ class Reservation
 
     public function create(array $data): bool
     {
+        return $this->createAndGetId($data) > 0;
+    }
+
+    public function createAndGetId(array $data): int
+    {
         $this->validateDates($data['check_in'], $data['check_out']);
+        $this->assertStatus((string) ($data['status'] ?? ''));
+        $room = $this->assertRoomExists((int) $data['room_id']);
+        $this->validateGuestId((int) ($data['guest_id'] ?? 0));
+        $this->validateOccupancy((int) ($data['adults'] ?? 0), (int) ($data['children'] ?? 0), $room);
+        $this->validateTotalAmount((float) ($data['total_amount'] ?? 0));
+
+        if (in_array($room['status'], ['Cleaning', 'Maintenance'], true)) {
+            throw new RuntimeException('The selected room is not bookable because it is marked as ' . $room['status'] . '.');
+        }
 
         if (!$this->roomIsAvailable((int) $data['room_id'], $data['check_in'], $data['check_out'])) {
             throw new RuntimeException('The selected room is not available for those dates.');
         }
 
         $statement = $this->db->prepare(
-            'INSERT INTO reservations (user_id, guest_id, room_id, check_in, check_out, adults, children, addons, total_amount, status)
-             VALUES (:user_id, :guest_id, :room_id, :check_in, :check_out, :adults, :children, :addons, :total_amount, :status)'
+            'INSERT INTO reservations (user_id, guest_id, room_id, check_in, check_out, adults, children, total_amount, status)
+             VALUES (:user_id, :guest_id, :room_id, :check_in, :check_out, :adults, :children, :total_amount, :status)'
         );
 
         $saved = $statement->execute([
@@ -76,16 +104,17 @@ class Reservation
             'check_out' => $data['check_out'],
             'adults' => (int) $data['adults'],
             'children' => (int) $data['children'],
-            'addons' => trim((string) ($data['addons'] ?? '')),
             'total_amount' => (float) $data['total_amount'],
             'status' => $data['status'],
         ]);
+
+        $reservationId = $saved ? (int) $this->db->lastInsertId() : 0;
 
         if ($saved) {
             $this->syncRoomStatus((int) $data['room_id'], $data['status']);
         }
 
-        return $saved;
+        return $reservationId;
     }
 
     public function update(int $reservationId, array $data): bool
@@ -97,6 +126,15 @@ class Reservation
         }
 
         $this->validateDates($data['check_in'], $data['check_out']);
+        $this->assertStatus((string) ($data['status'] ?? ''));
+        $room = $this->assertRoomExists((int) $data['room_id']);
+        $this->validateGuestId((int) ($data['guest_id'] ?? 0));
+        $this->validateOccupancy((int) ($data['adults'] ?? 0), (int) ($data['children'] ?? 0), $room);
+        $this->validateTotalAmount((float) ($data['total_amount'] ?? 0));
+
+        if (in_array($room['status'], ['Cleaning', 'Maintenance'], true) && (int) $existing['room_id'] !== (int) $data['room_id']) {
+            throw new RuntimeException('The selected room is not bookable because it is marked as ' . $room['status'] . '.');
+        }
 
         if (!$this->roomIsAvailable((int) $data['room_id'], $data['check_in'], $data['check_out'], $reservationId)) {
             throw new RuntimeException('The selected room is not available for those dates.');
@@ -110,7 +148,6 @@ class Reservation
                  check_out = :check_out,
                  adults = :adults,
                  children = :children,
-                 addons = :addons,
                  total_amount = :total_amount,
                  status = :status
              WHERE reservation_id = :reservation_id'
@@ -123,7 +160,6 @@ class Reservation
             'check_out' => $data['check_out'],
             'adults' => (int) $data['adults'],
             'children' => (int) $data['children'],
-            'addons' => trim((string) ($data['addons'] ?? '')),
             'total_amount' => (float) $data['total_amount'],
             'status' => $data['status'],
             'reservation_id' => $reservationId,
@@ -166,6 +202,8 @@ class Reservation
             return false;
         }
 
+        $this->assertStatus($status);
+
         $statement = $this->db->prepare('UPDATE reservations SET status = :status WHERE reservation_id = :reservation_id');
         $saved = $statement->execute([
             'status' => $status,
@@ -179,8 +217,157 @@ class Reservation
         return $saved;
     }
 
+    public function extendStay(int $reservationId, string $newCheckOut): array
+    {
+        $reservation = $this->find($reservationId);
+
+        if (!$reservation) {
+            throw new RuntimeException('Reservation not found.');
+        }
+
+        if (in_array($reservation['status'], ['Cancelled', 'Checked-out'], true)) {
+            throw new RuntimeException('Cancelled or checked-out reservations cannot be extended.');
+        }
+
+        $currentCheckOut = DateTimeImmutable::createFromFormat('!Y-m-d', (string) $reservation['check_out']);
+        $newCheckOutDate = DateTimeImmutable::createFromFormat('!Y-m-d', $newCheckOut);
+
+        if (
+            !$currentCheckOut
+            || !$newCheckOutDate
+            || $currentCheckOut->format('Y-m-d') !== (string) $reservation['check_out']
+            || $newCheckOutDate->format('Y-m-d') !== $newCheckOut
+        ) {
+            throw new RuntimeException('Please enter a valid new check-out date.');
+        }
+
+        if ($newCheckOutDate <= $currentCheckOut) {
+            throw new RuntimeException('The new check-out date must be after the current check-out date.');
+        }
+
+        if ($newCheckOutDate < new DateTimeImmutable('today')) {
+            throw new RuntimeException('The new check-out date cannot be in the past.');
+        }
+
+        $room = $this->assertRoomExists((int) $reservation['room_id']);
+
+        if (in_array($room['status'], ['Cleaning', 'Maintenance'], true)) {
+            throw new RuntimeException('This stay cannot be extended because the room is marked as ' . $room['status'] . '.');
+        }
+
+        $extensionStart = $currentCheckOut->format('Y-m-d');
+
+        if ($this->roomHasActiveOverlap((int) $reservation['room_id'], $extensionStart, $newCheckOut, $reservationId)) {
+            throw new RuntimeException('This stay cannot be extended because the room is already reserved during the requested extension dates.');
+        }
+
+        $extraNights = (int) $currentCheckOut->diff($newCheckOutDate)->days;
+        $additionalAmount = $extraNights * (float) $room['price_per_night'];
+        $newTotal = (float) $reservation['total_amount'] + $additionalAmount;
+
+        $statement = $this->db->prepare(
+            'UPDATE reservations
+             SET check_out = :check_out,
+                 total_amount = :total_amount
+             WHERE reservation_id = :reservation_id'
+        );
+        $statement->execute([
+            'check_out' => $newCheckOut,
+            'total_amount' => $newTotal,
+            'reservation_id' => $reservationId,
+        ]);
+
+        $this->syncRoomStatus((int) $reservation['room_id'], (string) $reservation['status']);
+
+        return [
+            'old_check_out' => (string) $reservation['check_out'],
+            'new_check_out' => $newCheckOut,
+            'extra_nights' => $extraNights,
+            'additional_amount' => $additionalAmount,
+            'new_total' => $newTotal,
+        ];
+    }
+
+    public function availableFrontDeskActions(array $reservation): array
+    {
+        $status = (string) ($reservation['status'] ?? '');
+
+        return match ($status) {
+            'Pending' => [
+                'confirm' => 'Confirm',
+                'check_in' => 'Check In',
+                'cancel' => 'Cancel',
+            ],
+            'Confirmed' => [
+                'check_in' => 'Check In',
+                'cancel' => 'Cancel',
+            ],
+            'Checked-in' => [
+                'check_out' => 'Check Out',
+            ],
+            default => [],
+        };
+    }
+
+    public function applyFrontDeskAction(int $reservationId, string $action): string
+    {
+        $reservation = $this->find($reservationId);
+
+        if (!$reservation) {
+            throw new RuntimeException('Reservation not found.');
+        }
+
+        $allowedActions = $this->availableFrontDeskActions($reservation);
+
+        if (!isset($allowedActions[$action], self::FRONT_DESK_ACTIONS[$action])) {
+            throw new RuntimeException('That front desk action is not available for this reservation status.');
+        }
+
+        $newStatus = self::FRONT_DESK_ACTIONS[$action];
+        $this->updateStatus($reservationId, $newStatus);
+
+        return $newStatus;
+    }
+
+    public function roomsWithDateAvailability(string $checkIn, string $checkOut, ?int $excludeReservationId = null): array
+    {
+        $rooms = $this->db->query('SELECT * FROM rooms ORDER BY floor ASC, room_number ASC')->fetchAll();
+
+        if (!$this->dateRangeIsValid($checkIn, $checkOut)) {
+            return $rooms;
+        }
+
+        foreach ($rooms as &$room) {
+            $dateAvailable = $this->roomIsAvailable((int) $room['room_id'], $checkIn, $checkOut, $excludeReservationId);
+            $operationallyBlocked = in_array($room['status'], ['Cleaning', 'Maintenance'], true);
+            $isAvailable = $dateAvailable && !$operationallyBlocked;
+
+            $room['is_available_for_dates'] = $isAvailable;
+            $room['availability_label'] = $this->availabilityLabel((string) $room['status'], $dateAvailable, $operationallyBlocked);
+        }
+
+        unset($room);
+
+        return $rooms;
+    }
+
+    public function dateRangeIsValid(string $checkIn, string $checkOut): bool
+    {
+        try {
+            $this->validateDates($checkIn, $checkOut);
+        } catch (RuntimeException) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function roomIsAvailable(int $roomId, string $checkIn, string $checkOut, ?int $excludeReservationId = null): bool
     {
+        if ($roomId <= 0 || !$this->dateRangeIsValid($checkIn, $checkOut)) {
+            return false;
+        }
+
         $sql = "SELECT COUNT(*)
                 FROM reservations
                 WHERE room_id = :room_id
@@ -202,6 +389,165 @@ class Reservation
         $statement->execute($params);
 
         return (int) $statement->fetchColumn() === 0;
+    }
+
+    public function operationalAlerts(): array
+    {
+        $overdueStatement = $this->db->query(
+            "SELECT r.reservation_id, r.check_out, g.first_name, g.last_name, rm.room_number, rm.room_type
+             FROM reservations r
+             INNER JOIN guests g ON g.guest_id = r.guest_id
+             INNER JOIN rooms rm ON rm.room_id = r.room_id
+             WHERE r.status = 'Checked-in'
+               AND r.check_out < CURRENT_DATE()
+             ORDER BY r.check_out ASC
+             LIMIT 5"
+        );
+
+        $conflictStatement = $this->db->query(
+            "SELECT rm.room_number, rm.room_type, COUNT(*) AS conflict_pairs
+             FROM reservations r1
+             INNER JOIN reservations r2
+                ON r2.room_id = r1.room_id
+               AND r2.reservation_id > r1.reservation_id
+             INNER JOIN rooms rm ON rm.room_id = r1.room_id
+             WHERE r1.status NOT IN ('Cancelled', 'Checked-out')
+               AND r2.status NOT IN ('Cancelled', 'Checked-out')
+               AND r1.check_in < r2.check_out
+               AND r1.check_out > r2.check_in
+             GROUP BY rm.room_id, rm.room_number, rm.room_type
+             ORDER BY conflict_pairs DESC, rm.room_number ASC
+             LIMIT 5"
+        );
+
+        return [
+            'overdue_checkouts' => $overdueStatement->fetchAll(),
+            'overbooking_conflicts' => $conflictStatement->fetchAll(),
+        ];
+    }
+
+    public function occupancyReport(string $startDate, string $endDate): array
+    {
+        [$start, $end] = $this->validateReportDateRange($startDate, $endDate);
+        $days = ((int) $start->diff($end)->days) + 1;
+
+        $statement = $this->db->prepare(
+            "SELECT
+                rm.room_type,
+                COUNT(DISTINCT rm.room_id) AS room_count,
+                COALESCE(SUM(
+                    CASE
+                        WHEN r.reservation_id IS NULL THEN 0
+                        ELSE DATEDIFF(
+                            LEAST(r.check_out, DATE_ADD(:end_date_calc, INTERVAL 1 DAY)),
+                            GREATEST(r.check_in, :start_date_calc)
+                        )
+                    END
+                ), 0) AS booked_room_nights
+             FROM rooms rm
+             LEFT JOIN reservations r
+                ON r.room_id = rm.room_id
+               AND r.status != 'Cancelled'
+               AND r.check_in < DATE_ADD(:end_date_join, INTERVAL 1 DAY)
+               AND r.check_out > :start_date_join
+             GROUP BY rm.room_type
+             ORDER BY MIN(rm.floor), rm.room_type"
+        );
+        $statement->execute([
+            'start_date_calc' => $startDate,
+            'end_date_calc' => $endDate,
+            'start_date_join' => $startDate,
+            'end_date_join' => $endDate,
+        ]);
+
+        $rows = [];
+        $totalRooms = 0;
+        $totalBookedNights = 0;
+
+        foreach ($statement->fetchAll() as $row) {
+            $roomCount = (int) $row['room_count'];
+            $bookedNights = (int) $row['booked_room_nights'];
+            $availableNights = max(0, ($roomCount * $days) - $bookedNights);
+            $capacityNights = $roomCount * $days;
+
+            $rows[] = [
+                'room_type' => $row['room_type'],
+                'room_count' => $roomCount,
+                'booked_room_nights' => $bookedNights,
+                'available_room_nights' => $availableNights,
+                'occupancy_rate' => $capacityNights > 0 ? ($bookedNights / $capacityNights) * 100 : 0,
+            ];
+
+            $totalRooms += $roomCount;
+            $totalBookedNights += $bookedNights;
+        }
+
+        $totalRoomNights = $totalRooms * $days;
+
+        return [
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'days' => $days,
+            'total_rooms' => $totalRooms,
+            'total_room_nights' => $totalRoomNights,
+            'booked_room_nights' => $totalBookedNights,
+            'available_room_nights' => max(0, $totalRoomNights - $totalBookedNights),
+            'occupancy_rate' => $totalRoomNights > 0 ? ($totalBookedNights / $totalRoomNights) * 100 : 0,
+            'by_room_type' => $rows,
+        ];
+    }
+
+    public function reservationTrendReport(string $startDate, string $endDate): array
+    {
+        [$start, $end] = $this->validateReportDateRange($startDate, $endDate);
+        $statement = $this->db->prepare(
+            "SELECT
+                DATE(created_at) AS reservation_date,
+                COUNT(*) AS total_reservations,
+                SUM(CASE WHEN status = 'Cancelled' THEN 1 ELSE 0 END) AS cancelled_reservations,
+                SUM(CASE WHEN status != 'Cancelled' THEN 1 ELSE 0 END) AS active_reservations
+             FROM reservations
+             WHERE DATE(created_at) BETWEEN :start_date AND :end_date
+             GROUP BY DATE(created_at)
+             ORDER BY reservation_date ASC"
+        );
+        $statement->execute([
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ]);
+
+        $indexedRows = [];
+
+        foreach ($statement->fetchAll() as $row) {
+            $indexedRows[(string) $row['reservation_date']] = [
+                'reservation_date' => (string) $row['reservation_date'],
+                'total_reservations' => (int) $row['total_reservations'],
+                'cancelled_reservations' => (int) $row['cancelled_reservations'],
+                'active_reservations' => (int) $row['active_reservations'],
+            ];
+        }
+
+        $rows = [];
+        $totalReservations = 0;
+        $period = new DatePeriod($start, new DateInterval('P1D'), $end->modify('+1 day'));
+
+        foreach ($period as $date) {
+            $key = $date->format('Y-m-d');
+            $row = $indexedRows[$key] ?? [
+                'reservation_date' => $key,
+                'total_reservations' => 0,
+                'cancelled_reservations' => 0,
+                'active_reservations' => 0,
+            ];
+
+            $totalReservations += (int) $row['total_reservations'];
+            $rows[] = $row;
+        }
+
+        return [
+            'total_reservations' => $totalReservations,
+            'rows' => $rows,
+        ];
     }
 
     public function dashboardSummary(): array
@@ -306,14 +652,148 @@ class Reservation
         ]);
     }
 
+    private function roomHasActiveOverlap(int $roomId, string $checkIn, string $checkOut, ?int $excludeReservationId = null): bool
+    {
+        $sql = "SELECT COUNT(*)
+                FROM reservations
+                WHERE room_id = :room_id
+                  AND status NOT IN ('Cancelled', 'Checked-out')
+                  AND NOT (check_out <= :check_in OR check_in >= :check_out)";
+        $params = [
+            'room_id' => $roomId,
+            'check_in' => $checkIn,
+            'check_out' => $checkOut,
+        ];
+
+        if ($excludeReservationId !== null) {
+            $sql .= ' AND reservation_id != :reservation_id';
+            $params['reservation_id'] = $excludeReservationId;
+        }
+
+        $statement = $this->db->prepare($sql);
+        $statement->execute($params);
+
+        return (int) $statement->fetchColumn() > 0;
+    }
+
+    private function availabilityLabel(string $roomStatus, bool $dateAvailable, bool $operationallyBlocked): string
+    {
+        if ($operationallyBlocked) {
+            return 'Unavailable: ' . $roomStatus;
+        }
+
+        if ($dateAvailable) {
+            return 'Available for dates';
+        }
+
+        return 'Booked for dates';
+    }
+
     private function validateDates(string $checkIn, string $checkOut): void
     {
         if ($checkIn === '' || $checkOut === '') {
             throw new RuntimeException('Check-in and check-out dates are required.');
         }
 
-        if (strtotime($checkOut) <= strtotime($checkIn)) {
+        $checkInDate = DateTimeImmutable::createFromFormat('!Y-m-d', $checkIn);
+        $checkOutDate = DateTimeImmutable::createFromFormat('!Y-m-d', $checkOut);
+
+        if (!$checkInDate || !$checkOutDate || $checkInDate->format('Y-m-d') !== $checkIn || $checkOutDate->format('Y-m-d') !== $checkOut) {
+            throw new RuntimeException('Please enter valid check-in and check-out dates.');
+        }
+
+        if ($checkOutDate <= $checkInDate) {
             throw new RuntimeException('Check-out date must be after the check-in date.');
+        }
+
+        $today = new DateTimeImmutable('today');
+
+        if ($checkInDate < $today) {
+            throw new RuntimeException('Check-in date cannot be in the past.');
+        }
+    }
+
+    private function validateReportDateRange(string $startDate, string $endDate): array
+    {
+        if ($startDate === '' || $endDate === '') {
+            throw new RuntimeException('Report start and end dates are required.');
+        }
+
+        $start = DateTimeImmutable::createFromFormat('!Y-m-d', $startDate);
+        $end = DateTimeImmutable::createFromFormat('!Y-m-d', $endDate);
+
+        if (!$start || !$end || $start->format('Y-m-d') !== $startDate || $end->format('Y-m-d') !== $endDate) {
+            throw new RuntimeException('Please enter valid report dates.');
+        }
+
+        if ($end < $start) {
+            throw new RuntimeException('Report end date must be the same as or after the start date.');
+        }
+
+        return [$start, $end];
+    }
+
+    private function assertStatus(string $status): void
+    {
+        if (!in_array($status, self::STATUSES, true)) {
+            throw new RuntimeException('Please choose a valid reservation status.');
+        }
+    }
+
+    private function assertRoomExists(int $roomId): array
+    {
+        if ($roomId <= 0) {
+            throw new RuntimeException('Please choose a valid room.');
+        }
+
+        $statement = $this->db->prepare('SELECT * FROM rooms WHERE room_id = :room_id LIMIT 1');
+        $statement->execute(['room_id' => $roomId]);
+        $room = $statement->fetch();
+
+        if (!$room) {
+            throw new RuntimeException('The selected room does not exist.');
+        }
+
+        return $room;
+    }
+
+    private function validateGuestId(int $guestId): void
+    {
+        if ($guestId <= 0) {
+            throw new RuntimeException('Please choose or create a valid guest record.');
+        }
+
+        $statement = $this->db->prepare('SELECT COUNT(*) FROM guests WHERE guest_id = :guest_id');
+        $statement->execute(['guest_id' => $guestId]);
+
+        if ((int) $statement->fetchColumn() === 0) {
+            throw new RuntimeException('The selected guest does not exist.');
+        }
+    }
+
+    private function validateOccupancy(int $adults, int $children, array $room): void
+    {
+        if ($adults < 1) {
+            throw new RuntimeException('At least one adult is required for a reservation.');
+        }
+
+        if ($children < 0) {
+            throw new RuntimeException('Children count cannot be negative.');
+        }
+
+        if ($adults > (int) $room['capacity_adults']) {
+            throw new RuntimeException('The selected room only allows ' . (int) $room['capacity_adults'] . ' adult guests.');
+        }
+
+        if ($children > (int) $room['capacity_children']) {
+            throw new RuntimeException('The selected room only allows ' . (int) $room['capacity_children'] . ' child guests.');
+        }
+    }
+
+    private function validateTotalAmount(float $totalAmount): void
+    {
+        if ($totalAmount <= 0) {
+            throw new RuntimeException('Reservation total must be greater than zero.');
         }
     }
 }

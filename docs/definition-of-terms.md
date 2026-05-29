@@ -1,6 +1,6 @@
 # Definition of Terms
 
-This document defines common technical terms used in the Emperor Hotel Reservation System.
+This document defines common technical terms used in the Emperor Hotel Reservation and Management System.
 
 | Term | Meaning In This Project |
 | --- | --- |
@@ -8,12 +8,17 @@ This document defines common technical terms used in the Emperor Hotel Reservati
 | API | An Application Programming Interface. This project does not currently expose a separate REST API; PHP pages and forms handle requests directly. |
 | Bootstrap | A frontend CSS/JavaScript library used for responsive layout, buttons, forms, tables, alerts, and carousel behavior. |
 | Bootstrap Icons | An icon library used for admin sidebar icons and visual UI indicators. |
+| Car Shuttle | A hotel transport service included with the Emperor Presidential room type. |
 | CDN | Content Delivery Network. The project previously used CDN links, but browser libraries are now stored locally in `public/assets/vendor/`. |
 | Chart.js | A JavaScript charting library used to display dashboard charts. |
+| Check-in | A front desk action that changes a reservation to `Checked-in` and marks the room as occupied. |
+| Check-out | A front desk action that changes a reservation to `Checked-out` and makes the room available again. |
+| Cost Tracker | A UI panel that estimates reservation or payment totals before saving a record. |
 | CRUD | Create, Read, Update, Delete. These are the four basic operations for managing records such as rooms, reservations, and users. |
 | Database | A structured storage system. This project uses MySQL/MariaDB through XAMPP. |
 | DOMDocument | A PHP class used to create and read XML documents. This project uses it for room XML import/export. |
 | ERD | Entity Relationship Diagram. It shows database tables and how they relate to one another. |
+| ERD File Correlation | A documentation map that shows which PHP models, pages, and includes use each database table. |
 | Foreign Key | A database field that links one table to another table, such as `reservations.room_id` linking to `rooms.room_id`. |
 | Favicon | The small website icon shown in the browser tab. This project uses `emperors-hotel-logo.svg` as the favicon. |
 | Form Handler | PHP code that receives and processes submitted HTML form data. |
@@ -24,15 +29,23 @@ This document defines common technical terms used in the Emperor Hotel Reservati
 | Model | A PHP class that handles database logic for one data area, such as `Room`, `Reservation`, or `Payment`. |
 | MySQL | The relational database system used by the project through XAMPP. |
 | Offline Mode | A feature where an app works without a server or database connection. This project does not support standalone offline mode. |
+| Overpayment Rule | A payment rule that prevents pending and confirmed payment records from exceeding the reservation total. |
+| Page-specific CSS | A CSS file loaded only by one page or page group, such as `public/assets/css/admin/payments.css`. |
 | PDO | PHP Data Objects. It is used to connect PHP to the database and run prepared SQL statements. |
 | Prepared Statement | A safer way to run SQL queries by separating SQL structure from user-provided values. |
 | Primary Key | A unique identifier for a table record, such as `user_id`, `room_id`, or `reservation_id`. |
 | Query | A SQL command used to get or change data in the database. |
 | Reservation | A booking record that connects a guest, room, check-in date, check-out date, total amount, and status. |
+| Receipt | A printable reservation document showing guest details, stay details, payment totals, balance due, and transaction logs. |
+| Reports Page | An admin page that shows filterable occupancy, confirmed revenue, and reservation trend reports. |
 | Responsive Design | A design approach that allows pages to adjust to different screen sizes. Bootstrap helps provide this. |
 | Role-Based Access | A permission system where users can access different pages based on their role, such as `admin` or `user`. |
+| Room Type Inclusions | Simple catalog text that explains what comes with each room type, such as breakfast, priority Wi-Fi, car shuttle, or late checkout. |
+| Room Selection Cards | The card-based room picker used in reservation forms. Cards are grouped by room type, show availability status, and use the yellow badge for the room number. |
 | Session | Server-side login state stored by PHP so the system knows who is currently logged in. |
+| Simulated Transaction | A payment record used for demonstration/testing only. It does not process real money and should be reviewed by an admin. |
 | SQL | Structured Query Language. It is used to create tables, insert records, update records, delete records, and query records. |
+| Transaction Reference | A system-generated payment identifier. Manual payment records use a `PAY-` prefix and simulated transaction records use a `SIM-` prefix. |
 | Tailwind CSS | A utility-first CSS framework. This project does not use Tailwind CSS. |
 | React.js | A JavaScript frontend framework. This project does not use React.js. |
 | PostgreSQL | A relational database system. This project does not use PostgreSQL; it uses MySQL/MariaDB. |
