@@ -127,14 +127,13 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                         <input class="form-control" id="price_per_night" name="price_per_night" type="number" min="0.01" step="0.01" value="<?php echo e($editRoom['price_per_night'] ?? '0.00'); ?>" required>
                     </div>
                 </div>
-                <div class="row g-3">
-                    <div class="col-6">
-                        <label class="form-label" for="capacity_adults">Adults</label>
-                        <input class="form-control" id="capacity_adults" name="capacity_adults" type="number" min="1" value="<?php echo e($editRoom['capacity_adults'] ?? 2); ?>" required>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label" for="capacity_children">Children</label>
-                        <input class="form-control" id="capacity_children" name="capacity_children" type="number" min="0" value="<?php echo e($editRoom['capacity_children'] ?? 1); ?>" required>
+                <div>
+                    <input type="hidden" name="capacity_adults" value="5">
+                    <input type="hidden" name="capacity_children" value="0">
+                    <div class="guest-capacity-note">
+                        <span>Guest Capacity</span>
+                        <strong>Up to 5 people per room</strong>
+                        <small>The system no longer separates adult and child limits in the UI.</small>
                     </div>
                 </div>
                 <div>
@@ -245,7 +244,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                                 <td><?php echo e($room['room_number']); ?></td>
                                 <td><?php echo e($room['room_type']); ?></td>
                                 <td><?php echo e($room['floor']); ?></td>
-                                <td><?php echo e($room['capacity_adults']); ?> / <?php echo e($room['capacity_children']); ?></td>
+                                <td>Up to 5 people</td>
                                 <td><?php echo e(formatMoney((float) $room['price_per_night'])); ?></td>
                                 <td><span class="badge-soft"><?php echo e($room['status']); ?></span></td>
                                 <td class="text-end">

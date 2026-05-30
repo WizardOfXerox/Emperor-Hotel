@@ -25,73 +25,31 @@ function buildReservationTotal(array $room, string $checkIn, string $checkOut): 
     return $nights * (float) $room['price_per_night'];
 }
 
-function minimumExtensionCheckOut(string $currentCheckOut): string
-{
-    $currentCheckOutDate = DateTimeImmutable::createFromFormat('!Y-m-d', $currentCheckOut);
-    $minimumDate = $currentCheckOutDate ? $currentCheckOutDate->modify('+1 day') : new DateTimeImmutable('tomorrow');
-    $today = new DateTimeImmutable('today');
-
-    if ($minimumDate < $today) {
-        return $today->format('Y-m-d');
-    }
-
-    return $minimumDate->format('Y-m-d');
-}
-
 $db = Database::connect();
 $currentAdmin = currentUser();
 $guestModel = new Guest($db);
 $roomModel = new Room($db);
 $reservationModel = new Reservation($db);
 $paymentModel = new Payment($db);
-$editReservation = null;
 $reservationStatuses = Reservation::statuses();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = (string) ($_POST['action'] ?? '');
-
     try {
-        if ($action === 'delete') {
-            $reservationModel->delete((int) ($_POST['reservation_id'] ?? 0));
-            setFlash('success', 'Reservation deleted.');
-            redirect('reservations.php');
-        }
-
-        if (in_array($action, ['confirm', 'check_in', 'check_out', 'cancel'], true)) {
-            $newStatus = $reservationModel->applyFrontDeskAction((int) ($_POST['reservation_id'] ?? 0), $action);
-            setFlash('success', 'Reservation status changed to ' . $newStatus . '.');
-            redirect('reservations.php');
-        }
-
-        if ($action === 'extend_stay') {
-            $extension = $reservationModel->extendStay(
-                (int) ($_POST['reservation_id'] ?? 0),
-                (string) ($_POST['new_check_out'] ?? '')
-            );
-            setFlash(
-                'success',
-                'Stay extended to ' . $extension['new_check_out']
-                . '. Added ' . $extension['extra_nights'] . ' night(s), additional balance '
-                . formatMoney((float) $extension['additional_amount'])
-                . '. New total is ' . formatMoney((float) $extension['new_total'])
-                . '. Use the Payment button to collect the added balance.'
-            );
-            redirect('reservations.php');
+        if ((string) ($_POST['action'] ?? '') !== 'create') {
+            throw new RuntimeException('This page only creates new reservations. Use Booking Records to manage existing reservations.');
         }
 
         $checkIn = (string) ($_POST['check_in'] ?? '');
         $checkOut = (string) ($_POST['check_out'] ?? '');
-        $adults = (int) ($_POST['adults'] ?? 1);
-        $children = (int) ($_POST['children'] ?? 0);
         $roomId = (int) ($_POST['room_id'] ?? 0);
-        $room = null;
-
-        if ($roomId > 0) {
-            $room = $roomModel->find($roomId);
-        }
+        $room = $roomId > 0 ? $roomModel->find($roomId) : null;
 
         if (!$room) {
             throw new RuntimeException('Please select a room card before saving the reservation.');
+        }
+
+        if (in_array($room['status'], ['Cleaning', 'Maintenance'], true)) {
+            throw new RuntimeException('Please choose a room that is not under cleaning or maintenance.');
         }
 
         $fullName = trim((string) ($_POST['full_name'] ?? ''));
@@ -114,96 +72,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'room_id' => $roomId,
             'check_in' => $checkIn,
             'check_out' => $checkOut,
-            'adults' => $adults,
-            'children' => $children,
+            'adults' => 1,
+            'children' => 0,
             'total_amount' => buildReservationTotal($room, $checkIn, $checkOut),
             'status' => (string) ($_POST['status'] ?? 'Pending'),
         ];
 
-        if ($action === 'create') {
-            if (in_array($room['status'], ['Cleaning', 'Maintenance'], true)) {
-                throw new RuntimeException('Please choose a room that is not under cleaning or maintenance.');
-            }
+        $paymentMethod = (string) ($_POST['payment_method'] ?? 'Cash');
 
-            $paymentMethod = (string) ($_POST['payment_method'] ?? 'Cash');
+        if (!in_array($paymentMethod, Payment::methods(), true)) {
+            throw new RuntimeException('Please choose a valid payment method.');
+        }
 
-            if (!in_array($paymentMethod, Payment::methods(), true)) {
-                throw new RuntimeException('Please choose a valid payment method.');
-            }
+        $reservationId = $reservationModel->createAndGetId($payload);
 
-            $reservationId = $reservationModel->createAndGetId($payload);
-
-            if ($paymentMethod === 'Cash') {
-                $paymentId = $paymentModel->createAndGetId([
-                    'reservation_id' => $reservationId,
-                    'amount' => (float) $payload['total_amount'],
-                    'payment_method' => 'Cash',
-                    'currency' => 'PHP',
-                    'payment_status' => 'Pending',
-                    'is_simulated' => false,
-                    'notes' => 'Automatic pending cash payment reference generated during reservation creation.',
-                ]);
-                $payment = $paymentModel->find($paymentId);
-                $reference = (string) ($payment['transaction_reference'] ?? ('Reservation #' . $reservationId));
-
-                setFlash('success', 'Reservation created. Payment reference: ' . $reference . '.');
-                redirect('reservations.php');
-            }
-
-            setFlash('success', 'Reservation created. Continue payment processing for ' . $paymentMethod . '.');
-            redirect('payments.php?' . http_build_query([
+        if ($paymentMethod === 'Cash') {
+            $paymentId = $paymentModel->createAndGetId([
                 'reservation_id' => $reservationId,
-                'payment_method' => $paymentMethod,
-            ]));
+                'amount' => (float) $payload['total_amount'],
+                'payment_method' => 'Cash',
+                'currency' => 'PHP',
+                'payment_status' => 'Pending',
+                'is_simulated' => false,
+                'notes' => 'Automatic pending cash payment reference generated during reservation creation.',
+            ]);
+            $payment = $paymentModel->find($paymentId);
+            $reference = (string) ($payment['transaction_reference'] ?? ('Reservation #' . $reservationId));
+
+            setFlash('success', 'Reservation created. Payment reference: ' . $reference . '.');
+            redirect('booking-records.php');
         }
 
-        if ($action === 'update') {
-            $reservationModel->update((int) ($_POST['reservation_id'] ?? 0), array_merge($payload, [
-                'guest_id' => $guestId,
-            ]));
-            setFlash('success', 'Reservation updated.');
-            redirect('reservations.php');
-        }
+        setFlash('success', 'Reservation created. Continue payment processing for ' . $paymentMethod . '.');
+        redirect('payments.php?' . http_build_query([
+            'reservation_id' => $reservationId,
+            'payment_method' => $paymentMethod,
+        ]));
     } catch (Throwable $exception) {
         setFlash('error', $exception->getMessage());
         redirect('reservations.php');
     }
 }
 
-if (isset($_GET['edit'])) {
-    $editReservation = $reservationModel->find((int) $_GET['edit']);
-}
-
-$prefillGuest = null;
-
-if (!$editReservation && isset($_GET['guest_id'])) {
-    $prefillGuest = $guestModel->find((int) $_GET['guest_id']);
-}
-
-$availabilityCheckIn = (string) ($_GET['check_in'] ?? ($editReservation['check_in'] ?? ''));
-$availabilityCheckOut = (string) ($_GET['check_out'] ?? ($editReservation['check_out'] ?? ''));
+$prefillGuest = isset($_GET['guest_id']) ? $guestModel->find((int) $_GET['guest_id']) : null;
+$availabilityCheckIn = (string) ($_GET['check_in'] ?? '');
+$availabilityCheckOut = (string) ($_GET['check_out'] ?? '');
 $availabilityDatesValid = $reservationModel->dateRangeIsValid($availabilityCheckIn, $availabilityCheckOut);
 $rooms = $availabilityDatesValid
-    ? $reservationModel->roomsWithDateAvailability(
-        $availabilityCheckIn,
-        $availabilityCheckOut,
-        isset($editReservation['reservation_id']) ? (int) $editReservation['reservation_id'] : null
-    )
+    ? $reservationModel->roomsWithDateAvailability($availabilityCheckIn, $availabilityCheckOut)
     : $roomModel->all();
-$reservations = $reservationModel->all();
-$paymentTotals = $paymentModel->totalsByReservation();
 
-renderAdminLayoutStart('Reservations', 'reservations', $currentAdmin, ['../assets/css/admin/reservations.css?v=20260530-modal-actions']);
+renderAdminLayoutStart('Reservations', 'reservations', $currentAdmin, ['../assets/css/admin/reservations.css?v=20260530-create-only']);
 ?>
-<section class="row g-4">
-    <div class="col-xl-5">
-        <div class="panel-card p-4 h-100">
-            <p class="eyebrow mb-1"><?php echo $editReservation ? 'Update reservation' : 'Create reservation'; ?></p>
-            <h3 class="mb-3"><?php echo $editReservation ? 'Edit Reservation' : 'New Reservation'; ?></h3>
+<section class="row g-4 justify-content-center">
+    <div class="col-xxl-9 col-xl-10">
+        <div class="panel-card p-4">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mb-4">
+                <div>
+                    <p class="eyebrow mb-1">Create Reservation</p>
+                    <h3 class="mb-2">New Reservation</h3>
+                    <p class="muted-copy mb-0">Use this page only for creating a booking. Existing bookings are managed in the Booking Records tab.</p>
+                </div>
+                <a class="btn btn-outline-light btn-sm" href="booking-records.php">Open Booking Records</a>
+            </div>
+
             <form method="get" class="availability-filter-card mb-4">
-                <?php if ($editReservation): ?>
-                    <input type="hidden" name="edit" value="<?php echo e($editReservation['reservation_id']); ?>">
-                <?php endif; ?>
                 <?php if ($prefillGuest): ?>
                     <input type="hidden" name="guest_id" value="<?php echo e($prefillGuest['guest_id']); ?>">
                 <?php endif; ?>
@@ -228,262 +161,82 @@ renderAdminLayoutStart('Reservations', 'reservations', $currentAdmin, ['../asset
                     </div>
                 <?php endif; ?>
             </form>
+
             <form method="post" class="d-grid gap-3" data-dynamic-room-availability data-availability-url="room-availability.php">
-                <input type="hidden" name="action" value="<?php echo $editReservation ? 'update' : 'create'; ?>">
-                <input type="hidden" name="guest_id" value="<?php echo e($editReservation['guest_id'] ?? ($prefillGuest['guest_id'] ?? '')); ?>">
-                <?php if ($editReservation): ?>
-                    <input type="hidden" name="reservation_id" value="<?php echo e($editReservation['reservation_id']); ?>">
-                <?php endif; ?>
-                <div>
-                    <label class="form-label" for="full_name">Full Name</label>
-                    <input class="form-control" id="full_name" name="full_name" type="text" value="<?php echo e(trim((string) (($editReservation['first_name'] ?? ($prefillGuest['first_name'] ?? '')) . ' ' . ($editReservation['last_name'] ?? ($prefillGuest['last_name'] ?? ''))))); ?>" required>
+                <input type="hidden" name="action" value="create">
+                <input type="hidden" name="guest_id" value="<?php echo e($prefillGuest['guest_id'] ?? ''); ?>">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="full_name">Full Name</label>
+                        <input class="form-control" id="full_name" name="full_name" type="text" value="<?php echo e(trim((string) (($prefillGuest['first_name'] ?? '') . ' ' . ($prefillGuest['last_name'] ?? '')))); ?>" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="phone">Phone</label>
+                        <input class="form-control" id="phone" name="phone" type="text" value="<?php echo e($prefillGuest['phone'] ?? ''); ?>">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="email">Email</label>
+                        <input class="form-control" id="email" name="email" type="email" value="<?php echo e($prefillGuest['email'] ?? ''); ?>">
+                    </div>
                 </div>
-                <div>
-                    <label class="form-label" for="phone">Phone</label>
-                    <input class="form-control" id="phone" name="phone" type="text" value="<?php echo e($editReservation['phone'] ?? ($prefillGuest['phone'] ?? '')); ?>">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="check_in">Check In</label>
+                        <input class="form-control" id="check_in" name="check_in" type="date" value="<?php echo e($availabilityCheckIn); ?>" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="check_out">Check Out</label>
+                        <input class="form-control" id="check_out" name="check_out" type="date" value="<?php echo e($availabilityCheckOut); ?>" required>
+                    </div>
                 </div>
-                <div>
-                    <label class="form-label" for="email">Email</label>
-                    <input class="form-control" id="email" name="email" type="email" value="<?php echo e($editReservation['guest_email'] ?? ($prefillGuest['email'] ?? '')); ?>">
-                </div>
+
                 <div>
                     <label class="form-label">Room</label>
-                    <?php renderRoomChoiceCards($rooms, isset($editReservation['room_id']) ? (int) $editReservation['room_id'] : null, true, $db); ?>
+                    <?php renderRoomChoiceCards($rooms, null, false, $db); ?>
                     <div class="form-text" data-room-availability-note>Use the filters for all, available, or unavailable rooms. Room cards update automatically when check-in and check-out dates change.</div>
                 </div>
+
                 <div class="row g-3">
-                    <div class="col-6">
-                        <label class="form-label" for="check_in">Check In</label>
-                        <input class="form-control" id="check_in" name="check_in" type="date" value="<?php echo e($editReservation['check_in'] ?? $availabilityCheckIn); ?>" required>
+                    <div class="col-md-7">
+                        <div class="guest-capacity-note">
+                            <span>Guest Capacity</span>
+                            <strong>Every room can hold up to 5 people</strong>
+                            <small>No adult or child split is required for the reservation form.</small>
+                        </div>
                     </div>
-                    <div class="col-6">
-                        <label class="form-label" for="check_out">Check Out</label>
-                        <input class="form-control" id="check_out" name="check_out" type="date" value="<?php echo e($editReservation['check_out'] ?? $availabilityCheckOut); ?>" required>
-                    </div>
-                </div>
-                <div class="row g-3">
-                    <div class="col-4">
-                        <label class="form-label" for="adults">Adults</label>
-                        <input class="form-control" id="adults" name="adults" type="number" min="1" value="<?php echo e($editReservation['adults'] ?? 1); ?>" required>
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label" for="children">Children</label>
-                        <input class="form-control" id="children" name="children" type="number" min="0" value="<?php echo e($editReservation['children'] ?? 0); ?>" required>
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label" for="status">Status</label>
+                    <div class="col-md-5">
+                        <label class="form-label" for="status">Initial Status</label>
                         <select class="form-select" id="status" name="status">
                             <?php foreach ($reservationStatuses as $status): ?>
-                                <option value="<?php echo e($status); ?>" <?php echo (($editReservation['status'] ?? 'Pending') === $status) ? 'selected' : ''; ?>><?php echo e($status); ?></option>
+                                <option value="<?php echo e($status); ?>" <?php echo $status === 'Pending' ? 'selected' : ''; ?>><?php echo e($status); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
+
                 <div>
                     <label class="form-label">Room Inclusions</label>
-                    <?php renderRoomInclusionPreview($editReservation['room_type'] ?? null); ?>
+                    <?php renderRoomInclusionPreview(); ?>
                 </div>
+
                 <?php renderReservationCostTracker(); ?>
-                <?php if (!$editReservation): ?>
-                    <div class="panel-card p-3">
-                        <p class="eyebrow mb-1">Payment Route</p>
-                        <h4 class="h6 mb-3">Customer Payment Mode</h4>
-                        <div>
-                            <label class="form-label" for="payment_method">Payment Mode</label>
-                            <select class="form-select" id="payment_method" name="payment_method" data-reservation-payment-method>
-                                <?php foreach (Payment::methods() as $method): ?>
-                                    <option value="<?php echo e($method); ?>"><?php echo e($method); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <div class="form-text" data-payment-route-message>Cash creates an automatic pending payment reference for the full reservation total. Card or online methods continue to the Payments page.</div>
-                        </div>
-                    </div>
-                <?php endif; ?>
-                <button class="btn btn-warning fw-semibold" type="submit"><?php echo $editReservation ? 'Save Reservation' : 'Create Reservation'; ?></button>
-                <?php if ($editReservation): ?>
-                    <a class="btn btn-outline-light" href="reservations.php">Cancel Edit</a>
-                <?php endif; ?>
-            </form>
-        </div>
-    </div>
-    <div class="col-xl-7">
-        <div class="panel-card p-4 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <p class="eyebrow mb-1">Reservations</p>
-                    <h3 class="mb-0">Booking Records</h3>
-                </div>
-                <span class="badge-soft"><?php echo e(count($reservations)); ?> reservations</span>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-dark-soft align-middle mb-0 booking-records-table">
-                    <thead>
-                        <tr>
-                            <th>Guest</th>
-                            <th>Room</th>
-                            <th>Stay</th>
-                            <th>Status</th>
-                            <th>Total</th>
-                            <th class="reservation-actions-column">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($reservations as $reservation): ?>
-                            <tr>
-                                <td><?php echo e($reservation['first_name'] . ' ' . $reservation['last_name']); ?></td>
-                                <td>
-                                    <div><?php echo e($reservation['room_number'] . ' • ' . $reservation['room_type']); ?></div>
-                                </td>
-                                <td><?php echo e($reservation['check_in']); ?> to <?php echo e($reservation['check_out']); ?></td>
-                                <td><span class="badge-soft"><?php echo e($reservation['status']); ?></span></td>
-                                <td><?php echo e(formatMoney((float) $reservation['total_amount'])); ?></td>
-                                <td class="reservation-actions-cell">
-                                    <button
-                                        class="btn btn-sm btn-warning reservation-manage-button"
-                                        type="button"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#reservationActionsModal<?php echo e($reservation['reservation_id']); ?>"
-                                    >
-                                        Manage
-                                    </button>
-                                </td>
-                            </tr>
+
+                <div class="panel-card p-3">
+                    <p class="eyebrow mb-1">Payment Route</p>
+                    <h4 class="h6 mb-3">Customer Payment Mode</h4>
+                    <label class="form-label" for="payment_method">Payment Mode</label>
+                    <select class="form-select" id="payment_method" name="payment_method" data-reservation-payment-method>
+                        <?php foreach (Payment::methods() as $method): ?>
+                            <option value="<?php echo e($method); ?>"><?php echo e($method); ?></option>
                         <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-            <?php foreach ($reservations as $reservation): ?>
-                <?php
-                    $reservationId = (int) $reservation['reservation_id'];
-                    $frontDeskActions = $reservationModel->availableFrontDeskActions($reservation);
-                    $canExtendStay = in_array($reservation['status'], ['Pending', 'Confirmed', 'Checked-in'], true);
-                    $minimumExtensionDate = minimumExtensionCheckOut((string) $reservation['check_out']);
-                    $reservationTotal = (float) $reservation['total_amount'];
-                    $totals = $paymentTotals[$reservationId] ?? [
-                        'confirmed_amount' => 0.0,
-                        'pending_amount' => 0.0,
-                        'logged_amount' => 0.0,
-                    ];
-                    $confirmedAmount = (float) $totals['confirmed_amount'];
-                    $pendingAmount = (float) $totals['pending_amount'];
-                    $balanceDue = max(0.0, $reservationTotal - $confirmedAmount);
-                ?>
-                <div
-                    class="modal fade reservation-action-modal"
-                    id="reservationActionsModal<?php echo e($reservationId); ?>"
-                    tabindex="-1"
-                    aria-labelledby="reservationActionsModalLabel<?php echo e($reservationId); ?>"
-                    aria-hidden="true"
-                >
-                    <div class="modal-dialog modal-dialog-centered modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <div>
-                                    <p class="eyebrow mb-1">Reservation #<?php echo e($reservationId); ?></p>
-                                    <h5 class="modal-title" id="reservationActionsModalLabel<?php echo e($reservationId); ?>">
-                                        <?php echo e($reservation['first_name'] . ' ' . $reservation['last_name']); ?>
-                                    </h5>
-                                </div>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="reservation-modal-summary" aria-label="Reservation details">
-                                    <div>
-                                        <span>Guest</span>
-                                        <strong><?php echo e($reservation['first_name'] . ' ' . $reservation['last_name']); ?></strong>
-                                    </div>
-                                    <div>
-                                        <span>Room</span>
-                                        <strong><?php echo e($reservation['room_number'] . ' • ' . $reservation['room_type']); ?></strong>
-                                    </div>
-                                    <div>
-                                        <span>Stay</span>
-                                        <strong><?php echo e($reservation['check_in']); ?> to <?php echo e($reservation['check_out']); ?></strong>
-                                    </div>
-                                    <div>
-                                        <span>Status</span>
-                                        <strong><?php echo e($reservation['status']); ?></strong>
-                                    </div>
-                                    <div>
-                                        <span>Total</span>
-                                        <strong><?php echo e(formatMoney($reservationTotal)); ?></strong>
-                                    </div>
-                                    <div>
-                                        <span>Confirmed Paid</span>
-                                        <strong><?php echo e(formatMoney($confirmedAmount)); ?></strong>
-                                    </div>
-                                    <div>
-                                        <span>Pending Payment Logs</span>
-                                        <strong><?php echo e(formatMoney($pendingAmount)); ?></strong>
-                                    </div>
-                                    <div>
-                                        <span>Balance Due</span>
-                                        <strong><?php echo e(formatMoney($balanceDue)); ?></strong>
-                                    </div>
-                                </div>
-
-                                <div class="reservation-modal-section">
-                                    <h6>Front Desk Actions</h6>
-                                    <div class="reservation-modal-actions">
-                                        <?php if ($frontDeskActions): ?>
-                                            <?php foreach ($frontDeskActions as $actionKey => $actionLabel): ?>
-                                                <form method="post" class="d-inline">
-                                                    <input type="hidden" name="action" value="<?php echo e($actionKey); ?>">
-                                                    <input type="hidden" name="reservation_id" value="<?php echo e($reservationId); ?>">
-                                                    <button class="btn btn-sm <?php echo $actionKey === 'cancel' ? 'btn-outline-danger' : 'btn-outline-warning'; ?>" type="submit"><?php echo e($actionLabel); ?></button>
-                                                </form>
-                                            <?php endforeach; ?>
-                                        <?php else: ?>
-                                            <span class="text-light-emphasis small">No front desk status action is available for this reservation.</span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-
-                                <div class="reservation-modal-section">
-                                    <h6>Records and Payments</h6>
-                                    <div class="reservation-modal-actions">
-                                        <a class="btn btn-sm btn-outline-light" href="receipt.php?reservation_id=<?php echo e($reservationId); ?>">Receipt</a>
-                                        <a class="btn btn-sm btn-outline-light" href="reservations.php?edit=<?php echo e($reservationId); ?>&check_in=<?php echo e($reservation['check_in']); ?>&check_out=<?php echo e($reservation['check_out']); ?>">Edit</a>
-                                        <a class="btn btn-sm btn-warning" href="payments.php?reservation_id=<?php echo e($reservationId); ?>">Payment</a>
-                                    </div>
-                                </div>
-
-                                <?php if ($canExtendStay): ?>
-                                    <div class="reservation-modal-section">
-                                        <h6>Extend Stay</h6>
-                                        <form method="post" class="extend-stay-form reservation-modal-extend" title="Extend stay in the same room">
-                                            <input type="hidden" name="action" value="extend_stay">
-                                            <input type="hidden" name="reservation_id" value="<?php echo e($reservationId); ?>">
-                                            <label class="visually-hidden" for="modal_new_check_out_<?php echo e($reservationId); ?>">New check-out date</label>
-                                            <input
-                                                class="form-control form-control-sm"
-                                                id="modal_new_check_out_<?php echo e($reservationId); ?>"
-                                                name="new_check_out"
-                                                type="date"
-                                                min="<?php echo e($minimumExtensionDate); ?>"
-                                                value="<?php echo e($minimumExtensionDate); ?>"
-                                                required
-                                            >
-                                            <button class="btn btn-sm btn-outline-warning" type="submit">Extend</button>
-                                        </form>
-                                    </div>
-                                <?php endif; ?>
-
-                                <div class="reservation-modal-section reservation-modal-section--danger">
-                                    <h6>Danger Zone</h6>
-                                    <div class="reservation-modal-actions">
-                                        <form method="post" class="d-inline">
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="reservation_id" value="<?php echo e($reservationId); ?>">
-                                            <button class="btn btn-sm btn-outline-danger" type="submit">Delete Reservation</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    </select>
+                    <div class="form-text" data-payment-route-message>Cash creates an automatic pending payment reference for the full reservation total. Card or online methods continue to the Payments page.</div>
                 </div>
-            <?php endforeach; ?>
+
+                <button class="btn btn-warning fw-semibold" type="submit">Create Reservation</button>
+            </form>
         </div>
     </div>
 </section>
@@ -504,10 +257,6 @@ document.querySelectorAll("[data-reservation-payment-method]").forEach((methodSe
 
     methodSelect.addEventListener("change", syncPaymentRoute);
     syncPaymentRoute();
-});
-
-document.querySelectorAll(".reservation-action-modal").forEach((modal) => {
-    document.body.appendChild(modal);
 });
 </script>
 <?php renderRoomAvailabilityUpdater(); ?>

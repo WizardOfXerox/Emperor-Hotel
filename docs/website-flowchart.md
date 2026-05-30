@@ -15,7 +15,7 @@ flowchart TD
     E -->|Yes| G[User Dashboard]
     F --> G
     G --> H[Enter stay details and choose room card]
-    H --> I[Select booking dates and guest count]
+    H --> I[Select booking dates and review 5-person capacity]
     I --> I1[Review cost tracker and submit reservation]
     I1 --> J[Reservation saved as Pending]
     J --> J1{Payment Mode}
@@ -30,7 +30,8 @@ flowchart TD
     L -->|No| G
 
     M --> N[Manage Rooms]
-    M --> O[Manage Reservations]
+    M --> O[Create Reservation]
+    M --> O12[Manage Booking Records]
     M --> P[Manage Payments]
     M --> Q[Manage Guests]
     M --> U[Manage Users]
@@ -44,11 +45,10 @@ flowchart TD
     N --> N5[Import or Export Room XML]
 
     O --> O1[Check Dates and Create Reservation]
-    O --> O2[Click Manage on Booking Record]
+    O12 --> O2[Click Manage on Booking Record]
     O2 --> O3[View Reservation Details and Payment Totals]
     O3 --> O4[Confirm / Check In / Extend Stay / Check Out / Cancel]
     O3 --> O5[Open Printable Receipt]
-    O3 --> O10[Edit Reservation]
     O3 --> O11[Delete Reservation]
     O --> O6{Payment Mode}
     O6 --> O7[Cash: Generate Pending Cash Payment Reference]
@@ -82,7 +82,7 @@ flowchart TD
 flowchart TD
     A[Guest visits public site] --> B[View homepage]
     B --> C[View rooms and suites]
-    C --> D[Check room types, images, prices, and capacity]
+    C --> D[Check room types, images, prices, and up to 5-person capacity]
     D --> E[Login or register to book]
 ```
 
@@ -91,7 +91,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     A[User logs in] --> B[User Dashboard]
-    B --> C[Enter full name, dates, guests, and payment route]
+    B --> C[Enter full name, dates, phone, and payment route]
     C --> C1[Choose a room from the room selection panel]
     C1 --> D[Review room inclusions]
     D --> D1[Review reservation cost tracker]
@@ -111,6 +111,7 @@ flowchart TD
     B --> C1[Review operational alerts]
     B --> D[Rooms Module]
     B --> E[Reservations Module]
+    B --> E10[Booking Records Module]
     B --> F[Payments Module]
     B --> G[Guests Module]
     B --> H[Users Module]
@@ -123,11 +124,10 @@ flowchart TD
 
     E --> E1[Check date-aware room availability]
     E --> E2[Add reservation]
-    E --> E3[Click Manage on booking record]
+    E10 --> E3[Click Manage on booking record]
     E3 --> E4[View reservation details and payment totals]
     E4 --> E5[Confirm, check in, extend stay, check out, or cancel]
     E4 --> E6[Open printable receipt]
-    E4 --> E8[Edit reservation]
     E4 --> E9[Delete reservation]
     E --> E7[Select room card manually]
 
@@ -164,6 +164,7 @@ flowchart TD
 | Admin Dashboard | `public/admin/dashboard.php` | Admin |
 | Admin Rooms | `public/admin/rooms.php` | Admin |
 | Admin Reservations | `public/admin/reservations.php` | Admin |
+| Admin Booking Records | `public/admin/booking-records.php` | Admin |
 | Admin Payments | `public/admin/payments.php` | Admin |
 | Admin Guests | `public/admin/guests.php` | Admin |
 | Admin Receipt | `public/admin/receipt.php` | Admin |

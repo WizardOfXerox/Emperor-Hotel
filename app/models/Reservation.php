@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 class Reservation
 {
+    private const MAX_GUESTS_PER_ROOM = 5;
+
     private const STATUSES = ['Pending', 'Confirmed', 'Checked-in', 'Checked-out', 'Cancelled'];
 
     private const FRONT_DESK_ACTIONS = [
@@ -800,19 +802,17 @@ class Reservation
     private function validateOccupancy(int $adults, int $children, array $room): void
     {
         if ($adults < 1) {
-            throw new RuntimeException('At least one adult is required for a reservation.');
+            throw new RuntimeException('At least one guest is required for a reservation.');
         }
 
         if ($children < 0) {
-            throw new RuntimeException('Children count cannot be negative.');
+            throw new RuntimeException('Guest count cannot be negative.');
         }
 
-        if ($adults > (int) $room['capacity_adults']) {
-            throw new RuntimeException('The selected room only allows ' . (int) $room['capacity_adults'] . ' adult guests.');
-        }
+        $totalGuests = $adults + $children;
 
-        if ($children > (int) $room['capacity_children']) {
-            throw new RuntimeException('The selected room only allows ' . (int) $room['capacity_children'] . ' child guests.');
+        if ($totalGuests > self::MAX_GUESTS_PER_ROOM) {
+            throw new RuntimeException('Each room can hold up to ' . self::MAX_GUESTS_PER_ROOM . ' people.');
         }
     }
 

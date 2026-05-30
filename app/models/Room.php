@@ -303,8 +303,8 @@ class Room
                 'room_number' => $this->nodeText($roomNode, 'room_number'),
                 'room_type' => $this->nodeText($roomNode, 'room_type'),
                 'floor' => $this->nodeText($roomNode, 'floor'),
-                'capacity_adults' => $this->nodeText($roomNode, 'capacity_adults') ?: 2,
-                'capacity_children' => $this->nodeText($roomNode, 'capacity_children') ?: 1,
+                'capacity_adults' => $this->nodeText($roomNode, 'capacity_adults') ?: 5,
+                'capacity_children' => $this->nodeText($roomNode, 'capacity_children') ?: 0,
                 'price_per_night' => $this->nodeText($roomNode, 'price_per_night'),
                 'status' => $this->nodeText($roomNode, 'status') ?: 'Available',
                 'description' => $this->nodeText($roomNode, 'description'),
@@ -368,11 +368,11 @@ class Room
         }
 
         if ($capacityAdults < 1) {
-            throw new RuntimeException('Room adult capacity must be at least 1.');
+            throw new RuntimeException('Room guest capacity must be at least 1.');
         }
 
         if ($capacityChildren < 0) {
-            throw new RuntimeException('Room child capacity cannot be negative.');
+            throw new RuntimeException('Room guest capacity cannot be negative.');
         }
     }
 }

@@ -51,8 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'book') {
             $checkIn = (string) ($_POST['check_in'] ?? '');
             $checkOut = (string) ($_POST['check_out'] ?? '');
-            $adults = (int) ($_POST['adults'] ?? 1);
-            $children = (int) ($_POST['children'] ?? 0);
             $roomId = (int) ($_POST['room_id'] ?? 0);
             $room = null;
 
@@ -105,8 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'room_id' => $roomId,
                 'check_in' => $checkIn,
                 'check_out' => $checkOut,
-                'adults' => $adults,
-                'children' => $children,
+                'adults' => 1,
+                'children' => 0,
                 'total_amount' => $totalAmount,
                 'status' => 'Pending',
             ]);
@@ -180,17 +178,16 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                 </div>
             </div>
             <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label" for="adults">Adults</label>
-                    <input class="form-control" id="adults" name="adults" type="number" min="1" value="1" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label" for="children">Children</label>
-                    <input class="form-control" id="children" name="children" type="number" min="0" value="0" required>
-                </div>
-                <div class="col-md-4">
+                <div class="col-md-7">
                     <label class="form-label" for="phone">Phone</label>
                     <input class="form-control" id="phone" name="phone" type="text">
+                </div>
+                <div class="col-md-5">
+                    <div class="guest-capacity-note">
+                        <span>Guest Capacity</span>
+                        <strong>Up to 5 people</strong>
+                        <small>No adult or child split is required.</small>
+                    </div>
                 </div>
             </div>
             <div>

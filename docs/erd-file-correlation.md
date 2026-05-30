@@ -81,9 +81,9 @@ erDiagram
 | --- | --- | --- | --- |
 | `users` | `app/models/User.php` | `public/auth/login.php`, `public/auth/register.php`, `public/admin/users.php`, `public/admin/dashboard.php` | Login, registration, admin user CRUD, dashboard user counts. |
 | `guests` | `app/models/Guest.php` | `public/admin/guests.php`, `public/admin/reservations.php`, `public/user/dashboard.php` | Guest records, walk-in guest search, guest history, reservation guest details. |
-| `rooms` | `app/models/Room.php` | `public/admin/rooms.php`, `public/admin/reservations.php`, `public/user/dashboard.php`, `public/site/home.php`, `public/site/rooms.php`, `public/admin/dashboard.php`, `public/admin/reports.php` | Room inventory, room status, price per night, room XML import/export, public room prices, dashboard room status, report grouping. |
-| `reservations` | `app/models/Reservation.php` | `public/admin/reservations.php`, `public/user/dashboard.php`, `public/admin/dashboard.php`, `public/admin/guests.php`, `public/admin/receipt.php`, `public/user/payment.php`, `public/admin/reports.php`, `public/admin/room-availability.php`, `public/user/room-availability.php` | Booking records, date validation, date-aware room availability, manual room selection, status flow, check-in/check-out, dashboard alerts, reports. |
-| `payments` | `app/models/Payment.php` | `public/admin/payments.php`, `public/user/payment.php`, `public/admin/reservations.php`, `public/admin/receipt.php`, `public/admin/dashboard.php`, `public/admin/reports.php` | Payment logs, generated references, automatic pending cash payment references, simulated payments, payment review, balances, dashboard revenue, revenue reports. |
+| `rooms` | `app/models/Room.php` | `public/admin/rooms.php`, `public/admin/reservations.php`, `public/admin/booking-records.php`, `public/user/dashboard.php`, `public/site/home.php`, `public/site/rooms.php`, `public/admin/dashboard.php`, `public/admin/reports.php` | Room inventory, room status, price per night, 5-person capacity label, room XML import/export, public room prices, dashboard room status, report grouping. |
+| `reservations` | `app/models/Reservation.php` | `public/admin/reservations.php`, `public/admin/booking-records.php`, `public/user/dashboard.php`, `public/admin/dashboard.php`, `public/admin/guests.php`, `public/admin/receipt.php`, `public/user/payment.php`, `public/admin/reports.php`, `public/admin/room-availability.php`, `public/user/room-availability.php` | Booking records, date validation, date-aware room availability, manual room selection, status flow, check-in/check-out, stay extension, dashboard alerts, reports. |
+| `payments` | `app/models/Payment.php` | `public/admin/payments.php`, `public/user/payment.php`, `public/admin/reservations.php`, `public/admin/booking-records.php`, `public/admin/receipt.php`, `public/admin/dashboard.php`, `public/admin/reports.php` | Payment logs, generated references, automatic pending cash payment references, simulated payments, payment review, balances, dashboard revenue, revenue reports. |
 
 ## File To ERD Table Map
 
@@ -99,7 +99,8 @@ erDiagram
 | `public/user/room-availability.php` | `rooms`, `reservations` | Read | Returns date-aware room availability JSON for the user booking form. |
 | `public/admin/dashboard.php` | `users`, `rooms`, `reservations`, `payments` | Read | Shows KPI cards, recent reservations, payment activity, and Chart.js reports. |
 | `public/admin/rooms.php` | `rooms` | Read/write | Handles room CRUD, bulk price updates, and room XML import/export. |
-| `public/admin/reservations.php` | `guests`, `rooms`, `reservations`, `payments` | Read/write | Handles walk-in reservation creation, edits, deletes, date availability, same-room stay extension, modal-based front desk action controls, payment summaries, and automatic pending cash payment references. |
+| `public/admin/reservations.php` | `guests`, `rooms`, `reservations`, `payments` | Read/write | Handles walk-in reservation creation, date availability, manual room selection, cost preview, and automatic pending cash payment references. |
+| `public/admin/booking-records.php` | `rooms`, `reservations`, `payments` | Read/write | Handles existing booking records, same-room stay extension, modal-based front desk action controls, payment summaries, receipts, and reservation deletion. |
 | `public/admin/payments.php` | `reservations`, `payments` | Read/write | Records manual payments, simulated transactions, generated references, and admin payment status review. |
 | `public/admin/guests.php` | `guests`, `reservations`, `payments`, `rooms` | Read | Searches guests and shows reservation/payment history. |
 | `public/admin/receipt.php` | `reservations`, `payments`, `guests`, `rooms` | Read | Shows printable receipt details and transaction history. |
@@ -142,11 +143,13 @@ flowchart LR
     RoomModel --> SiteHome["public/site/home.php"]
     RoomModel --> SiteRooms["public/site/rooms.php"]
     RoomModel --> AdminReservations
+    RoomModel --> BookingRecords["public/admin/booking-records.php"]
     RoomModel --> UserDashboard
     RoomModel --> AdminReports["public/admin/reports.php"]
     RoomModel --> AvailabilityApi["room-availability endpoints"]
 
     ReservationModel --> AdminReservations
+    ReservationModel --> BookingRecords
     ReservationModel --> UserDashboard
     ReservationModel --> AdminGuests
     ReservationModel --> AdminReceipt["public/admin/receipt.php"]
@@ -157,6 +160,7 @@ flowchart LR
     PaymentModel --> AdminPayments["public/admin/payments.php"]
     PaymentModel --> UserPayment
     PaymentModel --> AdminReservations
+    PaymentModel --> BookingRecords
     PaymentModel --> AdminReceipt
     PaymentModel --> AdminDashboard
     PaymentModel --> AdminReports

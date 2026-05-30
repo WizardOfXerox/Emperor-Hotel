@@ -191,6 +191,22 @@ a {
     box-shadow: 0 0 0 0.25rem rgba(253, 215, 0, 0.15);
 }
 
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: brightness(0) saturate(100%) invert(81%) sepia(93%) saturate(1279%) hue-rotate(358deg) brightness(102%) contrast(105%);
+    opacity: 1;
+    cursor: pointer;
+}
+
+.bi[class*="bi-calendar"] {
+    color: #fdd700;
+}
+
+.sidebar-link.active .bi[class*="bi-calendar"],
+.sidebar-link:hover .bi[class*="bi-calendar"] {
+    color: #020617;
+}
+
 .form-control:disabled,
 .form-select:disabled {
     color: rgba(248, 250, 252, 0.72);
@@ -228,6 +244,32 @@ a {
     color: #fdd700;
     font-size: 0.82rem;
     font-weight: 700;
+}
+
+.guest-capacity-note {
+    display: grid;
+    gap: 0.2rem;
+    min-height: 100%;
+    padding: 0.85rem;
+    border: 1px solid rgba(253, 215, 0, 0.2);
+    border-radius: 14px;
+    background: rgba(253, 215, 0, 0.08);
+}
+
+.guest-capacity-note span,
+.guest-capacity-note small {
+    color: rgba(248, 250, 252, 0.68);
+    font-size: 0.74rem;
+}
+
+.guest-capacity-note span {
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.guest-capacity-note strong {
+    color: #fdd700;
 }
 
 .site-section {

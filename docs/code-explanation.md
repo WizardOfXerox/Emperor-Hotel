@@ -373,11 +373,17 @@ Reference style:
 | `PAY-` | Manual or cash payment reference. |
 | `SIM-` | Simulated transaction reference. |
 
-## 11. Admin Reservation Page
+## 11. Admin Reservation Creation Page
 
 File: `public/admin/reservations.php`
 
-This page handles walk-in/admin reservation management.
+This page handles walk-in/admin reservation creation only.
+
+Existing reservation records are managed in:
+
+```text
+public/admin/booking-records.php
+```
 
 It uses these models:
 
@@ -388,20 +394,13 @@ $reservationModel = new Reservation($db);
 $paymentModel = new Payment($db);
 ```
 
-### POST Actions
+### POST Action
 
 The page checks the hidden `action` field to decide what to do.
 
 | Action | What Happens |
 | --- | --- |
 | `create` | Creates a reservation and routes payment depending on payment mode. |
-| `update` | Updates reservation details. |
-| `delete` | Deletes a reservation. |
-| `confirm` | Changes a pending reservation to confirmed. |
-| `check_in` | Checks the guest into the room. |
-| `check_out` | Checks the guest out. |
-| `cancel` | Cancels the reservation. |
-| `extend_stay` | Extends the stay if the same room is available for the added dates. |
 
 ### Payment Route On Admin Reservation Creation
 
@@ -409,7 +408,7 @@ When an admin creates a reservation, the payment mode controls the next step:
 
 | Payment Mode | Result |
 | --- | --- |
-| Cash | Creates an automatic pending cash payment reference and stays on reservations. |
+| Cash | Creates an automatic pending cash payment reference and redirects to Booking Records. |
 | Card, bank transfer, online payment, or other non-cash mode | Redirects to `public/admin/payments.php` for payment processing. |
 
 This fits a walk-in hotel workflow:
@@ -417,6 +416,25 @@ This fits a walk-in hotel workflow:
 ```text
 Cash can be handled at the counter. Non-cash methods need payment processing or review.
 ```
+
+The form no longer asks for separate adult and child counts. Each room is presented as good for up to 5 people, while the legacy database columns still receive default values for compatibility.
+
+## 12. Admin Booking Records Page
+
+File: `public/admin/booking-records.php`
+
+This page handles existing reservation records after they are created.
+
+### POST Actions
+
+| Action | What Happens |
+| --- | --- |
+| `delete` | Deletes a reservation and recalculates the affected room status. |
+| `confirm` | Changes a pending reservation to confirmed. |
+| `check_in` | Checks the guest into the room. |
+| `check_out` | Checks the guest out. |
+| `cancel` | Cancels the reservation and releases the room. |
+| `extend_stay` | Extends the stay if the same room is available for the added dates. |
 
 ### Manage Modal
 
@@ -441,7 +459,7 @@ The modal shows:
 - Pending payment logs.
 - Balance due.
 - Front desk actions.
-- Receipt, edit, and payment links.
+- Receipt and payment links.
 - Extend stay form when allowed.
 - Delete button in a danger zone.
 
@@ -477,7 +495,7 @@ The modal CSS also caps the modal height:
 
 This keeps the popup centered and lets the details scroll inside the modal if the content is tall.
 
-## 12. User Dashboard Booking Flow
+## 13. User Dashboard Booking Flow
 
 File: `public/user/dashboard.php`
 
@@ -489,7 +507,7 @@ Main parts:
 
 | Part | Purpose |
 | --- | --- |
-| Stay details | Full name, dates, adults, children, and payment mode. |
+| Stay details | Full name, dates, phone, the 5-person capacity note, and payment mode. |
 | Room selection | Room cards grouped by room type with availability labels. |
 | Room inclusions | Simple included perks based on selected room type. |
 | Cost tracker | Calculates room price, nights, subtotal, and estimated total. |
@@ -503,7 +521,9 @@ Reason:
 Manual room selection is easier to explain and more transparent for a reservation system.
 ```
 
-## 13. Room Card UI And Dynamic Availability
+The customer form also no longer asks for an adult/child split. Each room is shown as good for up to 5 people.
+
+## 14. Room Card UI And Dynamic Availability
 
 File: `public/includes/room_selection.php`
 
@@ -516,7 +536,7 @@ It includes:
 - Green or red status dot.
 - Room number badge.
 - Price per night.
-- Room capacity.
+- A simple "Good for up to 5 people" capacity label.
 - Hidden radio input for selected room.
 - JavaScript that updates availability when dates change.
 - Cost tracker logic.
@@ -536,7 +556,7 @@ public/includes/room_availability_api.php
 
 This prevents duplicating the same availability response code.
 
-## 14. Admin Payments Page
+## 15. Admin Payments Page
 
 File: `public/admin/payments.php`
 
@@ -562,7 +582,7 @@ Important rules:
 
 This means payment confirmation can drive reservation confirmation.
 
-## 15. Customer Payment Page
+## 16. Customer Payment Page
 
 File: `public/user/payment.php`
 
@@ -578,7 +598,7 @@ This is important to explain:
 The project demonstrates payment workflow logic, not real gateway integration.
 ```
 
-## 16. Dashboard And Reports
+## 17. Dashboard And Reports
 
 ### Admin Dashboard
 
@@ -661,7 +681,7 @@ public/admin/reservations.php
 public/assets/css/admin/reservations.css
 ```
 
-This pairing makes it easy to know where reservation page UI styles are located.
+This pairing makes it easy to know where reservation and booking-record UI styles are located. The same admin reservation CSS also styles `public/admin/booking-records.php` because both pages share the room/reservation visual components.
 
 ## 19. Validation Summary
 
@@ -675,8 +695,8 @@ Important validations:
 | Registration | Required fields, email format, password length, duplicate email prevention. |
 | Users | Valid role, valid email, password rules, duplicate email prevention. |
 | Guests | Required name and valid contact fields. |
-| Rooms | Valid room type, status, price, capacity, floor, and room number. |
-| Reservations | Valid dates, no date overlaps, valid guest, valid room, capacity, status, and positive total. |
+| Rooms | Valid room type, status, price, 5-person display capacity, floor, and room number. |
+| Reservations | Valid dates, no date overlaps, valid guest, valid room, 5-person capacity rule, status, and positive total. |
 | Payments | Positive amount, valid method, valid status, valid reservation, and no overpayment. |
 | Reports | Valid start and end date range. |
 
@@ -695,16 +715,16 @@ This is the easiest full-system walkthrough:
 3. `loginUser()` saves the account in the session.
 4. The user opens `public/user/dashboard.php`.
 5. The dashboard loads room cards from `Room.php` and availability from `Reservation.php`.
-6. The user chooses dates, guests, payment mode, and a room card.
+6. The user chooses dates, payment mode, and a room card.
 7. The form submits to the same dashboard page.
 8. The page creates or updates the guest through `Guest.php`.
 9. The page creates the reservation through `Reservation.php`.
-10. The model validates dates, capacity, room existence, and overlapping bookings.
+10. The model validates dates, the 5-person room capacity rule, room existence, and overlapping bookings.
 11. If the payment mode is cash, `Payment.php` creates a pending payment reference.
 12. If the payment mode is non-cash, the user is sent to `public/user/payment.php`.
-13. Admin can later open `public/admin/reservations.php`.
+13. Admin can later open `public/admin/booking-records.php`.
 14. Admin clicks Manage on the booking record.
-15. Admin can confirm, check in, check out, cancel, extend stay, open payment, edit, print receipt, or delete.
+15. Admin can confirm, check in, check out, cancel, extend stay, open payment, print receipt, or delete.
 16. Admin can open `public/admin/payments.php` to review or record payment.
 17. `Payment.php` updates payment totals and can auto-confirm a fully paid pending reservation.
 18. Admin can print the receipt through `public/admin/receipt.php`.
@@ -727,7 +747,8 @@ $reservations = $reservationModel->all();
 This means:
 
 - `Reservation.php` knows how to query reservation records.
-- `reservations.php` knows how to show and process the reservation page.
+- `reservations.php` knows how to show and process the reservation creation page.
+- `booking-records.php` knows how to show existing reservations and front desk actions.
 - The SQL stays mostly inside the model.
 - The page stays focused on user interaction.
 
@@ -766,9 +787,9 @@ Use this if you need to explain the code quickly:
 ```text
 Our system is built with Core PHP, MySQL, and OOP model classes. The pages in public handle the interface and form submissions, while the model classes in app/models handle the database queries and business rules.
 
-For example, reservations are handled by public/admin/reservations.php and public/user/dashboard.php, but the validation and availability logic is inside app/models/Reservation.php. Payments are recorded through payment pages, but references, balances, and overpayment rules are handled by app/models/Payment.php.
+For example, reservation creation is handled by public/admin/reservations.php and public/user/dashboard.php, while existing booking records are handled by public/admin/booking-records.php. The validation and availability logic is still inside app/models/Reservation.php. Payments are recorded through payment pages, but references, balances, and overpayment rules are handled by app/models/Payment.php.
 
-The admin reservation table uses a Manage modal so the table stays readable. The modal shows reservation details, payment totals, and actions like confirm, check in, extend stay, check out, cancel, receipt, edit, payment, and delete.
+The admin Booking Records table uses a Manage modal so the table stays readable. The modal shows reservation details, payment totals, and actions like confirm, check in, extend stay, check out, cancel, receipt, payment, and delete.
 
 The system also includes room XML import/export using DOMDocument, but XML is intentionally limited to room records. Other tables use normal PHP and MySQL CRUD pages.
 

@@ -17,7 +17,7 @@ $reservation = $reservationId > 0 ? $reservationModel->find($reservationId) : nu
 
 if (!$reservation) {
     setFlash('error', 'Reservation receipt not found.');
-    redirect('reservations.php');
+    redirect('booking-records.php');
 }
 
 $payments = $paymentModel->forReservation($reservationId);
@@ -31,7 +31,7 @@ renderHeader('Receipt #' . $reservationId, ['../assets/css/admin/receipt.css'], 
 ?>
 <main class="receipt-shell">
     <div class="receipt-actions no-print">
-        <a class="btn btn-outline-light" href="reservations.php">Back to Reservations</a>
+        <a class="btn btn-outline-light" href="booking-records.php">Back to Booking Records</a>
         <a class="btn btn-warning" href="payments.php?reservation_id=<?php echo e($reservationId); ?>">Add Payment</a>
         <button class="btn btn-light" type="button" onclick="window.print()">Print Receipt</button>
     </div>
@@ -76,7 +76,7 @@ renderHeader('Receipt #' . $reservationId, ['../assets/css/admin/receipt.css'], 
                 <h2>Stay Details</h2>
                 <p class="mb-1">Room <?php echo e($reservation['room_number']); ?> • <?php echo e($reservation['room_type']); ?></p>
                 <p class="mb-1"><?php echo e($reservation['check_in']); ?> to <?php echo e($reservation['check_out']); ?></p>
-                <p class="mb-0"><?php echo e($nights); ?> <?php echo $nights === 1 ? 'night' : 'nights'; ?> • <?php echo e((int) $reservation['adults']); ?> adults • <?php echo e((int) $reservation['children']); ?> children</p>
+                <p class="mb-0"><?php echo e($nights); ?> <?php echo $nights === 1 ? 'night' : 'nights'; ?> • Good for up to 5 people</p>
             </section>
         </div>
 

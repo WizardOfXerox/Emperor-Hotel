@@ -89,7 +89,7 @@ function renderRoomChoiceCards(array $rooms, ?int $selectedRoomId = null, bool $
                 $cardClass .= ' is-disabled';
             }
 
-            echo '<label class="' . e($cardClass) . '" for="' . e($inputId) . '" data-room-card data-room-id="' . e($roomId) . '" data-room-availability="' . e($isAvailable ? 'available' : 'unavailable') . '" data-room-number="' . e($room['room_number']) . '" data-room-type="' . e($roomType) . '" data-room-price="' . e((float) $room['price_per_night']) . '" data-room-adults="' . e((int) $room['capacity_adults']) . '" data-room-children="' . e((int) $room['capacity_children']) . '" data-room-included-perks="' . e($includedPerks) . '">';
+            echo '<label class="' . e($cardClass) . '" for="' . e($inputId) . '" data-room-card data-room-id="' . e($roomId) . '" data-room-availability="' . e($isAvailable ? 'available' : 'unavailable') . '" data-room-number="' . e($room['room_number']) . '" data-room-type="' . e($roomType) . '" data-room-price="' . e((float) $room['price_per_night']) . '" data-room-included-perks="' . e($includedPerks) . '">';
             echo '<input class="room-choice-input" type="radio" id="' . e($inputId) . '" name="room_id" value="' . e($roomId) . '"' . ($isSelected ? ' checked' : '') . (!$isSelectable ? ' disabled' : '') . '>';
             echo '<span class="room-choice-card__top">';
             echo '<span class="room-status-dot ' . e($statusClass) . '" data-room-status-dot aria-hidden="true"></span>';
@@ -99,7 +99,7 @@ function renderRoomChoiceCards(array $rooms, ?int $selectedRoomId = null, bool $
             echo '<strong>' . e($roomType) . '</strong>';
             echo '<span>' . e($includedPerks) . '</span>';
             echo '<small>' . e(formatMoney((float) $room['price_per_night'])) . ' / night</small>';
-            echo '<small>' . e($room['capacity_adults']) . ' adults / ' . e($room['capacity_children']) . ' children</small>';
+            echo '<small>Good for up to 5 people</small>';
             echo '</label>';
         }
 

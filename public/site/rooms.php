@@ -281,8 +281,9 @@ renderHeader('Suites & Rooms | Emperor Hotel', ['../assets/css/site/rooms.css'],
                 </div>
 
                 <div class="room-actions">
-                    <div class="room-price"><?php echo e($priceText); ?></div>
-                    <a class="room-home-link room-home-link--primary" href="<?php echo e($reservationHref); ?>"><?php echo e($reservationLabel); ?></a>
+                    <a class="room-price room-price--booking" href="<?php echo e($reservationHref); ?>" aria-label="<?php echo e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText); ?>">
+                        <?php echo e($priceText); ?>
+                    </a>
                 </div>
             </div>
         </section>

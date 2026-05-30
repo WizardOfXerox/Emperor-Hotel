@@ -168,7 +168,7 @@ Important fields:
 - `guest_id`: required guest
 - `room_id`: required assigned room
 - `check_in`, `check_out`: booking dates
-- `adults`, `children`: party size
+- `adults`, `children`: legacy compatibility fields; current UI stores defaults and presents every room as good for up to 5 people
 - `total_amount`: booking total
 - `status`: allowed values are `Pending`, `Confirmed`, `Checked-in`, `Checked-out`, `Cancelled`
 
@@ -237,8 +237,8 @@ Expected structure:
     <room_number>101</room_number>
     <room_type>Imperial Deluxe</room_type>
     <floor>1</floor>
-    <capacity_adults>2</capacity_adults>
-    <capacity_children>1</capacity_children>
+    <capacity_adults>5</capacity_adults>
+    <capacity_children>0</capacity_children>
     <price_per_night>4500.00</price_per_night>
     <status>Available</status>
     <description>A polished deluxe room.</description>
@@ -267,5 +267,5 @@ Quick ownership guide:
 | `users` | `app/models/User.php` | `public/auth/login.php`, `public/auth/register.php`, `public/admin/users.php` |
 | `guests` | `app/models/Guest.php` | `public/admin/guests.php`, `public/admin/reservations.php`, `public/user/dashboard.php` |
 | `rooms` | `app/models/Room.php` | `public/admin/rooms.php`, `public/site/home.php`, `public/site/rooms.php`, reservation forms |
-| `reservations` | `app/models/Reservation.php` | `public/admin/reservations.php`, `public/user/dashboard.php`, availability endpoints, receipts |
+| `reservations` | `app/models/Reservation.php` | `public/admin/reservations.php`, `public/admin/booking-records.php`, `public/user/dashboard.php`, availability endpoints, receipts |
 | `payments` | `app/models/Payment.php` | `public/admin/payments.php`, `public/user/payment.php`, `public/admin/receipt.php`, dashboard |

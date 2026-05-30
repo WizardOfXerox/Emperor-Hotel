@@ -525,7 +525,7 @@ Flow:
 ```mermaid
 flowchart TD
     A[User opens dashboard] --> B[Two-column reservation form appears]
-    B --> C[User enters full name, phone, dates, guests, and payment mode]
+    B --> C[User enters full name, phone, dates, and payment mode]
     C --> D[User chooses room cards from the right-side room panel]
     D --> D1[Room cards update by selected dates]
     D1 --> E[Use selected room]
@@ -546,7 +546,7 @@ What the user form collects:
 | Full name | Used to create/update the guest profile. |
 | Room card | Chooses which room will be reserved. The yellow card badge shows the room number. |
 | Check-in and check-out | Used for date validation and availability checking. |
-| Adults and children | Used for capacity validation. |
+| Capacity note | Shows that each room can hold up to 5 people. No adult/child split is required. |
 | Phone | Stored in the guest profile. |
 | Room inclusions | Shows what is already included with the selected room type. |
 | Payment mode | Decides whether an automatic cash payment reference is generated or the payment page is opened. |
@@ -557,6 +557,7 @@ Important behavior:
 - The user dashboard places stay details and payment fields on the left, room selection cards on the right, and booking history below.
 - User room cards use a three-card desktop layout for easier scanning.
 - Green/red availability indicators tell the user which rooms are available.
+- Room cards show a simple "up to 5 people" capacity label instead of adult/child limits.
 - Room totals are calculated in the cost tracker.
 - Cash creates an automatic pending cash payment reference for the full reservation total.
 - Credit card, debit card, bank transfer, online payment, and other non-cash modes go to `public/user/payment.php`.
@@ -566,6 +567,7 @@ Important behavior:
 Files involved:
 
 - `public/admin/reservations.php`
+- `public/admin/booking-records.php`
 - `public/admin/room-availability.php`
 - `public/includes/room_selection.php`
 - `public/includes/room_availability_api.php`
@@ -587,16 +589,17 @@ flowchart TD
     G --> H{Payment mode}
     H -->|Cash| I[Generate automatic pending cash payment reference]
     H -->|Non-cash| J[Redirect to Payments page]
-    I --> K[Reservation list updates]
+    I --> K[Booking Records page shows the new booking]
     J --> K
 ```
+
+The `Reservations` page is now only for creating a walk-in reservation. Existing bookings are managed from the separate `Booking Records` tab.
 
 Admin reservation actions are opened from one Manage button in the Booking Records table. The modal keeps the table readable while still showing the full reservation details, payment totals, and available actions:
 
 | Action | Meaning |
 | --- | --- |
 | Create | Adds a new walk-in reservation. |
-| Edit | Updates guest, room, dates, totals, and status. |
 | Delete | Removes the reservation record. |
 | Confirm | Changes pending reservation to confirmed. |
 | Check In | Marks the guest as checked in and room as occupied. |
@@ -666,7 +669,7 @@ The system checks:
 2. Is the date range valid?
 3. Is the room not in Cleaning or Maintenance?
 4. Is the room available for the selected dates?
-5. Does the room fit the number of adults and children?
+5. Does the reservation stay within the 5-person room capacity rule?
 
 If any check fails, the reservation is not saved and the form shows an error message.
 
@@ -734,6 +737,7 @@ Files involved:
 - `public/user/dashboard.php`
 - `public/user/payment.php`
 - `public/admin/reservations.php`
+- `public/admin/booking-records.php`
 - `public/admin/payments.php`
 - `app/models/Payment.php`
 - `public/admin/receipt.php`
@@ -883,7 +887,7 @@ The receipt page shows:
 - Room details.
 - Stay dates.
 - Number of nights.
-- Adults and children.
+- Room capacity note: good for up to 5 people.
 - Room inclusions.
 - Reservation total.
 - Confirmed paid amount.
@@ -1059,8 +1063,8 @@ Expected XML shape:
     <room_number>101</room_number>
     <room_type>Imperial Deluxe</room_type>
     <floor>1</floor>
-    <capacity_adults>2</capacity_adults>
-    <capacity_children>1</capacity_children>
+    <capacity_adults>5</capacity_adults>
+    <capacity_children>0</capacity_children>
     <price_per_night>4500.00</price_per_night>
     <status>Available</status>
     <description>A polished deluxe room.</description>
@@ -1116,10 +1120,10 @@ Important validation examples:
 | Registration | Required fields, matching password confirmation, duplicate email check. |
 | User CRUD | Email format, password length, unique email, self-admin protection. |
 | Guest | Required name fields and valid contact details. |
-| Room | Valid room type, room status, room number, floor, capacity, and price. |
+| Room | Valid room type, room status, room number, floor, 5-person display capacity, and price. |
 | Reservation dates | Check-in and check-out must be valid, future-facing, and check-out must be after check-in. |
 | Room availability | Active overlapping reservations block the same room. |
-| Capacity | Adults and children must fit the room capacity. |
+| Capacity | Each reservation must stay within the 5-person room capacity rule. |
 | Reservation total | Total amount must be positive. |
 | Payment amount | Amount must be positive. |
 | Payment status | Must be one of the allowed statuses. |
@@ -1226,8 +1230,8 @@ flowchart TD
 | Room availability API | `public/includes/room_availability_api.php`, `public/user/room-availability.php`, `public/admin/room-availability.php` |
 | Admin dashboard | `public/admin/dashboard.php`, all major models |
 | Rooms admin | `public/admin/rooms.php`, `app/models/Room.php` |
-| Reservations admin | `public/admin/reservations.php`, `app/models/Reservation.php` |
-| Stay extension | `public/admin/reservations.php`, `app/models/Reservation.php` |
+| Reservations admin | `public/admin/reservations.php`, `public/admin/booking-records.php`, `app/models/Reservation.php` |
+| Stay extension | `public/admin/booking-records.php`, `app/models/Reservation.php` |
 | Payments admin | `public/admin/payments.php`, `app/models/Payment.php` |
 | Guests admin | `public/admin/guests.php`, `app/models/Guest.php` |
 | Reports admin | `public/admin/reports.php`, `app/models/Reservation.php`, `app/models/Payment.php` |
@@ -1383,7 +1387,7 @@ Recommended presentation order:
 8. Log in as admin.
 9. Show dashboard summaries, alerts, and charts.
 10. Show room management and dynamic prices.
-11. Show the reservation Manage modal: confirm, check in, check out, cancel, payment, receipt, edit, extend stay, and delete.
+11. Show the Booking Records Manage modal: confirm, check in, check out, cancel, payment, receipt, extend stay, and delete.
 12. Show payments and admin review.
 13. Show guest history and receipt.
 14. Show reports.

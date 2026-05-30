@@ -471,8 +471,7 @@ body.rooms-showcase-page {
     align-items: center;
 }
 
-.rooms .room-price,
-.rooms .room-home-link {
+.rooms .room-price {
     min-width: 220px;
     font-size: 18px;
     font-weight: 700;
@@ -485,31 +484,22 @@ body.rooms-showcase-page {
 }
 
 .rooms .room-price {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: #020617;
-    background-color: #fdd700;
-}
-
-.rooms .room-home-link {
-    color: #f8fafc;
     text-decoration: none;
-    border: 2px solid #f8fafc;
-    background-color: #020617;
-}
-
-.rooms .room-home-link:hover {
-    color: #020617;
-    background-color: #f8fafc;
-}
-
-.rooms .room-home-link--primary {
-    color: #020617;
-    border-color: #fdd700;
     background-color: #fdd700;
+    border: 2px solid #fdd700;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
 }
 
-.rooms .room-home-link--primary:hover {
+.rooms .room-price:hover,
+.rooms .room-price:focus-visible {
     color: #fdd700;
     background-color: #020617;
+    transform: translateY(-2px);
 }
 
 @media (max-width: 1200px) {
@@ -666,8 +656,7 @@ body.rooms-showcase-page {
         min-height: auto;
     }
 
-    .rooms .room-price,
-    .rooms .room-home-link {
+    .rooms .room-price {
         width: 100%;
         min-width: 0;
         max-width: 340px;
