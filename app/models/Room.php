@@ -75,19 +75,16 @@ class Room
         }
 
         $statement = $this->db->prepare(
-            'INSERT INTO rooms (room_number, room_type, floor, capacity_adults, capacity_children, price_per_night, status, description)
-             VALUES (:room_number, :room_type, :floor, :capacity_adults, :capacity_children, :price_per_night, :status, :description)'
+            'INSERT INTO rooms (room_number, room_type, floor, price_per_night, status)
+             VALUES (:room_number, :room_type, :floor, :price_per_night, :status)'
         );
 
         return $statement->execute([
             'room_number' => trim($data['room_number']),
             'room_type' => $data['room_type'],
             'floor' => (int) $data['floor'],
-            'capacity_adults' => (int) $data['capacity_adults'],
-            'capacity_children' => (int) $data['capacity_children'],
             'price_per_night' => $pricePerNight,
             'status' => $data['status'],
-            'description' => trim((string) ($data['description'] ?? '')),
         ]);
     }
 
@@ -111,11 +108,8 @@ class Room
              SET room_number = :room_number,
                  room_type = :room_type,
                  floor = :floor,
-                 capacity_adults = :capacity_adults,
-                 capacity_children = :capacity_children,
                  price_per_night = :price_per_night,
-                 status = :status,
-                 description = :description
+                 status = :status
              WHERE room_id = :room_id'
         );
 
@@ -123,11 +117,8 @@ class Room
             'room_number' => trim($data['room_number']),
             'room_type' => $data['room_type'],
             'floor' => (int) $data['floor'],
-            'capacity_adults' => (int) $data['capacity_adults'],
-            'capacity_children' => (int) $data['capacity_children'],
             'price_per_night' => $pricePerNight,
             'status' => $data['status'],
-            'description' => trim((string) ($data['description'] ?? '')),
             'room_id' => $roomId,
         ]);
     }
@@ -272,11 +263,8 @@ class Room
                     'room_number',
                     'room_type',
                     'floor',
-                    'capacity_adults',
-                    'capacity_children',
                     'price_per_night',
                     'status',
-                    'description',
                 ] as $field
             ) {
                 $roomElement->appendChild($dom->createElement($field, (string) $room[$field]));
@@ -299,11 +287,8 @@ class Room
                 'room_number' => $this->nodeText($roomNode, 'room_number'),
                 'room_type' => $this->nodeText($roomNode, 'room_type'),
                 'floor' => $this->nodeText($roomNode, 'floor'),
-                'capacity_adults' => $this->nodeText($roomNode, 'capacity_adults') ?: 5,
-                'capacity_children' => $this->nodeText($roomNode, 'capacity_children') ?: 0,
                 'price_per_night' => $this->nodeText($roomNode, 'price_per_night'),
                 'status' => $this->nodeText($roomNode, 'status') ?: 'Available',
-                'description' => $this->nodeText($roomNode, 'description'),
             ];
 
             if ($roomData['room_number'] === '') {
@@ -356,19 +341,9 @@ class Room
     private function validateRoomNumbers(array $data): void
     {
         $floor = (int) ($data['floor'] ?? 0);
-        $capacityAdults = (int) ($data['capacity_adults'] ?? 0);
-        $capacityChildren = (int) ($data['capacity_children'] ?? 0);
 
         if ($floor < 1) {
             throw new RuntimeException('Room floor must be at least 1.');
-        }
-
-        if ($capacityAdults < 1) {
-            throw new RuntimeException('Room guest capacity must be at least 1.');
-        }
-
-        if ($capacityChildren < 0) {
-            throw new RuntimeException('Room guest capacity cannot be negative.');
         }
     }
 }

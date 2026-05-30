@@ -45,11 +45,8 @@ erDiagram
         string room_number UK
         enum room_type
         int floor
-        int capacity_adults
-        int capacity_children
         decimal price_per_night
         enum status
-        text description
         datetime created_at
     }
 
@@ -60,8 +57,6 @@ erDiagram
         int room_id FK
         date check_in
         date check_out
-        int adults
-        int children
         decimal total_amount
         enum status
         datetime created_at
@@ -72,10 +67,8 @@ erDiagram
         int reservation_id FK
         decimal amount
         enum payment_method
-        enum currency
         enum payment_status
         string transaction_reference
-        text notes
         datetime payment_date
     }
 ```
@@ -119,7 +112,7 @@ Relationships:
 ### rooms
 
 Purpose:
-Stores room inventory, room type, capacity, dynamic nightly price, and operational status.
+Stores room inventory, room type, floor, dynamic nightly price, and operational status.
 
 Important fields:
 
@@ -168,7 +161,6 @@ Important fields:
 - `guest_id`: required guest
 - `room_id`: required assigned room
 - `check_in`, `check_out`: booking dates
-- `adults`, `children`: legacy compatibility fields; current UI stores defaults and presents every room as good for up to 5 people
 - `total_amount`: booking total
 - `status`: allowed values are `Pending`, `Confirmed`, `Checked-in`, `Checked-out`, `Cancelled`
 
@@ -189,10 +181,8 @@ Important fields:
 - `reservation_id`: required reservation
 - `amount`: payment amount
 - `payment_method`: `Cash`, `Credit Card`, `Debit Card`, `Bank Transfer`, `Online Payment`, or `Other`
-- `currency`: `PHP`, `USD`, or `EUR`
 - `payment_status`: `Pending`, `Confirmed`, `Failed`, or `Refunded`
 - `transaction_reference`: system-generated payment reference, using `PAY-` for manual payments and `SIM-` for simulated transactions
-- `notes`: optional payment notes
 
 Relationships:
 
@@ -237,11 +227,8 @@ Expected structure:
     <room_number>101</room_number>
     <room_type>Imperial Deluxe</room_type>
     <floor>1</floor>
-    <capacity_adults>5</capacity_adults>
-    <capacity_children>0</capacity_children>
     <price_per_night>4500.00</price_per_night>
     <status>Available</status>
-    <description>A polished deluxe room.</description>
   </room>
 </rooms>
 ```

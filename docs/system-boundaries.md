@@ -18,7 +18,7 @@ The system will provide these main functions:
 | --- | --- |
 | Public website | Shows the hotel homepage, room/suite details, room images, room prices, and simple room-type inclusions. |
 | User management | Allows user registration, login, logout, role-based access, and admin user CRUD. |
-| User booking | Allows logged-in users to create reservations from the user dashboard with full name, stay dates, phone/contact details, manual room selection, a simple up-to-5-people room capacity rule, room inclusions, a cost tracker, payment route selection, automatic pending cash payment references for cash, and a customer-safe simulated payment page for non-cash methods. |
+| User booking | Allows logged-in users to create reservations from the user dashboard with full name, stay dates, phone/contact details, manual room selection, a simple up-to-5-people room note, room inclusions, a cost tracker, payment route selection, automatic pending cash payment references for cash, and a customer-safe simulated payment page for non-cash methods. |
 | Room management | Allows admins to create, view, edit, delete, import, export, and bulk update room prices. |
 | Reservation management | Allows admins to create walk-in reservations from the Reservations page, then manage existing booking records from the Booking Records tab with delete, status actions, manual room-card selection, same-room stay extension, date-aware availability checks, modal-based front desk controls, and automatic confirmation for fully paid pending reservations. |
 | Guest management | Allows admins to search guests by name, phone, or email and view reservation/payment history. |

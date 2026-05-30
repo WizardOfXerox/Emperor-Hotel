@@ -232,7 +232,7 @@ File: `app/models/Room.php`
 Purpose:
 
 - Manages room inventory.
-- Stores room numbers, room types, capacity, price, and status.
+- Stores room numbers, room types, floor, price, and status.
 - Handles room CRUD.
 - Handles room summaries for dashboard.
 - Handles XML export/import.
@@ -269,7 +269,7 @@ Purpose:
 
 - Manages reservations.
 - Validates booking dates.
-- Validates guest, room, occupancy, status, and total amount.
+- Validates guest, room, status, and total amount.
 - Prevents room date overlaps.
 - Finds available rooms by date range.
 - Validates that a room card was manually selected.
@@ -301,7 +301,7 @@ Important methods:
 Presentation explanation:
 
 ```text
-The Reservation model is one of the most important OOP classes because it protects the booking rules. It checks date ranges, room overlaps, room capacity, and reservation status before saving data.
+The Reservation model is one of the most important OOP classes because it protects the booking rules. It checks date ranges, room overlaps, selected room records, and reservation status before saving data.
 ```
 
 ### Payment Model
@@ -356,7 +356,7 @@ The system has five main tables:
 | --- | --- |
 | `users` | Stores login accounts and roles. |
 | `guests` | Stores guest contact details. |
-| `rooms` | Stores room inventory, room type, capacity, status, and price. |
+| `rooms` | Stores room inventory, room type, floor, status, and price. |
 | `reservations` | Stores booking records. |
 | `payments` | Stores payment and transaction records. |
 
@@ -495,7 +495,7 @@ Flow:
 flowchart TD
     A[Visitor opens website] --> B[Homepage]
     B --> C[Rooms page]
-    C --> D[View room types, images, prices, capacity, and included perks]
+    C --> D[View room types, images, prices, and included perks]
     D --> E[Login or register to book]
 ```
 
@@ -668,9 +668,7 @@ The system checks:
 1. Is a room card selected?
 2. Is the date range valid?
 3. Is the room available for the selected dates?
-4. Does the reservation stay within the 5-person room capacity rule?
-
-If any check fails, the reservation is not saved and the form shows an error message.
+If any date, room, or required-field check fails, the reservation is not saved and the form shows an error message.
 
 Presentation explanation:
 
@@ -699,7 +697,7 @@ Room price comes from:
 rooms.price_per_night
 ```
 
-Room type inclusions do not add extra cost because they are part of the room description.
+Room type inclusions do not add extra cost because they are descriptive catalog text.
 
 Example:
 
@@ -1059,11 +1057,8 @@ Expected XML shape:
     <room_number>101</room_number>
     <room_type>Imperial Deluxe</room_type>
     <floor>1</floor>
-    <capacity_adults>5</capacity_adults>
-    <capacity_children>0</capacity_children>
     <price_per_night>4500.00</price_per_night>
     <status>Available</status>
-    <description>A polished deluxe room.</description>
   </room>
 </rooms>
 ```
@@ -1116,10 +1111,9 @@ Important validation examples:
 | Registration | Required fields, matching password confirmation, duplicate email check. |
 | User CRUD | Email format, password length, unique email, self-admin protection. |
 | Guest | Required name fields and valid contact details. |
-| Room | Valid room type, room status, room number, floor, 5-person display capacity, and price. |
+| Room | Valid room type, room status, room number, floor, and price. |
 | Reservation dates | Check-in and check-out must be valid, future-facing, and check-out must be after check-in. |
 | Room availability | Active overlapping reservations block the same room. |
-| Capacity | Each reservation must stay within the 5-person room capacity rule. |
 | Reservation total | Total amount must be positive. |
 | Payment amount | Amount must be positive. |
 | Payment status | Must be one of the allowed statuses. |
@@ -1182,7 +1176,7 @@ flowchart TD
     A[Visitor views homepage] --> B[Visitor views rooms]
     B --> C[Visitor registers or logs in]
     C --> D[User dashboard]
-    D --> E[Choose dates, room, guests, and payment mode]
+    D --> E[Choose dates, room, phone details, and payment mode]
     E --> F[System validates room availability]
     F --> G[Reservation saved as Pending]
     G --> H{Payment mode}
@@ -1402,7 +1396,7 @@ The system has public pages, user pages, and admin pages. Public visitors can vi
 
 We used OOP through model classes such as User, Guest, Room, Reservation, and Payment. These classes handle the database queries and business rules. The PHP pages mainly handle form submissions and display the UI.
 
-The most important logic is in the Reservation and Payment models. The Reservation model validates dates, checks overlapping bookings, checks room capacity, and requires a selected available room. The Payment model generates references, tracks pending and confirmed payments, and prevents overpayment.
+The most important logic is in the Reservation and Payment models. The Reservation model validates dates, checks overlapping bookings, and requires a selected available room. The Payment model generates references, tracks pending and confirmed payments, and prevents overpayment.
 
 The system also demonstrates room XML import/export using DOMDocument, dashboard charts using Chart.js, and role-based access using PHP sessions.
 

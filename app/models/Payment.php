@@ -5,7 +5,6 @@ declare(strict_types=1);
 class Payment
 {
     private const PAYMENT_METHODS = ['Cash', 'Credit Card', 'Debit Card', 'Bank Transfer', 'Online Payment', 'Other'];
-    private const CURRENCIES = ['PHP', 'USD', 'EUR'];
     private const PAYMENT_STATUSES = ['Pending', 'Confirmed', 'Failed', 'Refunded'];
 
     public function __construct(private PDO $db)
@@ -15,11 +14,6 @@ class Payment
     public static function methods(): array
     {
         return self::PAYMENT_METHODS;
-    }
-
-    public static function currencies(): array
-    {
-        return self::CURRENCIES;
     }
 
     public static function statuses(): array
@@ -60,7 +54,6 @@ class Payment
 
         $isSimulated = (bool) ($data['is_simulated'] ?? false);
         $paymentMethod = (string) ($data['payment_method'] ?? 'Cash');
-        $currency = (string) ($data['currency'] ?? 'PHP');
         $paymentStatus = (string) ($data['payment_status'] ?? ($isSimulated ? 'Pending' : 'Confirmed'));
 
         if ($isSimulated) {
@@ -73,10 +66,6 @@ class Payment
             throw new RuntimeException('Please choose a valid payment method.');
         }
 
-        if (!in_array($currency, self::CURRENCIES, true)) {
-            throw new RuntimeException('Please choose a valid currency.');
-        }
-
         if (!in_array($paymentStatus, self::PAYMENT_STATUSES, true)) {
             throw new RuntimeException('Please choose a valid payment status.');
         }
@@ -84,18 +73,16 @@ class Payment
         $this->assertPaymentWillNotOverpay($reservationId, $amount, $paymentStatus);
 
         $statement = $this->db->prepare(
-            'INSERT INTO payments (reservation_id, amount, payment_method, currency, payment_status, transaction_reference, notes)
-             VALUES (:reservation_id, :amount, :payment_method, :currency, :payment_status, :transaction_reference, :notes)'
+            'INSERT INTO payments (reservation_id, amount, payment_method, payment_status, transaction_reference)
+             VALUES (:reservation_id, :amount, :payment_method, :payment_status, :transaction_reference)'
         );
 
         $saved = $statement->execute([
             'reservation_id' => $reservationId,
             'amount' => $amount,
             'payment_method' => $paymentMethod,
-            'currency' => $currency,
             'payment_status' => $paymentStatus,
             'transaction_reference' => $transactionReference,
-            'notes' => trim((string) ($data['notes'] ?? '')),
         ]);
 
         if (!$saved) {

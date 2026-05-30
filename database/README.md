@@ -11,7 +11,7 @@ Database name: `emperors_hotel_db`
 
 - `users`: login accounts and roles
 - `guests`: guest contact profiles
-- `rooms`: room inventory, room status, simplified up-to-5-people capacity, and dynamic nightly price
+- `rooms`: room inventory, room status, and dynamic nightly price
 - `reservations`: bookings connected to guests, users, and rooms
 - `payments`: payment records connected to reservations
 
@@ -28,7 +28,7 @@ Application reservation/reporting rules:
 
 - Room availability checks compare the requested stay dates against active reservations.
 - Reservation forms require the customer or admin to choose a visible room card before saving.
-- Reservation forms no longer ask for separate adult and child counts; each room is presented as good for up to 5 people.
+- Reservation forms no longer ask for separate adult and child counts; each room is presented with a simple "up to 5 people" UI note.
 - Occupancy reports use room nights from `reservations` and room counts from `rooms`.
 - Revenue reports use confirmed records from `payments`.
 

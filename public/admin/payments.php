@@ -35,21 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $reservationId = (int) ($_POST['reservation_id'] ?? 0);
         $isSimulated = isset($_POST['is_simulated']);
-        $notes = trim((string) ($_POST['notes'] ?? ''));
         $paymentStatus = $isSimulated ? 'Pending' : (string) ($_POST['payment_status'] ?? 'Confirmed');
-
-        if ($isSimulated && $notes === '') {
-            $notes = 'Simulated transaction from Payments page. No real money was processed.';
-        }
 
         $paymentModel->create([
             'reservation_id' => $reservationId,
             'amount' => (float) ($_POST['amount'] ?? 0),
             'payment_method' => (string) ($_POST['payment_method'] ?? 'Cash'),
-            'currency' => (string) ($_POST['currency'] ?? 'PHP'),
             'payment_status' => $paymentStatus,
             'is_simulated' => $isSimulated,
-            'notes' => $notes,
         ]);
 
         setFlash('success', $isSimulated ? 'Simulated transaction recorded.' : 'Payment recorded. Fully paid pending reservations are confirmed automatically.');
@@ -152,23 +145,13 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                     <input class="form-control" id="amount" name="amount" type="number" min="0.01" step="0.01" required data-payment-amount <?php echo !$reservations ? 'disabled' : ''; ?>>
                     <div class="form-text" data-payment-entry-note>Choose a reservation to fill the maximum payable amount.</div>
                 </div>
-                <div class="row g-3">
-                    <div class="col-6">
-                        <label class="form-label" for="payment_method">Method</label>
-                        <select class="form-select" id="payment_method" name="payment_method" <?php echo !$reservations ? 'disabled' : ''; ?>>
-                            <?php foreach (Payment::methods() as $method): ?>
-                                <option value="<?php echo e($method); ?>" <?php echo $selectedPaymentMethod === $method ? 'selected' : ''; ?>><?php echo e($method); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label" for="currency">Currency</label>
-                        <select class="form-select" id="currency" name="currency" <?php echo !$reservations ? 'disabled' : ''; ?>>
-                            <?php foreach (Payment::currencies() as $currency): ?>
-                                <option value="<?php echo e($currency); ?>"><?php echo e($currency); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                <div>
+                    <label class="form-label" for="payment_method">Method</label>
+                    <select class="form-select" id="payment_method" name="payment_method" <?php echo !$reservations ? 'disabled' : ''; ?>>
+                        <?php foreach (Payment::methods() as $method): ?>
+                            <option value="<?php echo e($method); ?>" <?php echo $selectedPaymentMethod === $method ? 'selected' : ''; ?>><?php echo e($method); ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <div>
                     <label class="form-label" for="payment_status">Status / Review Decision</label>
@@ -187,10 +170,6 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                 <div class="panel-card p-3">
                     <p class="eyebrow mb-1">Auto Reference</p>
                     <p class="muted-copy small mb-0">A reference like <strong>PAY-00001-YYYYMMDDHHMMSS</strong> or <strong>SIM-00001-YYYYMMDDHHMMSS</strong> will be generated when this transaction is saved.</p>
-                </div>
-                <div>
-                    <label class="form-label" for="notes">Notes</label>
-                    <textarea class="form-control" id="notes" name="notes" rows="3" <?php echo !$reservations ? 'disabled' : ''; ?>></textarea>
                 </div>
                 <button class="btn btn-warning fw-semibold" type="submit" <?php echo !$reservations ? 'disabled' : ''; ?>>Save Transaction</button>
             </form>
@@ -266,9 +245,6 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                                 <td>
                                     <div><?php echo e($payment['payment_method']); ?></div>
                                     <small class="text-light-emphasis"><?php echo e($payment['transaction_reference'] ?: 'No reference'); ?></small>
-                                    <?php if ($payment['notes']): ?>
-                                        <div><small class="text-light-emphasis"><?php echo e($payment['notes']); ?></small></div>
-                                    <?php endif; ?>
                                 </td>
                                 <td><span class="badge-soft"><?php echo e($payment['payment_status']); ?></span></td>
                                 <td><?php echo e(formatMoney((float) $payment['amount'])); ?></td>
@@ -317,13 +293,11 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
     const reservationSelect = form.querySelector("[data-payment-reservation]");
     const amountInput = form.querySelector("[data-payment-amount]");
     const simulatedInput = form.querySelector("#is_simulated");
-    const notesInput = form.querySelector("#notes");
     const statusInput = form.querySelector("#payment_status");
     const methodInput = form.querySelector("#payment_method");
-    const currencyInput = form.querySelector("#currency");
     const submitButton = form.querySelector("button[type='submit']");
     const entryNote = form.querySelector("[data-payment-entry-note]");
-    const paymentEntryFields = [amountInput, methodInput, currencyInput, statusInput, simulatedInput, notesInput, submitButton].filter(Boolean);
+    const paymentEntryFields = [amountInput, methodInput, statusInput, simulatedInput, submitButton].filter(Boolean);
     const money = (amount) => `PHP ${Number(amount || 0).toLocaleString("en-PH", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
@@ -420,10 +394,6 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
             if (simulatedInput.checked) {
                 if (statusInput) {
                     statusInput.value = "Pending";
-                }
-
-                if (notesInput && notesInput.value.trim() === "") {
-                    notesInput.value = "Simulated transaction. No real money was processed.";
                 }
             } else if (statusInput && statusInput.value === "Pending") {
                 statusInput.value = "Confirmed";

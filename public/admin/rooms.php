@@ -124,25 +124,12 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                     </div>
                 </div>
                 <div>
-                    <input type="hidden" name="capacity_adults" value="5">
-                    <input type="hidden" name="capacity_children" value="0">
-                    <div class="guest-capacity-note">
-                        <span>Guest Capacity</span>
-                        <strong>Up to 5 people per room</strong>
-                        <small>The system no longer separates adult and child limits in the UI.</small>
-                    </div>
-                </div>
-                <div>
                     <label class="form-label" for="status">Status</label>
                     <select class="form-select" id="status" name="status">
                         <?php foreach ($roomStatuses as $status): ?>
                             <option value="<?php echo e($status); ?>" <?php echo (($editRoom['status'] ?? 'Available') === $status) ? 'selected' : ''; ?>><?php echo e($status); ?></option>
                         <?php endforeach; ?>
                     </select>
-                </div>
-                <div>
-                    <label class="form-label" for="description">Description</label>
-                    <textarea class="form-control" id="description" name="description" rows="4"><?php echo e($editRoom['description'] ?? ''); ?></textarea>
                 </div>
                 <button class="btn btn-warning fw-semibold" type="submit"><?php echo $editRoom ? 'Save Room' : 'Create Room'; ?></button>
                 <?php if ($editRoom): ?>
@@ -228,7 +215,6 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                             <th>Room</th>
                             <th>Type</th>
                             <th>Floor</th>
-                            <th>Capacity</th>
                             <th>Rate</th>
                             <th>Status</th>
                             <th class="text-end">Actions</th>
@@ -240,7 +226,6 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                                 <td><?php echo e($room['room_number']); ?></td>
                                 <td><?php echo e($room['room_type']); ?></td>
                                 <td><?php echo e($room['floor']); ?></td>
-                                <td>Up to 5 people</td>
                                 <td><?php echo e(formatMoney((float) $room['price_per_night'])); ?></td>
                                 <td><span class="badge-soft"><?php echo e($room['status']); ?></span></td>
                                 <td class="text-end">

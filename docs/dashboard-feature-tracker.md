@@ -58,7 +58,7 @@ Current unresolved tracker rows:
 - The admin `Reservations` page is now create-only, while existing reservation management is separated into the `Booking Records` tab.
 - Walk-in front desk actions now live inside a per-reservation Manage modal on `booking-records.php`, keeping the records table compact while still supporting confirm, check-in, extend stay, check-out, cancel, receipt, payment, and delete actions.
 - User and admin reservation forms now require a manual room-card selection so the guest clearly chooses the room.
-- Reservation and room UIs no longer ask for adult/child split counts; each room is presented as good for up to 5 people.
+- Reservation and room UIs no longer ask for adult/child split counts; room cards present a simple "good for up to 5 people" display note.
 - Admin reservation forms can filter room cards by check-in/check-out dates before selecting a room.
 - Admin reports show filterable occupancy, confirmed revenue, and reservation trend tables.
 - Customer reservations can choose a payment route from the user dashboard.
@@ -67,7 +67,7 @@ Current unresolved tracker rows:
 - Customer non-cash payments use a customer-safe simulated payment page instead of the admin payments module.
 - Guest search/history and printable reservation receipts are available from the admin area.
 - Payment rules prevent active pending/confirmed payments from exceeding the reservation total.
-- Server-side validation covers reservation dates, date overlaps, guest records, room records, the 5-person room capacity rule, statuses, room prices, guest emails, user emails, and payment amounts.
+- Server-side validation covers reservation dates, date overlaps, guest records, room records, statuses, room prices, guest emails, user emails, and payment amounts.
 
 ## Feature Tracker
 
@@ -81,10 +81,10 @@ Current unresolved tracker rows:
 | Dashboard Overview | Room status chart | Done | Chart.js doughnut chart uses room status counts | Add click-through to filtered room table later |
 | Dashboard Overview | Payment status chart | Done | Chart.js doughnut chart uses payment status counts | Add payment date filters later |
 | Dashboard Overview | Alert panel | Done | Dashboard watchlist shows overdue check-outs, failed payments, and overlapping active reservation conflicts | Add notification delivery only if needed |
-| Rooms | Room listing table | Done | Admin room table loads live records from the database and shows a simple "up to 5 people" capacity label | Add search/filter controls later |
+| Rooms | Room listing table | Done | Admin room table loads live records from the database with room number, type, floor, rate, status, and actions | Add search/filter controls later |
 | Rooms | Room CRUD | Done | Admin can create, edit, and delete room records | Add delete guard messaging when room has reservations |
 | Rooms | Bulk room type price update | Done | Admin can set one price for all rooms under a selected room type | Add audit trail if required |
-| Rooms | Room type descriptions | Done | Each room type has plain catalog details and included perks shown on public and reservation pages | Keep text simple for student explanation |
+| Rooms | Room type catalog details | Done | Each room type has plain catalog details and included perks shown on public and reservation pages | Keep text simple for student explanation |
 | Rooms | Room type support | Done | Three room types are supported: Imperial Deluxe, Royal Executive, Emperor Presidential | Keep schema/model constants in sync if room types change |
 | Rooms | Room state support | Done | Available, Reserved, and Occupied are supported | Add separate housekeeping statuses later only if required |
 | Rooms | XML export | Done | `rooms.php?export=xml` exports room records only | Keep XML scoped to rooms unless another table export is explicitly required |
@@ -92,12 +92,12 @@ Current unresolved tracker rows:
 | Reservations | Reservation creation page | Done | Admin `reservations.php` is focused on creating new walk-in reservations only | Add guest search shortcuts later if needed |
 | Booking Records | Reservation listing table | Done | Admin `booking-records.php` loads existing booking records with one Manage button per row | Add search/date filters later |
 | Booking Records | Reservation record actions | Done | Admin can update status, extend active stays, open receipts, collect payments, cancel, and delete reservations from the Manage modal | Add edit workflow later only if the project needs it |
-| Reservations | Room card selector | Done | User and admin reservation forms use grouped room cards with all/available/unavailable filters, green/red status dots, room-number badges, and a three-card desktop layout on the user dashboard | Add capacity filtering later if required |
+| Reservations | Room card selector | Done | User and admin reservation forms use grouped room cards with all/available/unavailable filters, green/red status dots, room-number badges, and a three-card desktop layout on the user dashboard | Add guest-count filtering only if that feature returns |
 | Reservations | Date-aware availability | Done | Admin reservation form can filter room cards by selected check-in/check-out dates before choosing a room | Add live AJAX filtering later if desired |
-| Reservations | Room inclusions | Done | Each room type has plain included perks shown as descriptive room information | Add editable room descriptions later if required |
+| Reservations | Room inclusions | Done | Each room type has plain included perks shown as descriptive room information | Add editable catalog text later if required |
 | Reservations | Full-name booking field | Done | User and admin reservation forms collect full name and split it into guest first/last name for storage | Add self-service profile updates later |
 | Reservations | Cost tracker | Done | User and admin reservation forms show selected room, nightly rate, nights, subtotal, room inclusions, and estimated total | Add tax/discount fields later if required |
-| Reservations | Reservation validation | Done | Server-side validation checks date format, no past check-ins, check-out after check-in, date-overlap room availability, valid guest/room records, the 5-person room capacity rule, status, and positive totals | Add client-side helper validation later |
+| Reservations | Reservation validation | Done | Server-side validation checks date format, no past check-ins, check-out after check-in, date-overlap room availability, valid guest/room records, status, and positive totals | Add client-side helper validation later |
 | Reservations | Reservation status flow | Done | Status values exist, room status is recalculated from remaining active reservations on create/update/delete/status changes, front desk actions are opened from a per-reservation Manage modal, and fully paid pending reservations auto-confirm | Add configurable deposit-only rules later if required |
 | Reservations | Stay extension | Done | Active reservations can be extended in the same room only when the added date range has no active overlap; the reservation total increases by the added room-night cost | Add room-transfer workflow later if the same room is unavailable |
 | Reservations | Payment route selection | Done | New walk-in reservations can choose Cash to generate an automatic pending cash payment reference, while card, bank, online, and other methods continue to the Payments page | Add cashier-only role later if required |

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 class Reservation
 {
-    private const MAX_GUESTS_PER_ROOM = 5;
-
     private const STATUSES = ['Pending', 'Confirmed', 'Checked-in', 'Checked-out', 'Cancelled'];
 
     private const FRONT_DESK_ACTIONS = [
@@ -80,9 +78,8 @@ class Reservation
     {
         $this->validateDates($data['check_in'], $data['check_out']);
         $this->assertStatus((string) ($data['status'] ?? ''));
-        $room = $this->assertRoomExists((int) $data['room_id']);
+        $this->assertRoomExists((int) $data['room_id']);
         $this->validateGuestId((int) ($data['guest_id'] ?? 0));
-        $this->validateOccupancy((int) ($data['adults'] ?? 0), (int) ($data['children'] ?? 0), $room);
         $this->validateTotalAmount((float) ($data['total_amount'] ?? 0));
 
         if (!$this->roomIsAvailable((int) $data['room_id'], $data['check_in'], $data['check_out'])) {
@@ -90,8 +87,8 @@ class Reservation
         }
 
         $statement = $this->db->prepare(
-            'INSERT INTO reservations (user_id, guest_id, room_id, check_in, check_out, adults, children, total_amount, status)
-             VALUES (:user_id, :guest_id, :room_id, :check_in, :check_out, :adults, :children, :total_amount, :status)'
+            'INSERT INTO reservations (user_id, guest_id, room_id, check_in, check_out, total_amount, status)
+             VALUES (:user_id, :guest_id, :room_id, :check_in, :check_out, :total_amount, :status)'
         );
 
         $saved = $statement->execute([
@@ -100,8 +97,6 @@ class Reservation
             'room_id' => (int) $data['room_id'],
             'check_in' => $data['check_in'],
             'check_out' => $data['check_out'],
-            'adults' => (int) $data['adults'],
-            'children' => (int) $data['children'],
             'total_amount' => (float) $data['total_amount'],
             'status' => $data['status'],
         ]);
@@ -125,9 +120,8 @@ class Reservation
 
         $this->validateDates($data['check_in'], $data['check_out']);
         $this->assertStatus((string) ($data['status'] ?? ''));
-        $room = $this->assertRoomExists((int) $data['room_id']);
+        $this->assertRoomExists((int) $data['room_id']);
         $this->validateGuestId((int) ($data['guest_id'] ?? 0));
-        $this->validateOccupancy((int) ($data['adults'] ?? 0), (int) ($data['children'] ?? 0), $room);
         $this->validateTotalAmount((float) ($data['total_amount'] ?? 0));
 
         if (!$this->roomIsAvailable((int) $data['room_id'], $data['check_in'], $data['check_out'], $reservationId)) {
@@ -140,8 +134,6 @@ class Reservation
                  room_id = :room_id,
                  check_in = :check_in,
                  check_out = :check_out,
-                 adults = :adults,
-                 children = :children,
                  total_amount = :total_amount,
                  status = :status
              WHERE reservation_id = :reservation_id'
@@ -152,8 +144,6 @@ class Reservation
             'room_id' => (int) $data['room_id'],
             'check_in' => $data['check_in'],
             'check_out' => $data['check_out'],
-            'adults' => (int) $data['adults'],
-            'children' => (int) $data['children'],
             'total_amount' => (float) $data['total_amount'],
             'status' => $data['status'],
             'reservation_id' => $reservationId,
@@ -775,23 +765,6 @@ class Reservation
 
         if ((int) $statement->fetchColumn() === 0) {
             throw new RuntimeException('The selected guest does not exist.');
-        }
-    }
-
-    private function validateOccupancy(int $adults, int $children, array $room): void
-    {
-        if ($adults < 1) {
-            throw new RuntimeException('At least one guest is required for a reservation.');
-        }
-
-        if ($children < 0) {
-            throw new RuntimeException('Guest count cannot be negative.');
-        }
-
-        $totalGuests = $adults + $children;
-
-        if ($totalGuests > self::MAX_GUESTS_PER_ROOM) {
-            throw new RuntimeException('Each room can hold up to ' . self::MAX_GUESTS_PER_ROOM . ' people.');
         }
     }
 

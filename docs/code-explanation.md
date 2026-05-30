@@ -246,7 +246,6 @@ Main responsibilities:
 - Validate check-in and check-out dates.
 - Prevent overlapping bookings for the same room.
 - Validate guest and room records.
-- Validate room capacity.
 - Validate reservation status.
 - Calculate room availability by date range.
 - Apply front desk actions.
@@ -345,7 +344,7 @@ Main responsibilities:
 
 - Create payment records.
 - Generate transaction references automatically.
-- Store payment method, amount, status, and notes.
+- Store payment method, amount, status, and generated reference.
 - Calculate confirmed and pending totals.
 - Prevent active payments from exceeding the reservation total.
 - Lock confirmed, failed, and refunded transaction logs from normal editing.
@@ -414,7 +413,7 @@ This fits a walk-in hotel workflow:
 Cash can be handled at the counter. Non-cash methods need payment processing or review.
 ```
 
-The form no longer asks for separate adult and child counts. Each room is presented as good for up to 5 people, while the legacy database columns still receive default values for compatibility.
+The form no longer asks for separate adult and child counts. Each room is presented with a simple "up to 5 people" note, and the database no longer stores separate adult/child count columns.
 
 ## 12. Admin Booking Records Page
 
@@ -692,8 +691,8 @@ Important validations:
 | Registration | Required fields, email format, password length, duplicate email prevention. |
 | Users | Valid role, valid email, password rules, duplicate email prevention. |
 | Guests | Required name and valid contact fields. |
-| Rooms | Valid room type, status, price, 5-person display capacity, floor, and room number. |
-| Reservations | Valid dates, no date overlaps, valid guest, valid room, 5-person capacity rule, status, and positive total. |
+| Rooms | Valid room type, status, price, floor, and room number. |
+| Reservations | Valid dates, no date overlaps, valid guest, valid room, status, and positive total. |
 | Payments | Positive amount, valid method, valid status, valid reservation, and no overpayment. |
 | Reports | Valid start and end date range. |
 
@@ -716,7 +715,7 @@ This is the easiest full-system walkthrough:
 7. The form submits to the same dashboard page.
 8. The page creates or updates the guest through `Guest.php`.
 9. The page creates the reservation through `Reservation.php`.
-10. The model validates dates, the 5-person room capacity rule, room existence, and overlapping bookings.
+10. The model validates dates, room existence, and overlapping bookings.
 11. If the payment mode is cash, `Payment.php` creates a pending payment reference.
 12. If the payment mode is non-cash, the user is sent to `public/user/payment.php`.
 13. Admin can later open `public/admin/booking-records.php`.

@@ -43,21 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new RuntimeException('Please choose a valid non-cash payment method.');
         }
 
-        $customerReference = trim((string) ($_POST['customer_reference'] ?? ''));
-        $notes = 'Customer simulated ' . $paymentMethod . ' payment submitted from the customer payment page.';
-
-        if ($customerReference !== '') {
-            $notes .= ' Customer note/reference: ' . $customerReference;
-        }
-
         $paymentId = $paymentModel->createAndGetId([
             'reservation_id' => $reservationId,
             'amount' => (float) ($_POST['amount'] ?? 0),
             'payment_method' => $paymentMethod,
-            'currency' => 'PHP',
             'payment_status' => 'Pending',
             'is_simulated' => true,
-            'notes' => $notes,
         ]);
         $payment = $paymentModel->find($paymentId);
         $reference = (string) ($payment['transaction_reference'] ?? ('Reservation #' . $reservationId));
@@ -121,10 +112,6 @@ renderSiteLayoutStart('Payment', $user, '../site/', ['../assets/css/user/payment
                         <label class="form-label" for="amount">Amount</label>
                         <input class="form-control" id="amount" name="amount" type="number" min="0.01" max="<?php echo e(number_format($activeBalanceDue, 2, '.', '')); ?>" step="0.01" value="<?php echo e(number_format($activeBalanceDue, 2, '.', '')); ?>" required>
                         <div class="form-text">Partial payments are allowed, but pending plus confirmed payments cannot exceed the reservation total.</div>
-                    </div>
-                    <div>
-                        <label class="form-label" for="customer_reference">Optional Note / Reference</label>
-                        <textarea class="form-control" id="customer_reference" name="customer_reference" rows="3" placeholder="Example: card last 4 digits, bank reference, or online wallet note"></textarea>
                     </div>
                     <div class="payment-page__simulation-note panel-card p-3">
                         <p class="eyebrow mb-1">Simulated Transaction</p>

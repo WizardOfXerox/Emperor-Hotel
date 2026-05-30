@@ -15,7 +15,7 @@ flowchart TD
     E -->|Yes| G[User Dashboard]
     F --> G
     G --> H[Enter stay details and choose room card]
-    H --> I[Select booking dates and review 5-person capacity]
+    H --> I[Select booking dates and review room details]
     I --> I1[Review cost tracker and submit reservation]
     I1 --> J[Reservation saved as Pending]
     J --> J1{Payment Mode}
@@ -82,7 +82,7 @@ flowchart TD
 flowchart TD
     A[Guest visits public site] --> B[View homepage]
     B --> C[View rooms and suites]
-    C --> D[Check room types, images, prices, and up to 5-person capacity]
+    C --> D[Check room types, images, prices, and included perks]
     D --> E[Login or register to book]
 ```
 

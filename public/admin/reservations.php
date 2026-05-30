@@ -68,8 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'room_id' => $roomId,
             'check_in' => $checkIn,
             'check_out' => $checkOut,
-            'adults' => 1,
-            'children' => 0,
             'total_amount' => buildReservationTotal($room, $checkIn, $checkOut),
             'status' => (string) ($_POST['status'] ?? 'Pending'),
         ];
@@ -87,10 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'reservation_id' => $reservationId,
                 'amount' => (float) $payload['total_amount'],
                 'payment_method' => 'Cash',
-                'currency' => 'PHP',
                 'payment_status' => 'Pending',
                 'is_simulated' => false,
-                'notes' => 'Automatic pending cash payment reference generated during reservation creation.',
             ]);
             $payment = $paymentModel->find($paymentId);
             $reference = (string) ($payment['transaction_reference'] ?? ('Reservation #' . $reservationId));

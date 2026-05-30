@@ -40,11 +40,8 @@ erDiagram
         string room_number UK
         enum room_type
         int floor
-        int capacity_adults
-        int capacity_children
         decimal price_per_night
         enum status
-        text description
         datetime created_at
     }
 
@@ -55,8 +52,6 @@ erDiagram
         int room_id FK
         date check_in
         date check_out
-        int adults
-        int children
         decimal total_amount
         enum status
         datetime created_at
@@ -67,10 +62,8 @@ erDiagram
         int reservation_id FK
         decimal amount
         enum payment_method
-        enum currency
         enum payment_status
         string transaction_reference
-        text notes
         datetime payment_date
     }
 ```
@@ -81,7 +74,7 @@ erDiagram
 | --- | --- | --- | --- |
 | `users` | `app/models/User.php` | `public/auth/login.php`, `public/auth/register.php`, `public/admin/users.php`, `public/admin/dashboard.php` | Login, registration, admin user CRUD, dashboard user counts. |
 | `guests` | `app/models/Guest.php` | `public/admin/guests.php`, `public/admin/reservations.php`, `public/user/dashboard.php` | Guest records, walk-in guest search, guest history, reservation guest details. |
-| `rooms` | `app/models/Room.php` | `public/admin/rooms.php`, `public/admin/reservations.php`, `public/admin/booking-records.php`, `public/user/dashboard.php`, `public/site/home.php`, `public/site/rooms.php`, `public/admin/dashboard.php`, `public/admin/reports.php` | Room inventory, room status, price per night, 5-person capacity label, room XML import/export, public room prices, dashboard room status, report grouping. |
+| `rooms` | `app/models/Room.php` | `public/admin/rooms.php`, `public/admin/reservations.php`, `public/admin/booking-records.php`, `public/user/dashboard.php`, `public/site/home.php`, `public/site/rooms.php`, `public/admin/dashboard.php`, `public/admin/reports.php` | Room inventory, room status, price per night, room XML import/export, public room prices, dashboard room status, report grouping. |
 | `reservations` | `app/models/Reservation.php` | `public/admin/reservations.php`, `public/admin/booking-records.php`, `public/user/dashboard.php`, `public/admin/dashboard.php`, `public/admin/guests.php`, `public/admin/receipt.php`, `public/user/payment.php`, `public/admin/reports.php`, `public/admin/room-availability.php`, `public/user/room-availability.php` | Booking records, date validation, date-aware room availability, manual room selection, status flow, check-in/check-out, stay extension, dashboard alerts, reports. |
 | `payments` | `app/models/Payment.php` | `public/admin/payments.php`, `public/user/payment.php`, `public/admin/reservations.php`, `public/admin/booking-records.php`, `public/admin/receipt.php`, `public/admin/dashboard.php`, `public/admin/reports.php` | Payment logs, generated references, automatic pending cash payment references, simulated payments, payment review, balances, dashboard revenue, revenue reports. |
 
