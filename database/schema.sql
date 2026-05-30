@@ -29,7 +29,7 @@ CREATE TABLE rooms (
     capacity_adults INT NOT NULL DEFAULT 5,
     capacity_children INT NOT NULL DEFAULT 0,
     price_per_night DECIMAL(10,2) NOT NULL,
-    status ENUM('Available', 'Reserved', 'Occupied', 'Cleaning', 'Maintenance') NOT NULL DEFAULT 'Available',
+    status ENUM('Available', 'Reserved', 'Occupied') NOT NULL DEFAULT 'Available',
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

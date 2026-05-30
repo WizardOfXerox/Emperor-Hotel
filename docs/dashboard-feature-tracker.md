@@ -54,7 +54,7 @@ Current unresolved tracker rows:
 - Room XML import/export is implemented with DOMDocument.
 - Public home and rooms pages are PHP pages backed by room catalog data and database-driven starting prices.
 - Shared CSS now lives in `public/assets/css/app.css`, while each visual page group has page-specific CSS files for easier debugging.
-- Dashboard alerts show overdue check-outs, failed payments, maintenance rooms, and overlap conflicts.
+- Dashboard alerts show overdue check-outs, failed payments, and overlap conflicts.
 - The admin `Reservations` page is now create-only, while existing reservation management is separated into the `Booking Records` tab.
 - Walk-in front desk actions now live inside a per-reservation Manage modal on `booking-records.php`, keeping the records table compact while still supporting confirm, check-in, extend stay, check-out, cancel, receipt, payment, and delete actions.
 - User and admin reservation forms now require a manual room-card selection so the guest clearly chooses the room.
@@ -80,13 +80,13 @@ Current unresolved tracker rows:
 | Dashboard Overview | Reservation status chart | Done | Chart.js doughnut chart uses reservation status counts | Add drill-down links later |
 | Dashboard Overview | Room status chart | Done | Chart.js doughnut chart uses room status counts | Add click-through to filtered room table later |
 | Dashboard Overview | Payment status chart | Done | Chart.js doughnut chart uses payment status counts | Add payment date filters later |
-| Dashboard Overview | Alert panel | Done | Dashboard watchlist shows overdue check-outs, failed payments, maintenance rooms, and overlapping active reservation conflicts | Add notification delivery only if needed |
+| Dashboard Overview | Alert panel | Done | Dashboard watchlist shows overdue check-outs, failed payments, and overlapping active reservation conflicts | Add notification delivery only if needed |
 | Rooms | Room listing table | Done | Admin room table loads live records from the database and shows a simple "up to 5 people" capacity label | Add search/filter controls later |
 | Rooms | Room CRUD | Done | Admin can create, edit, and delete room records | Add delete guard messaging when room has reservations |
 | Rooms | Bulk room type price update | Done | Admin can set one price for all rooms under a selected room type | Add audit trail if required |
 | Rooms | Room type descriptions | Done | Each room type has plain catalog details and included perks shown on public and reservation pages | Keep text simple for student explanation |
 | Rooms | Room type support | Done | Three room types are supported: Imperial Deluxe, Royal Executive, Emperor Presidential | Keep schema/model constants in sync if room types change |
-| Rooms | Room state support | Done | Available, Reserved, Occupied, Cleaning, and Maintenance are supported | Add cleaner workflow screens later |
+| Rooms | Room state support | Done | Available, Reserved, and Occupied are supported | Add separate housekeeping statuses later only if required |
 | Rooms | XML export | Done | `rooms.php?export=xml` exports room records only | Keep XML scoped to rooms unless another table export is explicitly required |
 | Rooms | XML import | Done | Admin can upload room XML and create/update room records only | Add XML preview/validation report if needed |
 | Reservations | Reservation creation page | Done | Admin `reservations.php` is focused on creating new walk-in reservations only | Add guest search shortcuts later if needed |

@@ -7,6 +7,13 @@ WHERE room_type = 'Standard';
 ALTER TABLE rooms
 MODIFY room_type ENUM('Imperial Deluxe', 'Royal Executive', 'Emperor Presidential') NOT NULL;
 
+UPDATE rooms
+SET status = 'Available'
+WHERE status NOT IN ('Available', 'Reserved', 'Occupied');
+
+ALTER TABLE rooms
+MODIFY status ENUM('Available', 'Reserved', 'Occupied') NOT NULL DEFAULT 'Available';
+
 INSERT INTO rooms (room_number, room_type, floor, capacity_adults, capacity_children, price_per_night, status, description) VALUES
 ('101', 'Imperial Deluxe', 1, 5, 0, 4500.00, 'Available', 'A polished deluxe room with a warm luxury feel, ideal for couples, solo travelers, and business guests.'),
 ('102', 'Imperial Deluxe', 1, 5, 0, 4500.00, 'Available', 'A polished deluxe room with a warm luxury feel, ideal for couples, solo travelers, and business guests.'),

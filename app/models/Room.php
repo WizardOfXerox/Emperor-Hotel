@@ -10,7 +10,7 @@ class Room
         'Emperor Presidential',
     ];
 
-    private const ROOM_STATUSES = ['Available', 'Reserved', 'Occupied', 'Cleaning', 'Maintenance'];
+    private const ROOM_STATUSES = ['Available', 'Reserved', 'Occupied'];
 
     public function __construct(private PDO $db)
     {
@@ -165,7 +165,6 @@ class Room
         $summary = [
             'available' => 0,
             'not_available' => 0,
-            'maintenance' => 0,
         ];
 
         $statement = $this->db->query(
@@ -177,9 +176,6 @@ class Room
         foreach ($statement->fetchAll() as $row) {
             if ($row['status'] === 'Available') {
                 $summary['available'] += (int) $row['total'];
-            } elseif ($row['status'] === 'Maintenance') {
-                $summary['maintenance'] += (int) $row['total'];
-                $summary['not_available'] += (int) $row['total'];
             } else {
                 $summary['not_available'] += (int) $row['total'];
             }
@@ -190,7 +186,7 @@ class Room
 
     public function statusBreakdown(): array
     {
-        $statuses = ['Available', 'Reserved', 'Occupied', 'Cleaning', 'Maintenance'];
+        $statuses = self::ROOM_STATUSES;
         $counts = array_fill_keys($statuses, 0);
 
         $statement = $this->db->query(

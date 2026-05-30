@@ -250,7 +250,7 @@ Important methods:
 | `update()` | Updates a room record. |
 | `updateTypePrice()` | Updates the price of all rooms under one room type. |
 | `delete()` | Deletes a room if allowed by database rules. |
-| `statusSummary()` | Counts available, unavailable, and maintenance rooms. |
+| `statusSummary()` | Counts available and unavailable rooms. |
 | `typeSummary()` | Groups room counts and prices by room type. |
 | `exportToXml()` | Converts room records into XML. |
 | `importFromXml()` | Reads XML and creates/updates room records. |
@@ -667,9 +667,8 @@ The system checks:
 
 1. Is a room card selected?
 2. Is the date range valid?
-3. Is the room not in Cleaning or Maintenance?
-4. Is the room available for the selected dates?
-5. Does the reservation stay within the 5-person room capacity rule?
+3. Is the room available for the selected dates?
+4. Does the reservation stay within the 5-person room capacity rule?
 
 If any check fails, the reservation is not saved and the form shows an error message.
 
@@ -970,7 +969,6 @@ Operational alerts include:
 
 - Overdue check-outs.
 - Failed payments.
-- Maintenance rooms.
 - Overlap conflicts.
 
 Chart flow:
@@ -1024,8 +1022,6 @@ Room statuses:
 | Available | Room can be booked if dates are open. |
 | Reserved | Room has a reservation but guest has not checked in. |
 | Occupied | Guest is currently checked in. |
-| Cleaning | Room is temporarily blocked. |
-| Maintenance | Room is blocked for repair. |
 
 ## 27. Room XML Import And Export
 

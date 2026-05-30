@@ -217,8 +217,6 @@ Room statuses:
 | Available | Room can be booked if the chosen dates are open. |
 | Reserved | Room has an active reservation but the guest has not checked in. |
 | Occupied | Guest is checked in. |
-| Cleaning | Room is temporarily blocked. |
-| Maintenance | Room is blocked for repair. |
 
 Room XML support is intentionally limited to rooms only.
 
@@ -334,7 +332,6 @@ Room sync priority:
 | At least one `Checked-in` reservation remains | Occupied |
 | No checked-in reservation, but at least one `Pending` or `Confirmed` reservation remains | Reserved |
 | No active reservation remains | Available |
-| No active reservation remains, but the room was manually marked Cleaning or Maintenance | Keep Cleaning or Maintenance |
 
 This matters when a room has more than one non-overlapping reservation. If one reservation is deleted, cancelled, or checked out, the room should not automatically become Available if another active reservation still exists for a future date.
 

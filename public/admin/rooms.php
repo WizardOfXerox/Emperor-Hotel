@@ -89,10 +89,6 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
         <p class="eyebrow mb-2">Not Available</p>
         <div class="stat-value"><?php echo e($summary['not_available']); ?></div>
     </article>
-    <article class="stat-tile">
-        <p class="eyebrow mb-2">Maintenance</p>
-        <div class="stat-value"><?php echo e($summary['maintenance']); ?></div>
-    </article>
 </section>
 
 <section class="row g-4">

@@ -33,11 +33,9 @@ $reservationStatusChart = dashboardChartPayload($reservationModel->statusBreakdo
 $roomStatusChart = dashboardChartPayload($roomModel->statusBreakdown(), 'status', 'total');
 $paymentStatusChart = dashboardChartPayload($paymentModel->summaryByStatus(), 'payment_status', 'total_count');
 $operationalAlerts = $reservationModel->operationalAlerts();
-$maintenanceRooms = $roomModel->roomsByStatus('Maintenance', 5);
 $failedPayments = $paymentModel->failedPayments(5);
 $totalAlertCount = count($operationalAlerts['overdue_checkouts'])
     + count($operationalAlerts['overbooking_conflicts'])
-    + count($maintenanceRooms)
     + count($failedPayments);
 $dashboardChartData = [
     'monthly' => [
@@ -98,7 +96,7 @@ renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/
         </div>
     </div>
     <?php if ($totalAlertCount === 0): ?>
-        <div class="dashboard-alert-empty">No overdue check-outs, failed payments, maintenance rooms, or overlap conflicts need attention right now.</div>
+        <div class="dashboard-alert-empty">No overdue check-outs, failed payments, or overlap conflicts need attention right now.</div>
     <?php else: ?>
         <div class="dashboard-alert-grid">
             <article class="dashboard-alert-card">
@@ -123,18 +121,6 @@ renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/
                 <?php endif; ?>
                 <?php foreach ($failedPayments as $payment): ?>
                     <small><?php echo e($payment['first_name'] . ' ' . $payment['last_name']); ?> - <?php echo e(formatMoney((float) $payment['amount'])); ?> for Room <?php echo e($payment['room_number']); ?></small>
-                <?php endforeach; ?>
-            </article>
-            <article class="dashboard-alert-card">
-                <div>
-                    <p class="eyebrow mb-1">Maintenance Rooms</p>
-                    <strong><?php echo e(count($maintenanceRooms)); ?></strong>
-                </div>
-                <?php if (!$maintenanceRooms): ?>
-                    <small>No rooms are marked for maintenance.</small>
-                <?php endif; ?>
-                <?php foreach ($maintenanceRooms as $room): ?>
-                    <small>Room <?php echo e($room['room_number']); ?> - <?php echo e($room['room_type']); ?></small>
                 <?php endforeach; ?>
             </article>
             <article class="dashboard-alert-card">

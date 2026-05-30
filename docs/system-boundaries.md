@@ -39,7 +39,7 @@ The system is not intended to support these features in the current version:
 | No real-time collaboration | The system does not include live multi-user editing, WebSockets, or shared real-time task lists. |
 | No online payment gateway | Online payment is only a selectable internal method that routes to the simulated/manual Payments page. There is no Stripe, PayPal, GCash, Maya, or bank API integration yet. |
 | No email/SMS notifications | The system does not currently send booking confirmations, payment reminders, or deadline notifications. |
-| No full housekeeping workflow | Rooms can be marked Cleaning or Maintenance, but there is no dedicated housekeeping staff workflow or task assignment module yet. |
+| No full housekeeping workflow | The project now keeps room status simple: Available, Reserved, or Occupied. It does not include housekeeping task assignment or repair workflows. |
 | No dedicated profile update page | Admins can update user records, but there is no separate self-service profile edit page for normal users yet. |
 | No React/Tailwind frontend | The project uses PHP-rendered pages, Bootstrap, and custom CSS instead of React.js and Tailwind CSS. |
 | No PostgreSQL database | The project uses MySQL/MariaDB through XAMPP, not PostgreSQL. |

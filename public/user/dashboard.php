@@ -62,10 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Please choose a room card before submitting your reservation.');
             }
 
-            if (in_array($room['status'], ['Cleaning', 'Maintenance'], true)) {
-                throw new RuntimeException('Please choose a room that is not under cleaning or maintenance.');
-            }
-
             $fullName = trim((string) ($_POST['full_name'] ?? ''));
 
             if ($fullName === '') {

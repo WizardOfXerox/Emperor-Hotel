@@ -127,7 +127,7 @@ Important fields:
 - `room_number`: unique visible room number
 - `room_type`: allowed values are `Imperial Deluxe`, `Royal Executive`, `Emperor Presidential`
 - `price_per_night`: editable nightly room price used by booking calculations
-- `status`: allowed values are `Available`, `Reserved`, `Occupied`, `Cleaning`, `Maintenance`
+- `status`: allowed values are `Available`, `Reserved`, `Occupied`
 
 Seeded inventory:
 

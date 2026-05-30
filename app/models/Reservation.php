@@ -85,10 +85,6 @@ class Reservation
         $this->validateOccupancy((int) ($data['adults'] ?? 0), (int) ($data['children'] ?? 0), $room);
         $this->validateTotalAmount((float) ($data['total_amount'] ?? 0));
 
-        if (in_array($room['status'], ['Cleaning', 'Maintenance'], true)) {
-            throw new RuntimeException('The selected room is not bookable because it is marked as ' . $room['status'] . '.');
-        }
-
         if (!$this->roomIsAvailable((int) $data['room_id'], $data['check_in'], $data['check_out'])) {
             throw new RuntimeException('The selected room is not available for those dates.');
         }
@@ -133,10 +129,6 @@ class Reservation
         $this->validateGuestId((int) ($data['guest_id'] ?? 0));
         $this->validateOccupancy((int) ($data['adults'] ?? 0), (int) ($data['children'] ?? 0), $room);
         $this->validateTotalAmount((float) ($data['total_amount'] ?? 0));
-
-        if (in_array($room['status'], ['Cleaning', 'Maintenance'], true) && (int) $existing['room_id'] !== (int) $data['room_id']) {
-            throw new RuntimeException('The selected room is not bookable because it is marked as ' . $room['status'] . '.');
-        }
 
         if (!$this->roomIsAvailable((int) $data['room_id'], $data['check_in'], $data['check_out'], $reservationId)) {
             throw new RuntimeException('The selected room is not available for those dates.');
@@ -253,10 +245,6 @@ class Reservation
 
         $room = $this->assertRoomExists((int) $reservation['room_id']);
 
-        if (in_array($room['status'], ['Cleaning', 'Maintenance'], true)) {
-            throw new RuntimeException('This stay cannot be extended because the room is marked as ' . $room['status'] . '.');
-        }
-
         $extensionStart = $currentCheckOut->format('Y-m-d');
 
         if ($this->roomHasActiveOverlap((int) $reservation['room_id'], $extensionStart, $newCheckOut, $reservationId)) {
@@ -341,11 +329,8 @@ class Reservation
 
         foreach ($rooms as &$room) {
             $dateAvailable = $this->roomIsAvailable((int) $room['room_id'], $checkIn, $checkOut, $excludeReservationId);
-            $operationallyBlocked = in_array($room['status'], ['Cleaning', 'Maintenance'], true);
-            $isAvailable = $dateAvailable && !$operationallyBlocked;
-
-            $room['is_available_for_dates'] = $isAvailable;
-            $room['availability_label'] = $this->availabilityLabel((string) $room['status'], $dateAvailable, $operationallyBlocked);
+            $room['is_available_for_dates'] = $dateAvailable;
+            $room['availability_label'] = $this->availabilityLabel($dateAvailable);
         }
 
         unset($room);
@@ -668,9 +653,7 @@ class Reservation
         } elseif ($activeStatus !== false) {
             $roomStatus = 'Reserved';
         } else {
-            $roomStatus = in_array($currentStatus, ['Cleaning', 'Maintenance'], true)
-                ? (string) $currentStatus
-                : 'Available';
+            $roomStatus = 'Available';
         }
 
         $statement = $this->db->prepare('UPDATE rooms SET status = :status WHERE room_id = :room_id');
@@ -704,12 +687,8 @@ class Reservation
         return (int) $statement->fetchColumn() > 0;
     }
 
-    private function availabilityLabel(string $roomStatus, bool $dateAvailable, bool $operationallyBlocked): string
+    private function availabilityLabel(bool $dateAvailable): string
     {
-        if ($operationallyBlocked) {
-            return 'Unavailable: ' . $roomStatus;
-        }
-
         if ($dateAvailable) {
             return 'Available for dates';
         }
