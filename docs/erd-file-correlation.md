@@ -170,6 +170,6 @@ flowchart LR
 | Guest data | `Guest.php` owns guest lookup, upsert, and guest history queries. |
 | Room data | `Room.php` owns room CRUD, status summaries, type summaries, bulk price updates, and room XML import/export. |
 | Room inclusion text | `public/includes/room_catalog.php` owns simple room-type inclusions used by public pages and reservation forms. |
-| Reservation data | `Reservation.php` owns date validation, overlap checks, manual room selection validation, reservation CRUD, status changes, room status syncing, dashboard alerts, and occupancy/trend reports. |
+| Reservation data | `Reservation.php` owns date validation, overlap checks, manual room selection validation, reservation CRUD, status changes, recalculated room status syncing, dashboard alerts, and occupancy/trend reports. |
 | Payment data | `Payment.php` owns generated references, payment totals, overpayment rules, payment status updates, failed-payment alerts, revenue summaries, and revenue reports. |
 | Styling | CSS files do not own data. `app.css` holds shared styling, while page-specific CSS files stay beside their page group under `public/assets/css/`. |

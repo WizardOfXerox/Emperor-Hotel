@@ -325,15 +325,18 @@ The model checks if the action is allowed before changing the status.
 
 When reservations change, the system also updates room statuses.
 
-Example:
+The sync is not based only on the reservation that was just changed. The `Reservation` model recalculates the room status by checking all active reservations that still belong to the room.
 
-| Reservation Status | Expected Room Status |
+Room sync priority:
+
+| Remaining Reservation State | Expected Room Status |
 | --- | --- |
-| Pending or Confirmed | Reserved |
-| Checked-in | Occupied |
-| Checked-out or Cancelled | Available, unless another active reservation overlaps |
+| At least one `Checked-in` reservation remains | Occupied |
+| No checked-in reservation, but at least one `Pending` or `Confirmed` reservation remains | Reserved |
+| No active reservation remains | Available |
+| No active reservation remains, but the room was manually marked Cleaning or Maintenance | Keep Cleaning or Maintenance |
 
-This keeps the room inventory aligned with reservation activity.
+This matters when a room has more than one non-overlapping reservation. If one reservation is deleted, cancelled, or checked out, the room should not automatically become Available if another active reservation still exists for a future date.
 
 ## 10. Payment Model
 

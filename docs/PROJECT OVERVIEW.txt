@@ -23,7 +23,7 @@ CURRENT FOLDER STRUCTURE
 - app/models/User.php: User account CRUD and authentication
 - app/models/Guest.php: Guest profile CRUD, upsert helpers, search, and reservation history
 - app/models/Room.php: Room CRUD, room status, room prices, room XML import/export, and room summaries
-- app/models/Reservation.php: Reservation CRUD, date-aware availability checking, manual room selection validation, front desk status actions, status syncing, dashboard summaries, operational alerts, occupancy reports, and reservation trend reports
+- app/models/Reservation.php: Reservation CRUD, date-aware availability checking, manual room selection validation, front desk status actions, recalculated room status syncing, dashboard summaries, operational alerts, occupancy reports, and reservation trend reports
 - app/models/Payment.php: Payment recording, automatic transaction references, simulated transaction logs, overpayment protection, payment status review, failed-payment alerts, payment summaries, and revenue reports
 - public/includes/room_catalog.php: Room catalog details and room type inclusions
 - database/schema.sql: Main database schema plus initial room seed data

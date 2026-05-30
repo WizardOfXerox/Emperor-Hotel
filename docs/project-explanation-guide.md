@@ -287,8 +287,8 @@ Important methods:
 | `create()` | Creates a reservation. |
 | `createAndGetId()` | Creates a reservation and returns its ID. |
 | `update()` | Updates a reservation. |
-| `delete()` | Deletes a reservation. |
-| `updateStatus()` | Changes reservation status and syncs room status. |
+| `delete()` | Deletes a reservation and recalculates the related room status. |
+| `updateStatus()` | Changes reservation status and recalculates room status from remaining active reservations. |
 | `extendStay()` | Extends an active reservation in the same room and increases the reservation total. |
 | `availableFrontDeskActions()` | Determines which buttons should appear based on current status. |
 | `applyFrontDeskAction()` | Applies Confirm, Check In, Check Out, or Cancel. |

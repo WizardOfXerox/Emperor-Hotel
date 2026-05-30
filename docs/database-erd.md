@@ -176,7 +176,7 @@ Relationships:
 
 - Deleting a guest cascades to related reservations.
 - Deleting a room is restricted if reservations depend on it.
-- Reservation status changes can sync the room status in the PHP model.
+- Reservation status changes and deletes recalculate the room status from remaining active reservations in the PHP model.
 
 ### payments
 

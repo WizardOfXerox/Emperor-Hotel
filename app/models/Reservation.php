@@ -111,7 +111,7 @@ class Reservation
         $reservationId = $saved ? (int) $this->db->lastInsertId() : 0;
 
         if ($saved) {
-            $this->syncRoomStatus((int) $data['room_id'], $data['status']);
+            $this->syncRoomStatus((int) $data['room_id']);
         }
 
         return $reservationId;
@@ -167,10 +167,10 @@ class Reservation
 
         if ($saved) {
             if ((int) $existing['room_id'] !== (int) $data['room_id']) {
-                $this->syncRoomStatus((int) $existing['room_id'], 'Available');
+                $this->syncRoomStatus((int) $existing['room_id']);
             }
 
-            $this->syncRoomStatus((int) $data['room_id'], $data['status']);
+            $this->syncRoomStatus((int) $data['room_id']);
         }
 
         return $saved;
@@ -188,7 +188,7 @@ class Reservation
         $deleted = $statement->execute(['reservation_id' => $reservationId]);
 
         if ($deleted) {
-            $this->syncRoomStatus((int) $existing['room_id'], 'Available');
+            $this->syncRoomStatus((int) $existing['room_id']);
         }
 
         return $deleted;
@@ -211,7 +211,7 @@ class Reservation
         ]);
 
         if ($saved) {
-            $this->syncRoomStatus((int) $existing['room_id'], $status);
+            $this->syncRoomStatus((int) $existing['room_id']);
         }
 
         return $saved;
@@ -277,7 +277,7 @@ class Reservation
             'reservation_id' => $reservationId,
         ]);
 
-        $this->syncRoomStatus((int) $reservation['room_id'], (string) $reservation['status']);
+        $this->syncRoomStatus((int) $reservation['room_id']);
 
         return [
             'old_check_out' => (string) $reservation['check_out'],
@@ -637,13 +637,39 @@ class Reservation
         return $statement->fetchAll();
     }
 
-    private function syncRoomStatus(int $roomId, string $reservationStatus): void
+    private function syncRoomStatus(int $roomId): void
     {
-        $roomStatus = match ($reservationStatus) {
-            'Checked-in' => 'Occupied',
-            'Cancelled', 'Checked-out' => 'Available',
-            default => 'Reserved',
-        };
+        $roomStatement = $this->db->prepare('SELECT status FROM rooms WHERE room_id = :room_id LIMIT 1');
+        $roomStatement->execute(['room_id' => $roomId]);
+        $currentStatus = $roomStatement->fetchColumn();
+
+        if ($currentStatus === false) {
+            return;
+        }
+
+        $activeStatement = $this->db->prepare(
+            "SELECT status
+             FROM reservations
+             WHERE room_id = :room_id
+               AND status NOT IN ('Cancelled', 'Checked-out')
+             ORDER BY
+                CASE WHEN status = 'Checked-in' THEN 0 ELSE 1 END,
+                check_in ASC,
+                reservation_id ASC
+             LIMIT 1"
+        );
+        $activeStatement->execute(['room_id' => $roomId]);
+        $activeStatus = $activeStatement->fetchColumn();
+
+        if ($activeStatus === 'Checked-in') {
+            $roomStatus = 'Occupied';
+        } elseif ($activeStatus !== false) {
+            $roomStatus = 'Reserved';
+        } else {
+            $roomStatus = in_array($currentStatus, ['Cleaning', 'Maintenance'], true)
+                ? (string) $currentStatus
+                : 'Available';
+        }
 
         $statement = $this->db->prepare('UPDATE rooms SET status = :status WHERE room_id = :room_id');
         $statement->execute([
