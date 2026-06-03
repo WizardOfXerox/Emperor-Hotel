@@ -16,6 +16,7 @@ This folder contains the main project documentation for the Emperor Hotel Reserv
 | `dashboard-feature-tracker.md` | Tracks implemented, partial, missing, and future dashboard/admin features. |
 | `project-explanation-guide.md` | Explains how the whole project works for presentation, defense, and code walkthroughs. |
 | `code-explanation.md` | Gives a detailed code-level walkthrough of folders, models, pages, reservation flow, payments, room XML, validation, and the Manage modal. |
+| `rubric-presentation-guide.md` | Maps the grading requirements to the actual project features, files, demo flow, and defense scripts. |
 
 ## Important Note
 
