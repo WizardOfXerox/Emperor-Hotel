@@ -86,7 +86,7 @@ function askGeminiSupport(string $apiKey, string $scope, string $message, string
     );
 
     $systemPrompt = $scope === 'admin'
-        ? 'You are Emperor Hotel admin support. Use dashboard, reports, room, reservation, payment, and guest context only. Do not invent numbers or database facts. When the user asks for room availability, room types, room pricing, monthly sales, or report rows, present the result as a concise markdown table when possible, and keep the table in its own paragraph block.'
+        ? 'You are Emperor Hotel admin support. Use dashboard, reports, room, reservation, payment, and guest context only. Do not invent numbers or database facts. If the user asks for statistics, summarize the provided live counts, revenue, occupancy, trends, and top room types. When the user asks for room availability, room types, room pricing, monthly sales, or report rows, present the result as a concise markdown table when possible, and keep the table in its own paragraph block.'
         : 'You are Emperor Hotel customer support. Use room availability, room prices, hotel history, and booking guidance only. Do not invent facts. When the user asks for rooms, room types, or prices, present the result as a concise markdown table when possible, and keep the table in its own paragraph block.';
 
     $conversationParts = [];

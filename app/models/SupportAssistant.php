@@ -39,6 +39,10 @@ class SupportAssistant
         }
 
         if ($scope === 'admin') {
+            if ($this->isStatisticsIntent($normalized)) {
+                return $this->adminStatisticsReply($normalized, $range);
+            }
+
             if ($adminIntent) {
                 if ($this->matchesAny($normalized, ['monthly sales', 'sales', 'revenue', 'income', 'monthly report'])) {
                     return $this->adminSalesReply($range);
@@ -316,6 +320,88 @@ class SupportAssistant
         return $this->reply($lines, 'admin-overview');
     }
 
+    private function adminStatisticsReply(string $text, array $range): array
+    {
+        $dashboardSummary = $this->reservationModel->dashboardSummary();
+        $roomSummary = $this->roomModel->statusSummary();
+        $typeSummary = $this->roomModel->typeSummary();
+        $monthlyPerformance = $this->reservationModel->monthlyPerformance();
+        $revenueReport = $this->paymentModel->revenueReport($range['start'], $range['end']);
+        $trendReport = $this->reservationModel->reservationTrendReport($range['start'], $range['end']);
+        $occupancyReport = $this->reservationModel->occupancyReport($range['start'], $range['end']);
+
+        $topRoomType = null;
+        $topRevenue = 0.0;
+
+        foreach ($revenueReport['by_room_type'] as $row) {
+            $revenue = (float) $row['confirmed_revenue'];
+            if ($revenue > $topRevenue) {
+                $topRevenue = $revenue;
+                $topRoomType = (string) $row['room_type'];
+            }
+        }
+
+        $lines = [
+            'Admin statistics:',
+            sprintf('- Customers this month: %d', (int) $dashboardSummary['customers_this_month']),
+            sprintf('- Pending reservations: %d', (int) $dashboardSummary['pending_reservations']),
+            sprintf('- Available rooms: %d', (int) $roomSummary['available']),
+            sprintf('- Rooms not available: %d', (int) $roomSummary['not_available']),
+            sprintf('- Confirmed revenue for range: %s', formatMoney((float) $revenueReport['total_revenue'])),
+            sprintf('- Reservations created for range: %d', (int) $trendReport['total_reservations']),
+            sprintf('- Occupancy rate for range: %s', number_format((float) $occupancyReport['occupancy_rate'], 1) . '%'),
+        ];
+
+        if ($topRoomType !== null) {
+            $lines[] = sprintf('- Top room type by revenue: %s (%s)', $topRoomType, formatMoney($topRevenue));
+        }
+
+        $lines[] = '';
+        $lines[] = 'Room inventory by type:';
+        $lines[] = '| Type | Total rooms | Available | Lowest price |';
+        $lines[] = '| --- | --- | --- | --- |';
+
+        foreach ($typeSummary as $roomType => $summary) {
+            $lines[] = sprintf(
+                '| %s | %d | %d | %s |',
+                $roomType,
+                (int) $summary['total'],
+                (int) $summary['available'],
+                formatMoney((float) $summary['lowest_price']) . ' / night'
+            );
+        }
+
+        $lines[] = '';
+        $lines[] = 'Monthly performance snapshot:';
+        foreach ($monthlyPerformance as $row) {
+            $lines[] = sprintf(
+                '- %s | bookings: %d | income: %s',
+                $row['month_label'],
+                (int) $row['rooms_booked'],
+                formatMoney((float) $row['income'])
+            );
+        }
+
+        if ($this->matchesAny($text, ['today', 'today statistics', 'daily statistics', 'today revenue'])) {
+            $today = new DateTimeImmutable('today');
+            $todayRange = [
+                'start' => $today->format('Y-m-d'),
+                'end' => $today->format('Y-m-d'),
+            ];
+            $todayRevenue = $this->paymentModel->revenueReport($todayRange['start'], $todayRange['end']);
+            $todayTrend = $this->reservationModel->reservationTrendReport($todayRange['start'], $todayRange['end']);
+            $todayOccupancy = $this->reservationModel->occupancyReport($todayRange['start'], $todayRange['end']);
+
+            $lines[] = '';
+            $lines[] = 'Today statistics:';
+            $lines[] = sprintf('- Revenue today: %s', formatMoney((float) $todayRevenue['total_revenue']));
+            $lines[] = sprintf('- Reservations today: %d', (int) $todayTrend['total_reservations']);
+            $lines[] = sprintf('- Occupancy today: %s', number_format((float) $todayOccupancy['occupancy_rate'], 1) . '%');
+        }
+
+        return $this->reply($lines, 'admin-statistics');
+    }
+
     private function adminSalesReply(array $range): array
     {
         if (!$range) {
@@ -411,7 +497,12 @@ class SupportAssistant
 
     private function hasAdminIntent(string $text): bool
     {
-        return $this->matchesAny($text, ['dashboard', 'sales', 'revenue', 'income', 'graph', 'chart', 'occupancy', 'report', 'reservations', 'payments', 'alerts', 'room stats']);
+        return $this->matchesAny($text, ['dashboard', 'sales', 'revenue', 'income', 'graph', 'chart', 'occupancy', 'report', 'reservations', 'payments', 'alerts', 'room stats', 'statistics', 'stats', 'analytics', 'summary']);
+    }
+
+    private function isStatisticsIntent(string $text): bool
+    {
+        return $this->matchesAny($text, ['statistics', 'stats', 'analytics', 'summary', 'overview', 'numbers', 'metrics', 'performance', 'trend', 'how many', 'what is the revenue', 'what are the numbers']);
     }
 
     private function findBestDatasetMatch(string $normalizedMessage): ?array
