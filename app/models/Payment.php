@@ -72,6 +72,7 @@ class Payment
 
         $this->assertPaymentWillNotOverpay($reservationId, $amount, $paymentStatus);
 
+        // SQL: Inserts a payment log with an auto-generated reference tied to one reservation.
         $statement = $this->db->prepare(
             'INSERT INTO payments (reservation_id, amount, payment_method, payment_status, transaction_reference)
              VALUES (:reservation_id, :amount, :payment_method, :payment_status, :transaction_reference)'
@@ -97,6 +98,7 @@ class Payment
 
     public function all(): array
     {
+        // SQL: Lists all transaction logs with reservation, guest, and room details for the admin Payments page.
         $statement = $this->db->query(
             "SELECT p.*, r.reservation_id, r.total_amount, g.first_name, g.last_name, rm.room_number
              FROM payments p
@@ -150,6 +152,7 @@ class Payment
 
         $this->assertPaymentWillNotOverpay((int) $payment['reservation_id'], $amount, $paymentStatus, $paymentId);
 
+        // SQL: Reviews a pending transaction by updating its amount and status.
         $statement = $this->db->prepare(
             'UPDATE payments
              SET amount = :amount, payment_status = :payment_status
@@ -174,6 +177,7 @@ class Payment
             return false;
         }
 
+        // SQL: Reads the reservation connected to this payment before deciding whether to auto-confirm it.
         $statement = $this->db->prepare(
             "SELECT reservation_id, room_id, status
              FROM reservations
@@ -187,6 +191,7 @@ class Payment
             return false;
         }
 
+        // SQL: Marks the reservation Confirmed once confirmed payments cover the full reservation total.
         $updateReservation = $this->db->prepare(
             "UPDATE reservations
              SET status = 'Confirmed'
@@ -195,6 +200,7 @@ class Payment
         $updated = $updateReservation->execute(['reservation_id' => $reservationId]);
 
         if ($updated) {
+            // SQL: Keeps the room status in sync by marking the fully paid reservation's room as Reserved.
             $updateRoom = $this->db->prepare(
                 "UPDATE rooms
                  SET status = 'Reserved'
@@ -208,6 +214,7 @@ class Payment
 
     public function find(int $paymentId): ?array
     {
+        // SQL: Finds one payment log by primary key for review/update validation.
         $statement = $this->db->prepare('SELECT * FROM payments WHERE payment_id = :payment_id LIMIT 1');
         $statement->execute(['payment_id' => $paymentId]);
         $payment = $statement->fetch();
@@ -219,6 +226,7 @@ class Payment
     {
         $this->assertReservationExists($reservationId);
 
+        // SQL: Lists all payment logs for one reservation, newest first.
         $statement = $this->db->prepare(
             'SELECT *
              FROM payments
@@ -232,6 +240,8 @@ class Payment
 
     public function totalsByReservation(): array
     {
+        // SQL: Aggregates payment totals per reservation for booking history, receipts, and admin summaries.
+        // CASE expressions split confirmed payments from pending payment logs.
         $statement = $this->db->query(
             "SELECT reservation_id,
                     COALESCE(SUM(amount), 0) AS logged_amount,
@@ -258,10 +268,12 @@ class Payment
     {
         $this->assertReservationExists($reservationId);
 
+        // SQL: Reads the reservation total before comparing it with payment totals.
         $reservationStatement = $this->db->prepare('SELECT total_amount FROM reservations WHERE reservation_id = :reservation_id');
         $reservationStatement->execute(['reservation_id' => $reservationId]);
         $reservationTotal = (float) $reservationStatement->fetchColumn();
 
+        // SQL: Totals one reservation's payments and can exclude the payment currently being edited.
         $sql = "SELECT
                     COALESCE(SUM(amount), 0) AS logged_amount,
                     COALESCE(SUM(CASE WHEN payment_status = 'Confirmed' THEN amount ELSE 0 END), 0) AS confirmed_amount,
@@ -294,6 +306,7 @@ class Payment
 
     public function recent(int $limit = 5): array
     {
+        // SQL: Reads the latest payment activity with guest names for dashboard widgets.
         $statement = $this->db->prepare(
             "SELECT p.*, g.first_name, g.last_name
              FROM payments p
@@ -310,6 +323,7 @@ class Payment
 
     public function revenueThisMonth(): float
     {
+        // SQL: Sums confirmed payments from the current month for the dashboard revenue card.
         return (float) $this->db->query(
             "SELECT COALESCE(SUM(amount), 0)
              FROM payments
@@ -320,6 +334,7 @@ class Payment
 
     public function summaryByStatus(): array
     {
+        // SQL: Groups payment logs by review status for the payment status chart.
         $statement = $this->db->query(
             "SELECT payment_status, COUNT(*) AS total_count, COALESCE(SUM(amount), 0) AS total_amount
              FROM payments
@@ -332,6 +347,7 @@ class Payment
 
     public function failedPayments(int $limit = 5): array
     {
+        // SQL: Lists recent failed payments with guest and room details for admin attention.
         $statement = $this->db->prepare(
             "SELECT p.*, g.first_name, g.last_name, rm.room_number
              FROM payments p
@@ -352,6 +368,7 @@ class Payment
     {
         $this->validateReportDateRange($startDate, $endDate);
 
+        // SQL: Sums confirmed revenue inside the selected report date range.
         $totalStatement = $this->db->prepare(
             "SELECT COALESCE(SUM(amount), 0)
              FROM payments
@@ -363,6 +380,7 @@ class Payment
             'end_date' => $endDate,
         ]);
 
+        // SQL: Uses LEFT JOINs so every room type appears even if it has no revenue in the range.
         $typeStatement = $this->db->prepare(
             "SELECT
                 rm.room_type,
@@ -382,6 +400,7 @@ class Payment
             'end_date' => $endDate,
         ]);
 
+        // SQL: Groups confirmed revenue by payment method for the reports page.
         $methodStatement = $this->db->prepare(
             "SELECT
                 payment_method,
@@ -411,6 +430,7 @@ class Payment
             throw new RuntimeException('Please choose a reservation before saving a payment.');
         }
 
+        // SQL: Confirms the reservation exists before a payment is inserted or reviewed.
         $statement = $this->db->prepare('SELECT COUNT(*) FROM reservations WHERE reservation_id = :reservation_id');
         $statement->execute(['reservation_id' => $reservationId]);
 

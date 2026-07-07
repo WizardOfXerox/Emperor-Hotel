@@ -24,6 +24,7 @@ class Reservation
 
     public function all(): array
     {
+        // SQL: Lists all reservations with guest, room, and optional user account details for admin records.
         $statement = $this->db->query(
             "SELECT r.*, g.first_name, g.last_name, g.email AS guest_email, g.phone,
                     rm.room_number, rm.room_type, u.full_name AS user_name
@@ -39,6 +40,7 @@ class Reservation
 
     public function find(int $reservationId): ?array
     {
+        // SQL: Finds one reservation with guest and room details for editing, receipts, and modal views.
         $statement = $this->db->prepare(
             "SELECT r.*, g.first_name, g.last_name, g.email AS guest_email, g.phone,
                     rm.room_number, rm.room_type
@@ -56,6 +58,7 @@ class Reservation
 
     public function userReservations(int $userId): array
     {
+        // SQL: Lists reservations owned by one logged-in user for the customer booking history.
         $statement = $this->db->prepare(
             "SELECT r.*, rm.room_number, rm.room_type, g.first_name, g.last_name
              FROM reservations r
@@ -86,6 +89,7 @@ class Reservation
             throw new RuntimeException('The selected room is not available for those dates.');
         }
 
+        // SQL: Creates a reservation after validating dates, room availability, guest, status, and total amount.
         $statement = $this->db->prepare(
             'INSERT INTO reservations (user_id, guest_id, room_id, check_in, check_out, total_amount, status)
              VALUES (:user_id, :guest_id, :room_id, :check_in, :check_out, :total_amount, :status)'
@@ -128,6 +132,7 @@ class Reservation
             throw new RuntimeException('The selected room is not available for those dates.');
         }
 
+        // SQL: Updates the reservation details and rechecks availability while excluding this same reservation.
         $statement = $this->db->prepare(
             'UPDATE reservations
              SET guest_id = :guest_id,
@@ -168,6 +173,7 @@ class Reservation
             return false;
         }
 
+        // SQL: Deletes one reservation by primary key. Payment logs cascade through the database relationship.
         $statement = $this->db->prepare('DELETE FROM reservations WHERE reservation_id = :reservation_id');
         $deleted = $statement->execute(['reservation_id' => $reservationId]);
 
@@ -188,6 +194,7 @@ class Reservation
 
         $this->assertStatus($status);
 
+        // SQL: Changes only the reservation status for front desk actions such as Confirm, Check In, and Check Out.
         $statement = $this->db->prepare('UPDATE reservations SET status = :status WHERE reservation_id = :reservation_id');
         $saved = $statement->execute([
             'status' => $status,
@@ -245,6 +252,7 @@ class Reservation
         $additionalAmount = $extraNights * (float) $room['price_per_night'];
         $newTotal = (float) $reservation['total_amount'] + $additionalAmount;
 
+        // SQL: Extends the stay by changing check-out date and increasing the reservation total.
         $statement = $this->db->prepare(
             'UPDATE reservations
              SET check_out = :check_out,
@@ -311,6 +319,7 @@ class Reservation
 
     public function roomsWithDateAvailability(string $checkIn, string $checkOut, ?int $excludeReservationId = null): array
     {
+        // SQL: Reads all rooms first, then each room is checked against the selected date range.
         $rooms = $this->db->query('SELECT * FROM rooms ORDER BY floor ASC, room_number ASC')->fetchAll();
 
         if (!$this->dateRangeIsValid($checkIn, $checkOut)) {
@@ -345,6 +354,7 @@ class Reservation
             return false;
         }
 
+        // SQL: Counts active overlapping reservations. Zero means the room is free for the requested dates.
         $sql = "SELECT COUNT(*)
                 FROM reservations
                 WHERE room_id = :room_id
@@ -370,6 +380,7 @@ class Reservation
 
     public function operationalAlerts(): array
     {
+        // SQL: Finds checked-in reservations whose check-out date has already passed.
         $overdueStatement = $this->db->query(
             "SELECT r.reservation_id, r.check_out, g.first_name, g.last_name, rm.room_number, rm.room_type
              FROM reservations r
@@ -381,6 +392,7 @@ class Reservation
              LIMIT 5"
         );
 
+        // SQL: Self-joins reservations to detect active date overlaps for the same room.
         $conflictStatement = $this->db->query(
             "SELECT rm.room_number, rm.room_type, COUNT(*) AS conflict_pairs
              FROM reservations r1
@@ -408,6 +420,8 @@ class Reservation
         [$start, $end] = $this->validateReportDateRange($startDate, $endDate);
         $days = ((int) $start->diff($end)->days) + 1;
 
+        // SQL: Calculates booked room-nights per room type within the selected date range.
+        // LEAST/GREATEST count only the part of each reservation that overlaps the report range.
         $statement = $this->db->prepare(
             "SELECT
                 rm.room_type,
@@ -477,6 +491,7 @@ class Reservation
     public function reservationTrendReport(string $startDate, string $endDate): array
     {
         [$start, $end] = $this->validateReportDateRange($startDate, $endDate);
+        // SQL: Groups reservation creation counts by date for the trend report.
         $statement = $this->db->prepare(
             "SELECT
                 DATE(created_at) AS reservation_date,
@@ -529,16 +544,19 @@ class Reservation
 
     public function dashboardSummary(): array
     {
+        // SQL: Counts unique guests with reservations created this month.
         $customersThisMonth = (int) $this->db->query(
             "SELECT COUNT(DISTINCT guest_id)
              FROM reservations
              WHERE DATE_FORMAT(created_at, '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m')"
         )->fetchColumn();
 
+        // SQL: Counts reservations still waiting for confirmation/payment review.
         $pendingReservations = (int) $this->db->query(
             "SELECT COUNT(*) FROM reservations WHERE status = 'Pending'"
         )->fetchColumn();
 
+        // SQL: Counts confirmed or checked-in reservations checking out within the next 3 days.
         $upcomingCheckouts = (int) $this->db->query(
             "SELECT COUNT(*)
              FROM reservations
@@ -555,6 +573,7 @@ class Reservation
 
     public function monthlyPerformance(): array
     {
+        // SQL: Groups reservations by month and sums confirmed payment income for dashboard charts.
         $statement = $this->db->query(
             "SELECT DATE_FORMAT(r.created_at, '%b %Y') AS month_label,
                     COUNT(*) AS rooms_booked,
@@ -576,6 +595,7 @@ class Reservation
         $statuses = ['Pending', 'Confirmed', 'Checked-in', 'Checked-out', 'Cancelled'];
         $counts = array_fill_keys($statuses, 0);
 
+        // SQL: Counts reservations by status for the reservation status chart.
         $statement = $this->db->query(
             "SELECT status, COUNT(*) AS total
              FROM reservations
@@ -599,6 +619,7 @@ class Reservation
 
     public function recent(int $limit = 5): array
     {
+        // SQL: Reads the newest reservations with guest and room details for dashboard activity.
         $statement = $this->db->prepare(
             "SELECT r.reservation_id, r.status, r.check_in, r.check_out, r.total_amount,
                     g.first_name, g.last_name, rm.room_number, rm.room_type
@@ -616,6 +637,7 @@ class Reservation
 
     private function syncRoomStatus(int $roomId): void
     {
+        // SQL: Confirms the room exists before recalculating its status.
         $roomStatement = $this->db->prepare('SELECT status FROM rooms WHERE room_id = :room_id LIMIT 1');
         $roomStatement->execute(['room_id' => $roomId]);
         $currentStatus = $roomStatement->fetchColumn();
@@ -624,6 +646,8 @@ class Reservation
             return;
         }
 
+        // SQL: Finds the highest-priority active reservation for this room.
+        // Checked-in wins over reserved/pending statuses because it means the room is physically occupied.
         $activeStatement = $this->db->prepare(
             "SELECT status
              FROM reservations
@@ -646,6 +670,7 @@ class Reservation
             $roomStatus = 'Available';
         }
 
+        // SQL: Writes the calculated room status back to the rooms table.
         $statement = $this->db->prepare('UPDATE rooms SET status = :status WHERE room_id = :room_id');
         $statement->execute([
             'status' => $roomStatus,
@@ -655,6 +680,7 @@ class Reservation
 
     private function roomHasActiveOverlap(int $roomId, string $checkIn, string $checkOut, ?int $excludeReservationId = null): bool
     {
+        // SQL: Counts active overlapping reservations for extension validation.
         $sql = "SELECT COUNT(*)
                 FROM reservations
                 WHERE room_id = :room_id
@@ -743,6 +769,7 @@ class Reservation
             throw new RuntimeException('Please choose a valid room.');
         }
 
+        // SQL: Verifies that the selected room exists before creating or updating a reservation.
         $statement = $this->db->prepare('SELECT * FROM rooms WHERE room_id = :room_id LIMIT 1');
         $statement->execute(['room_id' => $roomId]);
         $room = $statement->fetch();
@@ -760,6 +787,7 @@ class Reservation
             throw new RuntimeException('Please choose or create a valid guest record.');
         }
 
+        // SQL: Verifies that the selected guest exists before saving a reservation.
         $statement = $this->db->prepare('SELECT COUNT(*) FROM guests WHERE guest_id = :guest_id');
         $statement->execute(['guest_id' => $guestId]);
 

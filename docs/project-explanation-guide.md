@@ -45,6 +45,7 @@ It can:
 - Search guest history.
 - Show dashboard charts and reports.
 - Import and export room records through XML. XML is only used for room records, not every database table.
+- Provide an AI support chat that answers customer and admin questions from live hotel data first, then uses Gemini when the request is conversational or outside the local dataset rules.
 
 It does not process real online payments yet. Online/card/bank payment modes are simulated for demonstration.
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/layout.php';
+require_once __DIR__ . '/../includes/room_showcase.php';
 
 $user = currentUser();
 $dashboardHref = '../auth/login.php';
@@ -14,7 +15,7 @@ if ($user) {
     $dashboardLabel = 'DASHBOARD';
 }
 
-renderHeader('Home | Emperor Hotel', ['../assets/css/site/home.css'], 'home-showcase-page');
+renderHeader('Home | Emperor Hotel', ['../assets/css/site/home.css', '../assets/css/site/rooms.css'], 'home-showcase-page');
 ?>
 <nav class="home-nav" aria-label="Primary navigation">
     <div class="home-nav__container">
@@ -24,7 +25,7 @@ renderHeader('Home | Emperor Hotel', ['../assets/css/site/home.css'], 'home-show
 
         <div class="home-nav__links">
             <a class="home-nav__link home-nav__link--active" href="home.php">HOME</a>
-            <a class="home-nav__link" href="rooms.php">SUITES &amp; ROOM</a>
+            <a class="home-nav__link" href="#suites-rooms">SUITES &amp; ROOM</a>
         </div>
 
         <div class="home-nav__auth">
@@ -49,11 +50,15 @@ renderHeader('Home | Emperor Hotel', ['../assets/css/site/home.css'], 'home-show
         <div class="home-hero__content">
             <h1>EMPEROR'S HOTEL</h1>
             <p>HOME SECTION</p>
-            <a href="rooms.php">SUITES &amp; ROOM</a>
+            <a href="#suites-rooms">SUITES &amp; ROOM</a>
         </div>
     </section>
+
+    <?php renderRoomShowcaseSection(); ?>
 </main>
+<?php renderSupportWidget('customer'); ?>
 
 <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/support-widget.js" defer></script>
 </body>
 </html>

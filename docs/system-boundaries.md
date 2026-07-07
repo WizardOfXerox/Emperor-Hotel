@@ -8,7 +8,7 @@ Emperor Hotel Reservation and Management System
 
 The Emperor Hotel Reservation and Management System is a web-based hotel reservation and front desk management system. It is designed for a local XAMPP environment using Core PHP, MySQL, and browser-based pages.
 
-The system supports public hotel browsing, user registration and login, customer reservations, side-by-side customer room selection, admin walk-in reservation management, date-aware room availability, check-in/check-out actions, guest search/history, payment recording, printable receipts, user management, operational alerts, and dashboard/reporting pages.
+The system supports public hotel browsing, user registration and login, customer reservations, side-by-side customer room selection, admin walk-in reservation management, date-aware room availability, check-in/check-out actions, guest search/history, payment recording, printable receipts, user management, operational alerts, dashboard/reporting pages, and an AI support widget for customer and admin questions.
 
 ## What The System Will Do
 
@@ -25,6 +25,7 @@ The system will provide these main functions:
 | Payment management | Allows customers to submit simulated non-cash payments for their own reservations and allows admins to generate automatic pending cash payment references for cash reservations, route card/bank/online methods to the Payments page, record payments, create simulated transactions, automatically generate transaction references, enforce overpayment rules, view cost/balance tracking, view summaries, and review transaction logs. |
 | Receipt printing | Allows admins to open and print reservation receipts with guest, stay, payment, balance, and transaction details. |
 | Dashboard reporting | Shows summary cards, operational alerts, recent records, Chart.js visual reports, and a dedicated Reports page for occupancy, revenue, and reservation trends. |
+| AI support widget | Lets guests and admins ask database-aware questions through a Gemini-powered support panel that prefers live hotel data, tables, and report context before falling back to AI narration. |
 | Room XML import/export | Allows room records to be exported and imported using XML with PHP DOMDocument. Other tables use normal PHP/MySQL CRUD pages. |
 | Database storage | Stores users, guests, rooms, reservations, and payments in MySQL. |
 
@@ -54,6 +55,7 @@ The system is not intended to support these features in the current version:
 | Frontend UI | Bootstrap 5.3.3 | Provides responsive layout, forms, buttons, tables, alerts, and carousel behavior. |
 | Icons | Bootstrap Icons 1.11.3 | Provides icons for admin navigation and UI indicators. |
 | Charts | Chart.js 4.5.1 | Renders admin dashboard charts. |
+| AI support | Gemini API | Powers the support widget when the local database response is not enough. |
 | Fonts | Local Google Fonts files | Provides DM Sans and DM Serif Display typography without runtime CDN dependency. |
 | Styling | Shared and page-specific custom CSS | Keeps reusable styles in `public/assets/css/app.css` and page-only styles in grouped CSS folders. |
 | XML | PHP DOMDocument | Handles room XML import and export. |

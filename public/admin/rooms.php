@@ -9,12 +9,31 @@ require_once __DIR__ . '/../includes/room_catalog.php';
 requireAuth('../auth/login.php');
 requireRole('admin', '../user/dashboard.php');
 
+function roomFiltersQuery(array $params = []): string
+{
+    $allowedKeys = ['search', 'room_type', 'status', 'floor', 'sort', 'direction', 'page', 'per_page', 'edit'];
+    $query = [];
+
+    foreach ($allowedKeys as $key) {
+        if (array_key_exists($key, $params) && $params[$key] !== '' && $params[$key] !== null) {
+            $query[$key] = $params[$key];
+        }
+    }
+
+    foreach (['page', 'edit'] as $stripKey) {
+        unset($query[$stripKey]);
+    }
+
+    return $query ? '?' . http_build_query($query) : '';
+}
+
 $db = Database::connect();
 $currentAdmin = currentUser();
 $roomModel = new Room($db);
 $editRoom = null;
 $roomTypes = Room::types();
 $roomStatuses = Room::statuses();
+$roomData = null;
 
 if (isset($_GET['export']) && $_GET['export'] === 'xml') {
     header('Content-Type: application/xml; charset=UTF-8');
@@ -22,6 +41,20 @@ if (isset($_GET['export']) && $_GET['export'] === 'xml') {
     echo $roomModel->exportToXml();
     exit;
 }
+
+$filters = [
+    'search' => trim((string) ($_GET['search'] ?? '')),
+    'room_type' => trim((string) ($_GET['room_type'] ?? '')),
+    'status' => trim((string) ($_GET['status'] ?? '')),
+    'floor' => trim((string) ($_GET['floor'] ?? '')),
+    'sort' => trim((string) ($_GET['sort'] ?? 'floor')),
+    'direction' => trim((string) ($_GET['direction'] ?? 'asc')),
+    'per_page' => $perPage,
+];
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = (int) ($_GET['per_page'] ?? (getenv('ROOMS_PER_PAGE') ?: 10));
+$perPage = max(5, min(50, $perPage));
+$querySuffix = roomFiltersQuery($_GET);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string) ($_POST['action'] ?? '');
@@ -34,13 +67,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $result = $roomModel->importFromXml($_FILES['xml_file']['tmp_name']);
             setFlash('success', "XML import finished. Created: {$result['created']}, Updated: {$result['updated']}.");
-            redirect('rooms.php');
+            redirect('rooms.php' . $querySuffix);
         }
 
         if ($action === 'create') {
             $roomModel->create($_POST);
             setFlash('success', 'Room record created.');
-            redirect('rooms.php');
+            redirect('rooms.php' . $querySuffix);
         }
 
         if ($action === 'update_type_price') {
@@ -50,23 +83,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $updatedTypeSummary = $roomModel->typeSummary();
             $totalRooms = $updatedTypeSummary[$roomType]['total'] ?? 0;
             setFlash('success', "{$roomType} rate updated to " . formatMoney($pricePerNight) . " for {$totalRooms} room record(s).");
-            redirect('rooms.php');
+            redirect('rooms.php' . $querySuffix);
         }
 
         if ($action === 'update') {
             $roomModel->update((int) ($_POST['room_id'] ?? 0), $_POST);
             setFlash('success', 'Room record updated.');
-            redirect('rooms.php');
+            redirect('rooms.php' . $querySuffix);
         }
 
         if ($action === 'delete') {
             $roomModel->delete((int) ($_POST['room_id'] ?? 0));
             setFlash('success', 'Room record deleted.');
-            redirect('rooms.php');
+            redirect('rooms.php' . $querySuffix);
         }
     } catch (Throwable $exception) {
         setFlash('error', $exception->getMessage());
-        redirect('rooms.php');
+        redirect('rooms.php' . $querySuffix);
     }
 }
 
@@ -74,9 +107,17 @@ if (isset($_GET['edit'])) {
     $editRoom = $roomModel->find((int) $_GET['edit']);
 }
 
-$rooms = $roomModel->all();
+$roomData = $roomModel->paginated($filters, $page, $perPage);
+$rooms = $roomData['rows'];
 $summary = $roomModel->statusSummary();
 $typeSummary = $roomModel->typeSummary();
+$filterActiveCount = count(array_filter([
+    $filters['search'],
+    $filters['room_type'],
+    $filters['status'],
+    $filters['floor'],
+]));
+$paginationBase = roomFiltersQuery($filters);
 
 renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/rooms.css']);
 ?>
@@ -89,6 +130,77 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
         <p class="eyebrow mb-2">Not Available</p>
         <div class="stat-value"><?php echo e($summary['not_available']); ?></div>
     </article>
+    <article class="stat-tile">
+        <p class="eyebrow mb-2">Filtered Rooms</p>
+        <div class="stat-value"><?php echo e($roomData['total']); ?></div>
+    </article>
+</section>
+
+<section class="panel-card p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
+        <div>
+            <p class="eyebrow mb-1">Browse Rooms</p>
+            <h3 class="mb-0">Filters and Search</h3>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <span class="badge-soft"><?php echo e($filterActiveCount); ?> active filter(s)</span>
+            <a class="btn btn-outline-light btn-sm" href="rooms.php">Clear Filters</a>
+            <a class="btn btn-warning btn-sm fw-semibold" href="rooms.php?export=xml">Export XML</a>
+        </div>
+    </div>
+    <form method="get" class="row g-3">
+        <div class="col-lg-4">
+            <label class="form-label" for="search">Search</label>
+            <input class="form-control" id="search" name="search" type="search" value="<?php echo e($filters['search']); ?>" placeholder="Room number, type, or status">
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label" for="room_type">Room Type</label>
+            <select class="form-select" id="room_type" name="room_type">
+                <option value="">All</option>
+                <?php foreach ($roomTypes as $type): ?>
+                    <option value="<?php echo e($type); ?>" <?php echo $filters['room_type'] === $type ? 'selected' : ''; ?>><?php echo e($type); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label" for="status">Status</label>
+            <select class="form-select" id="status" name="status">
+                <option value="">All</option>
+                <?php foreach ($roomStatuses as $status): ?>
+                    <option value="<?php echo e($status); ?>" <?php echo $filters['status'] === $status ? 'selected' : ''; ?>><?php echo e($status); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label" for="floor">Floor</label>
+            <input class="form-control" id="floor" name="floor" type="number" min="1" step="1" value="<?php echo e($filters['floor']); ?>" placeholder="Any">
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label" for="per_page">Per Page</label>
+            <select class="form-select" id="per_page" name="per_page">
+                <?php foreach ([5, 10, 20, 50] as $option): ?>
+                    <option value="<?php echo e((string) $option); ?>" <?php echo $perPage === $option ? 'selected' : ''; ?>><?php echo e((string) $option); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="col-lg-4">
+            <label class="form-label" for="sort">Sort By</label>
+            <div class="input-group">
+                <select class="form-select" id="sort" name="sort">
+                    <?php foreach (['floor' => 'Floor', 'room_number' => 'Room Number', 'room_type' => 'Room Type', 'price_per_night' => 'Rate', 'status' => 'Status', 'created_at' => 'Created'] as $sortKey => $sortLabel): ?>
+                        <option value="<?php echo e($sortKey); ?>" <?php echo $filters['sort'] === $sortKey ? 'selected' : ''; ?>><?php echo e($sortLabel); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <select class="form-select" id="direction" name="direction">
+                    <option value="asc" <?php echo strtolower($filters['direction']) === 'asc' ? 'selected' : ''; ?>>Ascending</option>
+                    <option value="desc" <?php echo strtolower($filters['direction']) === 'desc' ? 'selected' : ''; ?>>Descending</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-lg-8 d-flex align-items-end justify-content-end gap-2">
+            <button class="btn btn-warning fw-semibold" type="submit">Apply Filters</button>
+        </div>
+    </form>
 </section>
 
 <section class="row g-4">
@@ -133,7 +245,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                 </div>
                 <button class="btn btn-warning fw-semibold" type="submit"><?php echo $editRoom ? 'Save Room' : 'Create Room'; ?></button>
                 <?php if ($editRoom): ?>
-                    <a class="btn btn-outline-light" href="rooms.php">Cancel Edit</a>
+                    <a class="btn btn-outline-light" href="rooms.php<?php echo e($paginationBase); ?>">Cancel Edit</a>
                 <?php endif; ?>
             </form>
         </div>
@@ -206,7 +318,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                     <p class="eyebrow mb-1">Inventory</p>
                     <h3 class="mb-0">Room Records</h3>
                 </div>
-                <span class="badge-soft"><?php echo e(count($rooms)); ?> rooms</span>
+                <span class="badge-soft"><?php echo e($roomData['total']); ?> room(s)</span>
             </div>
             <div class="table-responsive">
                 <table class="table table-dark-soft align-middle mb-0">
@@ -221,6 +333,11 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                         </tr>
                     </thead>
                     <tbody>
+                        <?php if (!$rooms): ?>
+                            <tr>
+                                <td colspan="6" class="text-light-emphasis">No rooms match the current filters.</td>
+                            </tr>
+                        <?php endif; ?>
                         <?php foreach ($rooms as $room): ?>
                             <tr>
                                 <td><?php echo e($room['room_number']); ?></td>
@@ -229,7 +346,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                                 <td><?php echo e(formatMoney((float) $room['price_per_night'])); ?></td>
                                 <td><span class="badge-soft"><?php echo e($room['status']); ?></span></td>
                                 <td class="text-end">
-                                    <a class="btn btn-sm btn-outline-light" href="rooms.php?edit=<?php echo e($room['room_id']); ?>">Edit</a>
+                                    <a class="btn btn-sm btn-outline-light" href="rooms.php<?php echo e($paginationBase . ($paginationBase === '' ? '?' : '&') . 'edit=' . urlencode((string) $room['room_id'])); ?>">Edit</a>
                                     <form method="post" class="d-inline">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="room_id" value="<?php echo e($room['room_id']); ?>">
@@ -241,6 +358,24 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                     </tbody>
                 </table>
             </div>
+
+            <?php if ($roomData['total_pages'] > 1): ?>
+                <nav class="mt-4" aria-label="Room pagination">
+                    <ul class="pagination pagination-sm flex-wrap gap-1 mb-0">
+                        <li class="page-item <?php echo $roomData['page'] <= 1 ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="rooms.php<?php echo e($paginationBase . ($paginationBase === '' ? '?' : '&') . 'page=' . max(1, $roomData['page'] - 1)); ?>">Previous</a>
+                        </li>
+                        <?php for ($index = 1; $index <= $roomData['total_pages']; $index++): ?>
+                            <li class="page-item <?php echo $index === $roomData['page'] ? 'active' : ''; ?>">
+                                <a class="page-link" href="rooms.php<?php echo e($paginationBase . ($paginationBase === '' ? '?' : '&') . 'page=' . $index); ?>"><?php echo e((string) $index); ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        <li class="page-item <?php echo $roomData['page'] >= $roomData['total_pages'] ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="rooms.php<?php echo e($paginationBase . ($paginationBase === '' ? '?' : '&') . 'page=' . min($roomData['total_pages'], $roomData['page'] + 1)); ?>">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            <?php endif; ?>
         </div>
     </div>
 </section>

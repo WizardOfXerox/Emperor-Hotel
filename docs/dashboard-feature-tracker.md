@@ -50,6 +50,7 @@ Current unresolved tracker rows:
 - Dashboard data is loaded from MySQL through model classes.
 - Chart.js is stored locally and used by the dashboard without Node.js.
 - Room, reservation, payment, and user admin modules are connected to the database.
+- The support widget now routes customer questions to live room and hotel data first, and admin questions to dashboard/report data first, before falling back to Gemini for open-ended replies.
 - Room type inclusions are stored as simple PHP catalog descriptions, not as a separate database table.
 - Room XML import/export is implemented with DOMDocument.
 - Public home and rooms pages are PHP pages backed by room catalog data and database-driven starting prices.
@@ -81,6 +82,8 @@ Current unresolved tracker rows:
 | Dashboard Overview | Room status chart | Done | Chart.js doughnut chart uses room status counts | Add click-through to filtered room table later |
 | Dashboard Overview | Payment status chart | Done | Chart.js doughnut chart uses payment status counts | Add payment date filters later |
 | Dashboard Overview | Alert panel | Done | Dashboard watchlist shows overdue check-outs, failed payments, and overlapping active reservation conflicts | Add notification delivery only if needed |
+| AI Support | Customer support chat widget | Done | The support widget answers customer room questions from the database, formats room availability and room types as tables, and falls back to Gemini for broader help | Add conversation logging only if needed |
+| AI Support | Admin support chat widget | Done | The support widget can read dashboard/reports context for admin questions and present room/report data in a table when useful | Add scoped audit logging later |
 | Rooms | Room listing table | Done | Admin room table loads live records from the database with room number, type, floor, rate, status, and actions | Add search/filter controls later |
 | Rooms | Room CRUD | Done | Admin can create, edit, and delete room records | Add delete guard messaging when room has reservations |
 | Rooms | Bulk room type price update | Done | Admin can set one price for all rooms under a selected room type | Add audit trail if required |

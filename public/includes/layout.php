@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 function renderHeader(string $title, array $extraStylesheets = [], string $bodyClass = ''): void
 {
+    $extraStylesheets[] = '../assets/css/support-widget.css';
     $extraStylesheetLinks = '';
 
     foreach ($extraStylesheets as $stylesheet) {
@@ -103,7 +104,9 @@ function renderAdminLayoutEnd(): void
     echo '</div>';
     echo '</main>';
     echo '</div>';
+    renderSupportWidget('admin');
     echo '<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>';
+    echo '<script src="../assets/js/support-widget.js" defer></script>';
     echo '</body></html>';
 }
 
@@ -146,6 +149,25 @@ function renderSiteLayoutEnd(): void
 {
     echo '</div>';
     echo '</main>';
+    renderSupportWidget('customer');
     echo '<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>';
+    echo '<script src="../assets/js/support-widget.js" defer></script>';
     echo '</body></html>';
+}
+
+function renderSupportWidget(string $scope): void
+{
+    $scope = in_array($scope, ['admin', 'customer'], true) ? $scope : 'customer';
+    $title = $scope === 'admin' ? 'Admin Support' : 'Customer Support';
+    $subtitle = $scope === 'admin'
+        ? 'Reads dashboard, sales, and operations data'
+        : 'Reads room availability and hotel info';
+    $welcome = $scope === 'admin'
+        ? 'Hello admin. Ask about monthly sales, date ranges, occupancy, or dashboard data.'
+        : 'Hello. Ask about available rooms, prices, room types, or hotel history.';
+    $hint = $scope === 'admin'
+        ? 'Try: "monthly sales this month" or "revenue from 2026-06-01 to 2026-06-30"'
+        : 'Try: "show available rooms" or "what are the room prices?"';
+
+    echo '<div data-support-widget data-support-api="../support/api.php" data-support-scope="' . e($scope) . '" data-support-title="' . e($title) . '" data-support-subtitle="' . e($subtitle) . '" data-support-welcome="' . e($welcome) . '" data-support-hint="' . e($hint) . '"></div>';
 }

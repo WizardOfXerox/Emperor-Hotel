@@ -104,7 +104,7 @@ renderAdminLayoutStart('Users', 'users', $currentAdmin, ['../assets/css/admin/us
                 <?php endif; ?>
                 <div>
                     <label class="form-label" for="full_name">Full Name</label>
-                    <input class="form-control" id="full_name" name="full_name" type="text" value="<?php echo e($editUser['full_name'] ?? ''); ?>" required>
+                    <input class="form-control" id="full_name" name="full_name" type="text" value="<?php echo e($editUser['full_name'] ?? ''); ?>" pattern="^[A-Za-z][A-Za-z .'-]*$" title="Use letters, spaces, periods, apostrophes, and hyphens only." required>
                 </div>
                 <div>
                     <label class="form-label" for="email">Email</label>
@@ -112,7 +112,7 @@ renderAdminLayoutStart('Users', 'users', $currentAdmin, ['../assets/css/admin/us
                 </div>
                 <div>
                     <label class="form-label" for="password">Password <?php if ($editUser): ?><span class="text-light-emphasis small">(leave blank to keep current)</span><?php endif; ?></label>
-                    <input class="form-control" id="password" name="password" type="password" <?php echo $editUser ? '' : 'required'; ?>>
+                    <input class="form-control" id="password" name="password" type="password" minlength="6" <?php echo $editUser ? '' : 'required'; ?>>
                 </div>
                 <div>
                     <label class="form-label" for="role">Role</label>

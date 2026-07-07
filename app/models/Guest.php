@@ -10,6 +10,7 @@ class Guest
 
     public function find(int $guestId): ?array
     {
+        // SQL: Finds one guest record by its primary key for editing and reservation links.
         $statement = $this->db->prepare('SELECT * FROM guests WHERE guest_id = :guest_id LIMIT 1');
         $statement->execute(['guest_id' => $guestId]);
         $guest = $statement->fetch();
@@ -19,6 +20,7 @@ class Guest
 
     public function findByEmail(string $email): ?array
     {
+        // SQL: Finds a guest by email so reservation forms can reuse an existing guest record.
         $statement = $this->db->prepare('SELECT * FROM guests WHERE email = :email LIMIT 1');
         $statement->execute(['email' => $email]);
         $guest = $statement->fetch();
@@ -28,6 +30,7 @@ class Guest
 
     public function findByUserId(int $userId): ?array
     {
+        // SQL: Finds the guest profile linked to a registered user account.
         $statement = $this->db->prepare('SELECT * FROM guests WHERE user_id = :user_id LIMIT 1');
         $statement->execute(['user_id' => $userId]);
         $guest = $statement->fetch();
@@ -48,6 +51,8 @@ class Guest
             $params['term'] = '%' . $term . '%';
         }
 
+        // SQL: Lists guests with reservation count, last stay, and total spending.
+        // The LEFT JOIN keeps guests visible even when they have no reservations yet.
         $statement = $this->db->prepare(
             "SELECT g.*,
                     COALESCE(stats.reservation_count, 0) AS reservation_count,
@@ -72,6 +77,8 @@ class Guest
 
     public function reservationHistory(int $guestId): array
     {
+        // SQL: Shows a guest's booking history with room details and payment totals.
+        // The payment subquery separates confirmed money from pending payment logs.
         $statement = $this->db->prepare(
             "SELECT r.*,
                     rm.room_number,
@@ -99,6 +106,7 @@ class Guest
     {
         $this->validateGuestData($data);
 
+        // SQL: Creates a guest profile that can be used by reservations and walk-in bookings.
         $statement = $this->db->prepare(
             'INSERT INTO guests (user_id, first_name, last_name, phone, email) VALUES (:user_id, :first_name, :last_name, :phone, :email)'
         );
@@ -117,6 +125,7 @@ class Guest
     {
         $this->validateGuestData($data);
 
+        // SQL: Updates contact/profile details for one guest record.
         $statement = $this->db->prepare(
             'UPDATE guests SET user_id = :user_id, first_name = :first_name, last_name = :last_name, phone = :phone, email = :email WHERE guest_id = :guest_id'
         );
@@ -133,6 +142,7 @@ class Guest
 
     public function delete(int $guestId): bool
     {
+        // SQL: Deletes one guest record by primary key.
         $statement = $this->db->prepare('DELETE FROM guests WHERE guest_id = :guest_id');
 
         return $statement->execute(['guest_id' => $guestId]);
@@ -199,6 +209,9 @@ class Guest
             throw new RuntimeException('Guest first name and last name are required.');
         }
 
+        $this->validateNamePart($firstName, 'Guest first name');
+        $this->validateNamePart($lastName, 'Guest last name');
+
         if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new RuntimeException('Please enter a valid guest email address.');
         }
@@ -209,6 +222,13 @@ class Guest
 
         if (strlen($phone) > 30) {
             throw new RuntimeException('Guest phone number is too long.');
+        }
+    }
+
+    private function validateNamePart(string $name, string $label): void
+    {
+        if (!preg_match("/^[\\p{L}](?:[\\p{L} .'-]*[\\p{L}.])?$/u", $name)) {
+            throw new RuntimeException($label . ' can only include letters, spaces, periods, apostrophes, and hyphens.');
         }
     }
 }

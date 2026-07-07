@@ -28,13 +28,64 @@ class Room
 
     public function all(): array
     {
+        // SQL: Reads the complete room inventory in floor/room-number order for room lists and XML export.
         $statement = $this->db->query('SELECT * FROM rooms ORDER BY floor ASC, room_number ASC');
 
         return $statement->fetchAll();
     }
 
+    public function paginated(array $filters = [], int $page = 1, int $perPage = 10): array
+    {
+        $page = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+
+        [$whereSql, $params] = $this->buildRoomFilterSql($filters);
+        $sortKey = (string) ($filters['sort'] ?? 'floor');
+        $direction = strtolower((string) ($filters['direction'] ?? 'asc')) === 'desc' ? 'DESC' : 'ASC';
+        $sortableColumns = [
+            'floor' => 'floor',
+            'room_number' => 'room_number',
+            'room_type' => 'room_type',
+            'price_per_night' => 'price_per_night',
+            'status' => 'status',
+            'created_at' => 'created_at',
+        ];
+        $orderBy = $sortableColumns[$sortKey] ?? 'floor';
+
+        $countStatement = $this->db->prepare("SELECT COUNT(*) FROM rooms {$whereSql}");
+        $countStatement->execute($params);
+        $total = (int) $countStatement->fetchColumn();
+        $totalPages = max(1, (int) ceil($total / $perPage));
+        $page = min($page, $totalPages);
+        $offset = ($page - 1) * $perPage;
+
+        $statement = $this->db->prepare(
+            "SELECT *
+             FROM rooms
+             {$whereSql}
+             ORDER BY {$orderBy} {$direction}, room_number ASC
+             LIMIT :limit OFFSET :offset"
+        );
+
+        foreach ($params as $key => $value) {
+            $statement->bindValue(':' . $key, $value);
+        }
+        $statement->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $statement->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $statement->execute();
+
+        return [
+            'rows' => $statement->fetchAll(),
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_pages' => $totalPages,
+        ];
+    }
+
     public function availableRooms(): array
     {
+        // SQL: Reads only rooms whose current operational status is Available.
         $statement = $this->db->prepare("SELECT * FROM rooms WHERE status = 'Available' ORDER BY floor ASC, room_number ASC");
         $statement->execute();
 
@@ -43,6 +94,7 @@ class Room
 
     public function find(int $roomId): ?array
     {
+        // SQL: Finds one room by primary key for editing, reservations, and validation.
         $statement = $this->db->prepare('SELECT * FROM rooms WHERE room_id = :room_id LIMIT 1');
         $statement->execute(['room_id' => $roomId]);
         $room = $statement->fetch();
@@ -52,6 +104,7 @@ class Room
 
     public function findByNumber(string $roomNumber): ?array
     {
+        // SQL: Finds one room by unique room number, mainly for XML import update-or-create logic.
         $statement = $this->db->prepare('SELECT * FROM rooms WHERE room_number = :room_number LIMIT 1');
         $statement->execute(['room_number' => $roomNumber]);
         $room = $statement->fetch();
@@ -74,6 +127,7 @@ class Room
             throw new RuntimeException('Room price must be greater than zero.');
         }
 
+        // SQL: Inserts a new room record after validating type, status, floor, and price.
         $statement = $this->db->prepare(
             'INSERT INTO rooms (room_number, room_type, floor, price_per_night, status)
              VALUES (:room_number, :room_type, :floor, :price_per_night, :status)'
@@ -103,6 +157,7 @@ class Room
             throw new RuntimeException('Room price must be greater than zero.');
         }
 
+        // SQL: Updates all editable room fields for one room record.
         $statement = $this->db->prepare(
             'UPDATE rooms
              SET room_number = :room_number,
@@ -131,6 +186,7 @@ class Room
             throw new RuntimeException('Room price must be greater than zero.');
         }
 
+        // SQL: Bulk-updates the price for every room under the selected room type.
         $statement = $this->db->prepare(
             'UPDATE rooms
              SET price_per_night = :price_per_night
@@ -146,6 +202,7 @@ class Room
 
     public function delete(int $roomId): bool
     {
+        // SQL: Deletes one room by primary key. The database blocks deletion if restricted reservations still use it.
         $statement = $this->db->prepare('DELETE FROM rooms WHERE room_id = :room_id');
 
         return $statement->execute(['room_id' => $roomId]);
@@ -158,6 +215,7 @@ class Room
             'not_available' => 0,
         ];
 
+        // SQL: Groups rooms by status so the dashboard can show available vs not available counts.
         $statement = $this->db->query(
             "SELECT status, COUNT(*) AS total
              FROM rooms
@@ -180,6 +238,7 @@ class Room
         $statuses = self::ROOM_STATUSES;
         $counts = array_fill_keys($statuses, 0);
 
+        // SQL: Counts rooms per status for the room availability chart.
         $statement = $this->db->query(
             "SELECT status, COUNT(*) AS total
              FROM rooms
@@ -205,6 +264,7 @@ class Room
     {
         $this->assertRoomStatus($status);
 
+        // SQL: Reads a limited list of rooms matching one status for dashboard/status previews.
         $statement = $this->db->prepare(
             'SELECT *
              FROM rooms
@@ -221,6 +281,7 @@ class Room
 
     public function typeSummary(): array
     {
+        // SQL: Groups rooms by type to show total rooms, available rooms, and min/max rates per room type.
         $statement = $this->db->query(
             "SELECT
                 room_type,
@@ -345,5 +406,39 @@ class Room
         if ($floor < 1) {
             throw new RuntimeException('Room floor must be at least 1.');
         }
+    }
+
+    private function buildRoomFilterSql(array $filters): array
+    {
+        $clauses = [];
+        $params = [];
+
+        $search = trim((string) ($filters['search'] ?? ''));
+        if ($search !== '') {
+            $clauses[] = '(room_number LIKE :search OR room_type LIKE :search OR status LIKE :search)';
+            $params['search'] = '%' . $search . '%';
+        }
+
+        $roomType = trim((string) ($filters['room_type'] ?? ''));
+        if ($roomType !== '' && in_array($roomType, self::ROOM_TYPES, true)) {
+            $clauses[] = 'room_type = :room_type';
+            $params['room_type'] = $roomType;
+        }
+
+        $status = trim((string) ($filters['status'] ?? ''));
+        if ($status !== '' && in_array($status, self::ROOM_STATUSES, true)) {
+            $clauses[] = 'status = :status';
+            $params['status'] = $status;
+        }
+
+        $floor = trim((string) ($filters['floor'] ?? ''));
+        if ($floor !== '' && ctype_digit($floor)) {
+            $clauses[] = 'floor = :floor';
+            $params['floor'] = (int) $floor;
+        }
+
+        $whereSql = $clauses ? 'WHERE ' . implode(' AND ', $clauses) : '';
+
+        return [$whereSql, $params];
     }
 }

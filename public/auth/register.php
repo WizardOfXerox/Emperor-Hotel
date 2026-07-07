@@ -57,7 +57,7 @@ renderHeader('Register', ['../assets/css/auth/register.css']);
         <form method="post" class="d-grid gap-3">
             <div>
                 <label class="form-label" for="full_name">Full Name</label>
-                <input class="form-control" id="full_name" name="full_name" type="text" required>
+                <input class="form-control" id="full_name" name="full_name" type="text" pattern="^[A-Za-z][A-Za-z .'-]*$" title="Use letters, spaces, periods, apostrophes, and hyphens only." required>
             </div>
             <div>
                 <label class="form-label" for="email">Email</label>
@@ -65,11 +65,11 @@ renderHeader('Register', ['../assets/css/auth/register.css']);
             </div>
             <div>
                 <label class="form-label" for="password">Password</label>
-                <input class="form-control" id="password" name="password" type="password" required>
+                <input class="form-control" id="password" name="password" type="password" minlength="6" required>
             </div>
             <div>
                 <label class="form-label" for="confirm_password">Confirm Password</label>
-                <input class="form-control" id="confirm_password" name="confirm_password" type="password" required>
+                <input class="form-control" id="confirm_password" name="confirm_password" type="password" minlength="6" required>
             </div>
             <?php if ($allowAdminRole): ?>
                 <div>

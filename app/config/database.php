@@ -16,9 +16,11 @@ class Database
         $database = getenv('DB_NAME') ?: 'emperors_hotel_db';
         $username = getenv('DB_USER') ?: 'root';
         $password = getenv('DB_PASS') ?: '';
+        $port = getenv('DB_PORT') ?: '3306';
+        $charset = getenv('DB_CHARSET') ?: 'utf8mb4';
 
         self::$connection = new PDO(
-            "mysql:host={$host};dbname={$database};charset=utf8mb4",
+            "mysql:host={$host};port={$port};dbname={$database};charset={$charset}",
             $username,
             $password,
             [

@@ -14,9 +14,11 @@ This folder contains the main project documentation for the Emperor Hotel Reserv
 | `database-erd.md` | Provides a detailed database ERD and table relationship explanation. |
 | `erd-file-correlation.md` | Maps each ERD table to the PHP models, pages, includes, and UI files that use it. |
 | `dashboard-feature-tracker.md` | Tracks implemented, partial, missing, and future dashboard/admin features. |
+| `support-ai-integration.md` | Documents the AI support widget, database-aware chat routing, and Gemini fallback behavior. |
 | `project-explanation-guide.md` | Explains how the whole project works for presentation, defense, and code walkthroughs. |
 | `code-explanation.md` | Gives a detailed code-level walkthrough of folders, models, pages, reservation flow, payments, room XML, validation, and the Manage modal. |
 | `rubric-presentation-guide.md` | Maps the grading requirements to the actual project features, files, demo flow, and defense scripts. |
+| `sql-query-explanation.md` | Explains the SQL queries inside every model class, including CRUD queries, joins, aggregates, payment totals, reports, and date-overlap logic. |
 
 ## Important Note
 
