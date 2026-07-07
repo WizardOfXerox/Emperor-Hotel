@@ -66,11 +66,14 @@
         }
         .support-panel.is-open { display: flex; }
         .support-panel.is-sidebar {
+            position: fixed;
+            right: 16px;
             top: 0;
             bottom: 0;
             height: 100vh;
-            width: min(420px, 100vw);
+            width: min(420px, calc(100vw - 32px));
             border-radius: 0;
+            box-shadow: -16px 0 48px rgba(0, 0, 0, 0.6);
         }
         .support-header {
             display: flex;
@@ -345,11 +348,13 @@
         : ['Show available rooms', 'What are the room prices?', 'Tell me about Emperor Hotel', 'Room types and inclusions'];
 
     const keywordGroups = [
-        { label: 'room', terms: ['room', 'rooms', 'suite', 'suites', 'availability', 'available', 'price', 'prices', 'rate', 'rates', 'type', 'types'] },
-        { label: 'hotel', terms: ['hotel', 'history', 'history of emperor', 'founded', 'founding', 'about', 'emperor'] },
+        { label: 'room-availability', terms: ['available rooms', 'room availability', 'rooms available', 'show available rooms', 'which rooms are available'] },
+        { label: 'room-types', terms: ['room type', 'room types', 'types of rooms', 'room categories', 'room categories and prices'] },
+        { label: 'room-pricing', terms: ['room price', 'room prices', 'room rate', 'room rates', 'price per night', 'pricing by room type'] },
+        { label: 'hotel-history', terms: ['hotel history', 'history of emperor', 'founded', 'founding', 'about emperor hotel', 'about the hotel'] },
         { label: 'booking', terms: ['booking', 'reserve', 'reservation', 'check in', 'check out', 'payment', 'pay'] },
-        { label: 'sales', terms: ['sales', 'revenue', 'income', 'dashboard', 'graph', 'chart', 'report'] },
-        { label: 'occupancy', terms: ['occupancy', 'occupied', 'available rooms', 'room status'] },
+        { label: 'sales', terms: ['sales', 'revenue', 'income', 'dashboard', 'graph', 'chart', 'report', 'monthly sales'] },
+        { label: 'occupancy', terms: ['occupancy', 'occupied', 'room status', 'room occupancy', 'reservation trend'] },
     ];
 
     quickPrompts.forEach((prompt) => {

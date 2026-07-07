@@ -24,11 +24,11 @@ class SupportAssistant
         $scope = $this->normalizeScope($scope);
         $normalized = $this->normalizeText($message);
         $contextText = $this->buildContextText($message, $history, $keywords);
-        $range = $this->extractDateRange($contextText) ?? $this->defaultRange();
+        $range = $this->extractDateRange($normalized) ?? $this->extractDateRange($contextText) ?? $this->defaultRange();
         $isGreeting = $this->isGreeting($normalized);
-        $customerIntent = $this->hasCustomerIntent($contextText);
-        $adminIntent = $this->hasAdminIntent($contextText);
-        $datasetMatch = $this->findBestDatasetMatch($message, $contextText);
+        $customerIntent = $this->hasCustomerIntent($normalized);
+        $adminIntent = $this->hasAdminIntent($normalized);
+        $datasetMatch = $this->findBestDatasetMatch($normalized);
 
         if ($isGreeting) {
             return $this->greetingReply($scope);
@@ -40,11 +40,11 @@ class SupportAssistant
 
         if ($scope === 'admin') {
             if ($adminIntent) {
-                if ($this->matchesAny($contextText, ['monthly sales', 'sales', 'revenue', 'income', 'monthly report'])) {
+                if ($this->matchesAny($normalized, ['monthly sales', 'sales', 'revenue', 'income', 'monthly report'])) {
                     return $this->adminSalesReply($range);
                 }
 
-                if ($this->matchesAny($contextText, ['occupancy', 'booking trend', 'reservation trend', 'reservations', 'payments', 'alerts', 'room stats'])) {
+                if ($this->matchesAny($normalized, ['occupancy', 'booking trend', 'reservation trend', 'reservations', 'payments', 'alerts', 'room stats'])) {
                     return $this->adminOperationsReply($range);
                 }
 
@@ -52,15 +52,27 @@ class SupportAssistant
             }
 
             if ($customerIntent) {
-                if ($this->matchesAny($contextText, ['available rooms', 'room availability', 'rooms available', 'room price', 'room prices', 'room type', 'room types', 'suite'])) {
-                    return $this->customerRoomReply();
+                $roomTypeMatch = $this->matchesAny($normalized, ['room type', 'room types', 'types of rooms', 'type of room', 'room categories', 'room categories and prices']);
+                $roomAvailabilityMatch = $this->matchesAny($normalized, ['available rooms', 'room availability', 'rooms available', 'available room']);
+                $roomPricingMatch = $this->matchesAny($normalized, ['room price', 'room prices', 'room rate', 'room rates', 'price per night']);
+
+                if ($roomTypeMatch && !$roomAvailabilityMatch && !$roomPricingMatch) {
+                    return $this->customerRoomTypeReply();
                 }
 
-                if ($this->matchesAny($contextText, ['found', 'founded', 'founding', 'history', 'established', 'running', 'about emperor hotel', 'about the hotel'])) {
+                if ($roomAvailabilityMatch && !$roomTypeMatch) {
+                    return $this->customerAvailabilityReply();
+                }
+
+                if ($roomPricingMatch) {
+                    return $this->customerRoomPriceReply();
+                }
+
+                if ($this->matchesAny($normalized, ['found', 'founded', 'founding', 'history', 'established', 'running', 'about emperor hotel', 'about the hotel'])) {
                     return $this->hotelProfileReply();
                 }
 
-                if ($this->matchesAny($contextText, ['booking', 'reservation', 'check in', 'check out', 'payment'])) {
+                if ($this->matchesAny($normalized, ['booking', 'reservation', 'check in', 'check out', 'payment'])) {
                     return $this->customerBookingReply();
                 }
             }
@@ -69,15 +81,27 @@ class SupportAssistant
         }
 
         if ($customerIntent) {
-            if ($this->matchesAny($contextText, ['available rooms', 'room availability', 'rooms available', 'room price', 'room prices', 'room type', 'room types', 'suite'])) {
-                return $this->customerRoomReply();
+            $roomTypeMatch = $this->matchesAny($normalized, ['room type', 'room types', 'types of rooms', 'type of room', 'room categories', 'room categories and prices']);
+            $roomAvailabilityMatch = $this->matchesAny($normalized, ['available rooms', 'room availability', 'rooms available', 'available room']);
+            $roomPricingMatch = $this->matchesAny($normalized, ['room price', 'room prices', 'room rate', 'room rates', 'price per night']);
+
+            if ($roomTypeMatch && !$roomAvailabilityMatch && !$roomPricingMatch) {
+                return $this->customerRoomTypeReply();
             }
 
-            if ($this->matchesAny($contextText, ['found', 'founded', 'founding', 'history', 'established', 'running', 'about emperor hotel', 'about the hotel'])) {
+            if ($roomAvailabilityMatch && !$roomTypeMatch) {
+                return $this->customerAvailabilityReply();
+            }
+
+            if ($roomPricingMatch) {
+                return $this->customerRoomPriceReply();
+            }
+
+            if ($this->matchesAny($normalized, ['found', 'founded', 'founding', 'history', 'established', 'running', 'about emperor hotel', 'about the hotel'])) {
                 return $this->hotelProfileReply();
             }
 
-            if ($this->matchesAny($contextText, ['booking', 'reservation', 'check in', 'check out', 'payment'])) {
+            if ($this->matchesAny($normalized, ['booking', 'reservation', 'check in', 'check out', 'payment'])) {
                 return $this->customerBookingReply();
             }
         }
@@ -85,11 +109,9 @@ class SupportAssistant
         return $this->aiReply($scope, $range, $keywords);
     }
 
-    private function customerRoomReply(): array
+    private function customerAvailabilityReply(): array
     {
         $availableRooms = $this->roomModel->availableRooms();
-        $typeSummary = $this->roomModel->typeSummary();
-        $roomCatalog = roomCatalog();
         $lines = ['Available rooms right now:'];
 
         if (!$availableRooms) {
@@ -110,25 +132,32 @@ class SupportAssistant
             }
         }
 
+        return $this->reply($lines, 'customer-availability-table');
+    }
+
+    private function customerRoomTypeReply(): array
+    {
+        $typeSummary = $this->roomModel->typeSummary();
+        $roomCatalog = roomCatalog();
+        $lines = ['Room types and inclusions:'];
+
         $lines[] = '';
-        $lines[] = 'Room type pricing:';
-        $lines[] = '';
-        $lines[] = '| Type | Available | Total | Lowest price |';
+        $lines[] = '| Type | Total rooms | Available | Lowest price |';
         $lines[] = '| --- | --- | --- | --- |';
 
         foreach ($roomCatalog as $roomType => $roomInfo) {
             $summary = $typeSummary[$roomType] ?? null;
+            $availableCount = $summary ? (int) $summary['available'] : 0;
+            $totalCount = $summary ? (int) $summary['total'] : 0;
             $priceText = $summary
                 ? formatMoney((float) $summary['lowest_price']) . ' / night'
                 : 'Price not set';
-            $availableCount = $summary ? (int) $summary['available'] : 0;
-            $totalCount = $summary ? (int) $summary['total'] : 0;
 
             $lines[] = sprintf(
                 '| %s | %d | %d | %s |',
                 $roomType,
-                $availableCount,
                 $totalCount,
+                $availableCount,
                 $priceText
             );
         }
@@ -140,7 +169,39 @@ class SupportAssistant
             $lines[] = sprintf('- %s: %s', $roomType, implode(', ', $roomInfo['included_perks']));
         }
 
-        return $this->reply($lines, 'customer-room-table');
+        return $this->reply($lines, 'customer-room-types-table');
+    }
+
+    private function customerRoomPriceReply(): array
+    {
+        $typeSummary = $this->roomModel->typeSummary();
+        $roomCatalog = roomCatalog();
+        $lines = ['Room prices by type:'];
+        $lines[] = '';
+        $lines[] = '| Type | Lowest price | Availability |';
+        $lines[] = '| --- | --- | --- |';
+
+        foreach ($roomCatalog as $roomType => $roomInfo) {
+            $summary = $typeSummary[$roomType] ?? null;
+            $priceText = $summary
+                ? formatMoney((float) $summary['lowest_price']) . ' / night'
+                : 'Price not set';
+            $availableCount = $summary ? (int) $summary['available'] : 0;
+            $totalCount = $summary ? (int) $summary['total'] : 0;
+
+            $lines[] = sprintf(
+                '| %s | %s | %d of %d available |',
+                $roomType,
+                $priceText,
+                $availableCount,
+                $totalCount
+            );
+        }
+
+        $lines[] = '';
+        $lines[] = 'If you want, I can also show availability for a specific room type or floor.';
+
+        return $this->reply($lines, 'customer-room-prices-table');
     }
 
     private function customerBookingReply(): array
@@ -192,7 +253,13 @@ class SupportAssistant
 
     private function datasetReply(array $match): array
     {
-        return $this->reply([$match['answer']], 'dataset');
+        return match ($match['route'] ?? 'faq') {
+            'room-availability' => $this->customerAvailabilityReply(),
+            'room-types' => $this->customerRoomTypeReply(),
+            'room-prices' => $this->customerRoomPriceReply(),
+            'hotel-history' => $this->hotelProfileReply(),
+            default => $this->reply([(string) ($match['answer'] ?? 'How can I help you with Emperor Hotel today?')], 'dataset'),
+        };
     }
 
     private function aiReply(string $scope, array $range, array $keywords): array
@@ -347,11 +414,11 @@ class SupportAssistant
         return $this->matchesAny($text, ['dashboard', 'sales', 'revenue', 'income', 'graph', 'chart', 'occupancy', 'report', 'reservations', 'payments', 'alerts', 'room stats']);
     }
 
-    private function findBestDatasetMatch(string $message, string $contextText): ?array
+    private function findBestDatasetMatch(string $normalizedMessage): ?array
     {
         $bestEntry = null;
         $bestScore = 0.0;
-        $input = $this->normalizeText($message . ' ' . $contextText);
+        $input = $normalizedMessage;
 
         foreach ($this->datasetEntries() as $entry) {
             foreach ($entry['patterns'] as $pattern) {
@@ -378,64 +445,99 @@ class SupportAssistant
     {
         return [
             [
-                'patterns' => ['check in time', 'check-in time', 'what time can i check in', 'when is check in', 'arrival time'],
+                'route' => 'faq',
+                'patterns' => ['check in time', 'check-in time', 'what time can i check in', 'when is check in', 'arrival time', 'check in starts', 'when can i check in'],
                 'answer' => 'Check-in starts at 3:00 PM. Early check-in may be available on request, subject to room availability.',
             ],
             [
-                'patterns' => ['check out time', 'check-out time', 'what time is checkout', 'when do i need to check out', 'departure time'],
+                'route' => 'faq',
+                'patterns' => ['check out time', 'check-out time', 'what time is checkout', 'when do i need to check out', 'departure time', 'check out starts', 'when can i check out'],
                 'answer' => 'Check-out is at 12:00 PM (noon). Late check-out may be arranged for an additional fee, subject to availability.',
             ],
             [
-                'patterns' => ['wifi password', 'wi-fi password', 'internet access', 'how do i connect to wifi', 'wifi'],
+                'route' => 'faq',
+                'patterns' => ['wifi password', 'wi-fi password', 'internet access', 'how do i connect to wifi', 'wifi', 'internet password'],
                 'answer' => 'Complimentary WiFi is available throughout the hotel. The network name and password are available at the front desk.',
             ],
             [
-                'patterns' => ['breakfast hours', 'breakfast time', 'when is breakfast served', 'buffet hours', 'breakfast'],
+                'route' => 'faq',
+                'patterns' => ['breakfast hours', 'breakfast time', 'when is breakfast served', 'buffet hours', 'breakfast', 'breakfast served', 'morning buffet'],
                 'answer' => 'Breakfast is served daily from 6:30 AM to 10:30 AM at our main restaurant.',
             ],
             [
-                'patterns' => ['parking availability', 'do you have parking', 'valet parking', 'where can i park', 'parking'],
+                'route' => 'faq',
+                'patterns' => ['parking availability', 'do you have parking', 'valet parking', 'where can i park', 'parking', 'car parking', 'parking fee'],
                 'answer' => 'On-site parking is available for guests. Valet parking may also be offered for an additional fee.',
             ],
             [
-                'patterns' => ['pet policy', 'are pets allowed', 'can i bring my dog', 'can i bring my cat', 'pet friendly'],
+                'route' => 'faq',
+                'patterns' => ['pet policy', 'are pets allowed', 'can i bring my dog', 'can i bring my cat', 'pet friendly', 'pets allowed'],
                 'answer' => 'Pets are welcome in designated rooms for an additional cleaning fee. Please let us know in advance.',
             ],
             [
-                'patterns' => ['cancellation policy', 'how do i cancel my reservation', 'can i get a refund', 'cancel booking'],
+                'route' => 'faq',
+                'patterns' => ['cancellation policy', 'how do i cancel my reservation', 'can i get a refund', 'cancel booking', 'refund policy'],
                 'answer' => 'Reservations can usually be cancelled free of charge up to 24 hours before check-in.',
             ],
             [
-                'patterns' => ['pool hours', 'swimming pool hours', 'when is the pool open', 'pool'],
+                'route' => 'faq',
+                'patterns' => ['pool hours', 'swimming pool hours', 'when is the pool open', 'pool', 'pool open', 'pool schedule'],
                 'answer' => 'Our swimming pool is open daily from 7:00 AM to 9:00 PM.',
             ],
             [
-                'patterns' => ['gym hours', 'fitness center hours', 'when is the gym open', 'gym'],
+                'route' => 'faq',
+                'patterns' => ['gym hours', 'fitness center hours', 'when is the gym open', 'gym', 'workout room', 'exercise room'],
                 'answer' => 'The fitness center is open 24/7 and accessible with your room key card.',
             ],
             [
-                'patterns' => ['spa hours', 'spa booking', 'how do i book a massage', 'spa'],
+                'route' => 'faq',
+                'patterns' => ['spa hours', 'spa booking', 'how do i book a massage', 'spa', 'massage booking', 'spa schedule'],
                 'answer' => 'Our spa is open from 10:00 AM to 8:00 PM. We recommend booking treatments in advance.',
             ],
             [
-                'patterns' => ['extra bed', 'rollaway bed', 'baby crib', 'do you have cribs'],
+                'route' => 'faq',
+                'patterns' => ['extra bed', 'rollaway bed', 'baby crib', 'do you have cribs', 'cribs', 'additional bed'],
                 'answer' => 'Extra beds and cribs are available on request for an additional fee, subject to room capacity.',
             ],
             [
-                'patterns' => ['payment methods', 'do you accept credit cards', 'can i pay cash', 'accepted payment'],
+                'route' => 'faq',
+                'patterns' => ['payment methods', 'do you accept credit cards', 'can i pay cash', 'accepted payment', 'payment options', 'cash payment'],
                 'answer' => 'We accept major credit cards, debit cards, and cash. Payment timing depends on booking type.',
             ],
             [
-                'patterns' => ['room service hours', 'in room dining', 'order food to my room', 'room service'],
+                'route' => 'faq',
+                'patterns' => ['room service hours', 'in room dining', 'order food to my room', 'room service', 'food delivery to room'],
                 'answer' => 'Room service is available daily from 6:00 AM to 11:00 PM.',
             ],
             [
-                'patterns' => ['airport shuttle', 'airport transfer', 'do you offer pickup', 'shuttle service'],
+                'route' => 'faq',
+                'patterns' => ['airport shuttle', 'airport transfer', 'do you offer pickup', 'shuttle service', 'airport pickup', 'pickup service'],
                 'answer' => 'We offer an airport shuttle service. Please contact the front desk at least 24 hours in advance.',
             ],
             [
-                'patterns' => ['smoking policy', 'is smoking allowed', 'can i smoke in my room', 'smoking'],
+                'route' => 'faq',
+                'patterns' => ['smoking policy', 'is smoking allowed', 'can i smoke in my room', 'smoking', 'smoke allowed'],
                 'answer' => 'All guest rooms are non-smoking. Designated smoking areas are available outside the hotel entrance.',
+            ],
+            [
+                'route' => 'room-types',
+                'patterns' => ['room types', 'what room types', 'types of rooms', 'room categories', 'room categories and prices', 'show room types'],
+                'answer' => '',
+            ],
+            [
+                'route' => 'room-availability',
+                'patterns' => ['available rooms', 'room availability', 'rooms available', 'available room', 'show available rooms', 'which rooms are available'],
+                'answer' => '',
+            ],
+            [
+                'route' => 'room-prices',
+                'patterns' => ['room prices', 'room price', 'room rates', 'price per night', 'pricing by room type', 'room type prices'],
+                'answer' => '',
+            ],
+            [
+                'route' => 'hotel-history',
+                'patterns' => ['hotel history', 'about emperor hotel', 'tell me about emperor hotel', 'founded emperor hotel', 'founding of emperor hotel'],
+                'answer' => '',
             ],
         ];
     }
@@ -479,6 +581,17 @@ class SupportAssistant
 
             $parts[] = (string) ($entry['text'] ?? '');
         }
+
+        foreach ($keywords as $keyword) {
+            $parts[] = (string) $keyword;
+        }
+
+        return $this->normalizeText(implode(' ', $parts));
+    }
+
+    private function buildMessageContext(string $message, array $keywords = []): string
+    {
+        $parts = [$message];
 
         foreach ($keywords as $keyword) {
             $parts[] = (string) $keyword;
