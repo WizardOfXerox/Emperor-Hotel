@@ -89,8 +89,9 @@ function askGeminiSupport(string $apiKey, string $scope, string $message, string
         ? 'You are Emperor Hotel admin support. Use dashboard, reports, room, reservation, payment, and guest context only. Do not invent numbers or database facts. If the user asks for statistics, summarize the provided live counts, revenue, occupancy, trends, and top room types. When the user asks for room availability, room types, room pricing, monthly sales, or report rows, present the result as a concise markdown table when possible, and keep the table in its own paragraph block.'
         : 'You are Emperor Hotel customer support. Use room availability, room prices, hotel history, and booking guidance only. Do not invent facts. When the user asks for rooms, room types, or prices, present the result as a concise markdown table when possible, and keep the table in its own paragraph block.';
 
-    $conversationParts = [];
+    $contents = [];
 
+    // Map history to Gemini's user/model role expectations
     foreach (array_slice($history, -10) as $entry) {
         $role = (string) ($entry['role'] ?? 'user');
         $text = trim((string) ($entry['text'] ?? ''));
@@ -99,23 +100,57 @@ function askGeminiSupport(string $apiKey, string $scope, string $message, string
             continue;
         }
 
-        $conversationParts[] = strtoupper($role) . ': ' . $text;
+        $geminiRole = ($role === 'assistant') ? 'model' : 'user';
+        $contents[] = [
+            'role' => $geminiRole,
+            'parts' => [
+                ['text' => $text],
+            ],
+        ];
+    }
+
+    // Clean up consecutive turns with same role to avoid Gemini API validation errors
+    $cleanedContents = [];
+    foreach ($contents as $turn) {
+        if (empty($cleanedContents)) {
+            $cleanedContents[] = $turn;
+        } else {
+            $lastIndex = count($cleanedContents) - 1;
+            if ($cleanedContents[$lastIndex]['role'] === $turn['role']) {
+                $cleanedContents[$lastIndex]['parts'][0]['text'] .= "\n" . $turn['parts'][0]['text'];
+            } else {
+                $cleanedContents[] = $turn;
+            }
+        }
+    }
+
+    // Append the current message
+    if (!empty($cleanedContents) && $cleanedContents[count($cleanedContents) - 1]['role'] === 'user') {
+        $cleanedContents[count($cleanedContents) - 1]['parts'][0]['text'] .= "\n" . $message;
+    } else {
+        $cleanedContents[] = [
+            'role' => 'user',
+            'parts' => [
+                ['text' => $message],
+            ],
+        ];
+    }
+
+    $systemInstructionText = $systemPrompt;
+    if ($context !== '') {
+        $systemInstructionText .= "\n\nContext:\n" . $context;
+    }
+    if (!empty($keywords)) {
+        $systemInstructionText .= "\n\nKeywords:\n" . implode(', ', $keywords);
     }
 
     $payload = json_encode([
-        'system_instruction' => [
+        'systemInstruction' => [
             'parts' => [
-                ['text' => $systemPrompt . "\n\nContext:\n" . $context . "\n\nKeywords:\n" . implode(', ', $keywords) . "\n\nConversation:\n" . implode("\n", $conversationParts)],
+                ['text' => $systemInstructionText],
             ],
         ],
-        'contents' => [
-            [
-                'role' => 'user',
-                'parts' => [
-                    ['text' => $message],
-                ],
-            ],
-        ],
+        'contents' => $cleanedContents,
         'generationConfig' => [
             'temperature' => 0.4,
             'maxOutputTokens' => 400,

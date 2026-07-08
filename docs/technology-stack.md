@@ -19,6 +19,8 @@ The frontend uses Bootstrap, Bootstrap Icons, Google Fonts, Chart.js, custom CSS
 | PHP Sessions | Native PHP sessions | `app/helpers/auth.php`, auth pages | Login state, user sessions, and flash messages |
 | `password_hash()` / `password_verify()` | Native PHP password API | `app/models/User.php` | Secure password storage and login verification |
 | DOMDocument | PHP XML DOM extension | `app/models/Room.php` | Room XML export and import |
+| Gemini REST API | External API (via `file_get_contents`) | `public/support/api.php` | AI fallback for open-ended support questions that cannot be answered from the local database |
+| DateTimeImmutable | Native PHP date/time API | `app/models/SupportAssistant.php` | Date/month range extraction and smart year resolution for temporal query parsing |
 
 ## Frontend Libraries
 
@@ -39,6 +41,7 @@ The frontend uses Bootstrap, Bootstrap Icons, Google Fonts, Chart.js, custom CSS
 | Auth page CSS | `public/assets/css/auth/login.css`, `public/assets/css/auth/register.css` | Login/register page-specific styling |
 | Site page CSS | `public/assets/css/site/home.css`, `public/assets/css/site/rooms.css` | Public home and rooms page-specific styling |
 | User page CSS | `public/assets/css/user/dashboard.css`, `public/assets/css/user/payment.css` | Customer booking dashboard, side-by-side room selection layout, booking history, and customer payment page styling |
+| Support widget JS | `public/assets/js/support-widget.js` | AI support chat widget with floating launcher, sidebar expand mode, quick prompts, keyword extraction, Windows CRLF normalization, and Markdown-to-HTML table rendering |
 | Hotel logo SVG | `public/assets/images/branding/emperors-hotel-logo.svg` | Favicon and site branding |
 | Home hero image | `public/assets/images/home/hero.jpg` | Public hero and admin background image |
 | Room images | `public/assets/images/rooms/**` | Room hero images and carousel images |

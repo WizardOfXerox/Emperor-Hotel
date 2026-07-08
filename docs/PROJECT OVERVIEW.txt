@@ -48,6 +48,10 @@ CURRENT FOLDER STRUCTURE
 - public/user/dashboard.php: User booking dashboard with side-by-side stay details and room selection, plus booking history below
 - public/assets/css/admin/reports.css: Page-specific admin report styles
 - public/assets/vendor/chartjs/chart.umd.min.js: Local Chart.js browser file
+- app/models/SupportAssistant.php: AI support assistant with hybrid local-database-first and Gemini-fallback architecture, FAQ dataset matching, booking guide instructions, date/month range parsing, live context injection, and admin statistics compilation
+- app/config/hotel.php: Hotel identity configuration including name, description, founded year, support email, and support phone
+- public/support/api.php: Support chat API endpoint that routes messages through SupportAssistant for local replies and Gemini for AI fallback, with camelCase systemInstruction and alternating role-turn chat history
+- public/assets/js/support-widget.js: Support chat widget with floating launcher, sidebar expand mode, quick prompts, keyword extraction, and Markdown table rendering with Windows CRLF normalization
 
 IMPLEMENTED REQUIREMENT STATUS
 
@@ -155,6 +159,19 @@ Status: Implemented and still being improved
 - Room pages include room image carousels.
 - Admin pages use a shared background image treatment.
 
+7. AI Support System
+
+Status: Implemented
+
+- The support widget provides two scoped AI help modes: customer support (rooms, pricing, booking guidance, hotel info) and admin support (dashboard metrics, sales, occupancy, operational alerts).
+- Local PHP dataset rules and direct database queries handle common questions first. The Gemini API is used only as a fallback for open-ended or conversational queries.
+- The SupportAssistant model uses word-boundary greeting detection, phrase-coverage FAQ scoring, date/month range extraction (supporting specific month names, yesterday, last 30/90 days), and live database context injection.
+- A step-by-step booking guide is built in for both guest self-service booking and admin walk-in reservation workflows.
+- The support widget JavaScript normalizes Windows CRLF line endings and parses Markdown tables into structured HTML tables for clean in-chat rendering.
+- The Gemini API payload uses camelCase systemInstruction and alternating user/model role turns with consecutive-role merging.
+- Admin AI context includes live dashboard counters, monthly performance snapshots, room inventory status, operational check-out alerts, and range-specific revenue/occupancy data.
+- Customer AI context includes hotel profile, available rooms with pricing, room catalog descriptions, and included perks.
+
 CURRENT ROOM INVENTORY
 
 The system uses three room types:
@@ -194,6 +211,8 @@ The admin dashboard currently includes:
 - Guest search/history through the Guests module
 - Printable receipt links from reservations, guests, and payments
 - Dedicated Reports page for occupancy, confirmed revenue by room type/payment method, and daily reservation trends
+- AI support widget with local-first database responses and Gemini fallback for customer and admin scopes
+- Step-by-step guest and admin booking/reservation guides accessible through the support chat
 
 PAYMENT FLOW
 

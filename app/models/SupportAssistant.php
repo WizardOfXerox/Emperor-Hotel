@@ -211,9 +211,21 @@ class SupportAssistant
     private function customerBookingReply(): array
     {
         $lines = [
-            'Customer support can help with room availability, room pricing, and booking guidance.',
-            'For a reservation, choose your stay dates, pick a room, then complete the booking form from your dashboard.',
-            'If you want, ask me for: available rooms, room prices, or hotel history.',
+            'Here is the step-by-step guide to make a room booking at Emperor Hotel:',
+            '',
+            '### Guest Booking Guide:',
+            '1. **Log In**: Access your guest account (or sign up if you don\'t have one).',
+            '2. **Go to User Dashboard**: Navigate to the booking area on your dashboard.',
+            '3. **Stay Dates**: Select your check-in and check-out dates in the stay details form.',
+            '4. **Select Room**: Browse the live room cards on the right-hand panel and pick your preferred room.',
+            '5. **Choose Payment Mode**: Select "Cash" to pay at the front desk (creates a pending payment reference) or choose card/online transfer.',
+            '6. **Confirm Booking**: Submit the form. If you chose card/online payment, complete the simulated payment screen.',
+            '7. **Track Status**: Scroll to the "Booking History" table at the bottom of your dashboard to view your booking details and status (Pending, Confirmed, etc.).',
+            '',
+            '### Staff/Admin Walk-in Booking Guide:',
+            '1. **Reservations Tab**: Go to the admin panel and navigate to the "Reservations" page to log a walk-in guest.',
+            '2. **Fill Details**: Select room, check-in/check-out dates, and input guest name, email, and phone number.',
+            '3. **Manage Status & Operations**: To confirm, check-in, check-out, extend a stay, or cancel, go to the **Booking Records** page and click the **Manage** button on the booking row to open the controls modal.',
         ];
 
         return $this->reply($lines, 'customer-booking');
@@ -236,6 +248,8 @@ class SupportAssistant
         $lines[] = 'Hotel identity:';
         $lines[] = '- Name: ' . (string) $this->hotelProfile['name'];
         $lines[] = '- Description: ' . (string) $this->hotelProfile['description'];
+        $lines[] = '- Support Email: ' . (string) ($this->hotelProfile['support_email'] ?: 'support@example.com');
+        $lines[] = '- Support Phone: ' . (string) ($this->hotelProfile['support_phone'] ?: 'Not provided');
 
         return $this->reply($lines, 'customer-hotel-profile');
     }
@@ -262,6 +276,7 @@ class SupportAssistant
             'room-types' => $this->customerRoomTypeReply(),
             'room-prices' => $this->customerRoomPriceReply(),
             'hotel-history' => $this->hotelProfileReply(),
+            'booking-guide' => $this->customerBookingReply(),
             default => $this->reply([(string) ($match['answer'] ?? 'How can I help you with Emperor Hotel today?')], 'dataset'),
         };
     }
@@ -487,7 +502,18 @@ class SupportAssistant
 
     private function isGreeting(string $text): bool
     {
-        return $this->matchesAny($text, ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening']);
+        $greetings = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'];
+        $pattern = '/\b(' . implode('|', array_map('preg_quote', $greetings)) . ')\b/i';
+        if (!preg_match($pattern, $text)) {
+            return false;
+        }
+
+        $words = explode(' ', $text);
+        if (count($words) <= 3) {
+            return true;
+        }
+
+        return false;
     }
 
     private function hasCustomerIntent(string $text): bool
@@ -515,12 +541,31 @@ class SupportAssistant
             foreach ($entry['patterns'] as $pattern) {
                 $normalizedPattern = $this->normalizeText((string) $pattern);
 
-                if ($normalizedPattern === '' || !str_contains($input, $normalizedPattern)) {
+                if ($normalizedPattern === '') {
                     continue;
                 }
 
-                $coverage = count(explode(' ', $normalizedPattern)) / max(count(explode(' ', $input)), 1);
-                $score = min(1.0, $coverage + strlen($normalizedPattern) / 40);
+                if (!str_contains($input, $normalizedPattern)) {
+                    continue;
+                }
+
+                if (strlen($normalizedPattern) < 4) {
+                    $patternRegex = '/\b' . preg_quote($normalizedPattern, '/') . '\b/';
+                    if (!preg_match($patternRegex, $input)) {
+                        continue;
+                    }
+                }
+
+                if ($input === $normalizedPattern) {
+                    $score = 1.0;
+                } else {
+                    $patternWords = count(explode(' ', $normalizedPattern));
+                    $inputWords = count(explode(' ', $input));
+                    $coverage = $patternWords / max($inputWords, 1);
+                    
+                    $score = 0.55 + ($coverage * 0.25) + (strlen($normalizedPattern) / 80);
+                    $score = min(1.0, $score);
+                }
 
                 if ($score > $bestScore) {
                     $bestScore = $score;
@@ -611,6 +656,15 @@ class SupportAssistant
                 'answer' => 'All guest rooms are non-smoking. Designated smoking areas are available outside the hotel entrance.',
             ],
             [
+                'route' => 'faq',
+                'patterns' => ['contact number', 'phone number', 'email address', 'contact support', 'support email', 'support phone', 'how to contact', 'contact details', 'phone', 'email'],
+                'answer' => sprintf(
+                    'You can contact our support team at %s or call us at %s.',
+                    $this->hotelProfile['support_email'] ?: 'support@example.com',
+                    $this->hotelProfile['support_phone'] ?: '(not provided)'
+                ),
+            ],
+            [
                 'route' => 'room-types',
                 'patterns' => ['room types', 'what room types', 'types of rooms', 'room categories', 'room categories and prices', 'show room types'],
                 'answer' => '',
@@ -630,6 +684,11 @@ class SupportAssistant
                 'patterns' => ['hotel history', 'about emperor hotel', 'tell me about emperor hotel', 'founded emperor hotel', 'founding of emperor hotel'],
                 'answer' => '',
             ],
+            [
+                'route' => 'booking-guide',
+                'patterns' => ['how to book', 'booking guide', 'how to make a reservation', 'booking instructions', 'reservation guide', 'how do i book', 'book a room', 'make a booking'],
+                'answer' => '',
+            ],
         ];
     }
 
@@ -637,17 +696,140 @@ class SupportAssistant
     {
         $lines = [];
 
+        // Add current date context
+        $todayStr = (new DateTimeImmutable('today'))->format('Y-m-d');
+        $lines[] = 'Current date: ' . $todayStr;
+
         if ($scope === 'admin') {
             $lines[] = 'Admin support context:';
             $lines[] = '- Current dashboard summary is available from live hotel data.';
             $lines[] = '- If a date range is present, use report data for that range.';
             $lines[] = '- If the user asks for charts, summarize revenue, occupancy, reservations, and room status.';
             $lines[] = '- If the user asks about room availability, room types, or room pricing, use a markdown table in its own paragraph block.';
+
+            // Get live dashboard and room stats
+            $dashboardSummary = $this->reservationModel->dashboardSummary();
+            $roomSummary = $this->roomModel->statusSummary();
+            $typeSummary = $this->roomModel->typeSummary();
+            $revenueThisMonth = $this->paymentModel->revenueThisMonth();
+            $monthlyPerformance = $this->reservationModel->monthlyPerformance();
+
+            $lines[] = 'Live Admin Data:';
+            $lines[] = sprintf('- Customers this month: %d', (int) $dashboardSummary['customers_this_month']);
+            $lines[] = sprintf('- Pending reservations: %d', (int) $dashboardSummary['pending_reservations']);
+            $lines[] = sprintf('- Upcoming check-outs: %d', (int) $dashboardSummary['upcoming_checkouts']);
+            $lines[] = sprintf('- Available rooms: %d', (int) $roomSummary['available']);
+            $lines[] = sprintf('- Rooms not available: %d', (int) $roomSummary['not_available']);
+            $lines[] = sprintf('- Confirmed revenue this month: %s', formatMoney($revenueThisMonth));
+            
+            $lines[] = 'Monthly Performance:';
+            foreach ($monthlyPerformance as $row) {
+                $lines[] = sprintf(
+                    '  * Month: %s | Bookings: %d | Income: %s',
+                    $row['month_label'],
+                    (int) $row['rooms_booked'],
+                    formatMoney((float) $row['income'])
+                );
+            }
+
+            // Room inventory details
+            $lines[] = 'Room Inventory status:';
+            foreach ($typeSummary as $roomType => $summary) {
+                $lines[] = sprintf(
+                    '  * Type: %s | Total: %d | Available: %d | Lowest price: %s',
+                    $roomType,
+                    (int) $summary['total'],
+                    (int) $summary['available'],
+                    formatMoney((float) $summary['lowest_price'])
+                );
+            }
+
+            // Get operational alerts
+            $alerts = $this->reservationModel->operationalAlerts();
+            $lines[] = 'Operational Alerts:';
+            $lines[] = sprintf('  * Overdue check-outs count: %d', count($alerts['overdue_checkouts']));
+            $lines[] = sprintf('  * Overbooking conflicts count: %d', count($alerts['overbooking_conflicts']));
+            foreach ($alerts['overdue_checkouts'] as $row) {
+                $lines[] = sprintf(
+                    '  * Overdue check-out alert: Room %s | Guest %s %s | Due %s',
+                    $row['room_number'],
+                    $row['first_name'],
+                    $row['last_name'],
+                    $row['check_out']
+                );
+            }
+
+            // If a range is present, include the range details
+            if ($range) {
+                $report = $this->paymentModel->revenueReport($range['start'], $range['end']);
+                $trend = $this->reservationModel->reservationTrendReport($range['start'], $range['end']);
+                $occupancy = $this->reservationModel->occupancyReport($range['start'], $range['end']);
+
+                $lines[] = sprintf('Range Data (%s to %s):', $range['start'], $range['end']);
+                $lines[] = sprintf('  * Revenue: %s', formatMoney((float) $report['total_revenue']));
+                $lines[] = sprintf('  * Reservations created: %d', (int) $trend['total_reservations']);
+                $lines[] = sprintf('  * Occupancy rate: %s', number_format((float) $occupancy['occupancy_rate'], 1) . '%');
+                $lines[] = '  * Revenue by room type in range:';
+                foreach ($report['by_room_type'] as $row) {
+                    $lines[] = sprintf(
+                        '    - %s: %s (Count: %d)',
+                        $row['room_type'],
+                        formatMoney((float) $row['confirmed_revenue']),
+                        (int) $row['payment_count']
+                    );
+                }
+            }
         } else {
             $lines[] = 'Customer support context:';
             $lines[] = '- Available rooms, room types, prices, and hotel info are available from live hotel data.';
             $lines[] = '- Stay within customer-facing answers unless the user explicitly asks for admin information.';
             $lines[] = '- If the user asks about rooms, types, or pricing, use a markdown table in its own paragraph block.';
+
+            // Get live customer-facing room & hotel data
+            $availableRooms = $this->roomModel->availableRooms();
+            $typeSummary = $this->roomModel->typeSummary();
+            $roomCatalog = roomCatalog();
+
+            $lines[] = 'Hotel Profile:';
+            $lines[] = '- Name: ' . $this->hotelProfile['name'];
+            $lines[] = '- Description: ' . $this->hotelProfile['description'];
+            $lines[] = '- Founded: ' . ($this->hotelProfile['founded_year'] ?: $this->hotelProfile['founded_note']);
+            $lines[] = '- Support Email: ' . ($this->hotelProfile['support_email'] ?: 'support@example.com');
+            $lines[] = '- Support Phone: ' . ($this->hotelProfile['support_phone'] ?: 'not provided');
+
+            $lines[] = 'Available Rooms:';
+            if (!$availableRooms) {
+                $lines[] = '  (None available right now)';
+            } else {
+                foreach ($availableRooms as $room) {
+                    $lines[] = sprintf(
+                        '  * Room %s | Type: %s | Floor: %s | Price: %s',
+                        $room['room_number'],
+                        $room['room_type'],
+                        $room['floor'],
+                        formatMoney((float) $room['price_per_night'])
+                    );
+                }
+            }
+
+            $lines[] = 'Room Catalog & Pricing:';
+            foreach ($roomCatalog as $roomType => $info) {
+                $summary = $typeSummary[$roomType] ?? null;
+                $lowestPrice = $summary ? (float) $summary['lowest_price'] : 0.0;
+                $availableCount = $summary ? (int) $summary['available'] : 0;
+                $totalCount = $summary ? (int) $summary['total'] : 0;
+
+                $lines[] = sprintf(
+                    '  * Type: %s | Lowest Price: %s | Availability: %d of %d available',
+                    $roomType,
+                    $lowestPrice > 0 ? formatMoney($lowestPrice) : 'not set',
+                    $availableCount,
+                    $totalCount
+                );
+                $lines[] = '    - Perks: ' . implode(', ', $info['included_perks']);
+                $lines[] = '    - Features: ' . implode(', ', $info['features']);
+                $lines[] = '    - Details: ' . $info['details'];
+            }
         }
 
         if ($range) {
@@ -705,6 +887,7 @@ class SupportAssistant
     private function extractDateRange(string $text): ?array
     {
         $today = new DateTimeImmutable('today');
+        $currentYear = (int) $today->format('Y');
 
         if (str_contains($text, 'this month') || str_contains($text, 'current month')) {
             return [
@@ -720,6 +903,14 @@ class SupportAssistant
             return [
                 'start' => $start->format('Y-m-d'),
                 'end' => $end->format('Y-m-d'),
+            ];
+        }
+
+        if (str_contains($text, 'yesterday')) {
+            $date = $today->modify('-1 day')->format('Y-m-d');
+            return [
+                'start' => $date,
+                'end' => $date,
             ];
         }
 
@@ -739,6 +930,20 @@ class SupportAssistant
             ];
         }
 
+        if (str_contains($text, 'last 30 days')) {
+            return [
+                'start' => $today->modify('-29 days')->format('Y-m-d'),
+                'end' => $today->format('Y-m-d'),
+            ];
+        }
+
+        if (str_contains($text, 'last 90 days')) {
+            return [
+                'start' => $today->modify('-89 days')->format('Y-m-d'),
+                'end' => $today->format('Y-m-d'),
+            ];
+        }
+
         if (preg_match('/from\s+(\d{4}-\d{2}-\d{2})\s+(?:to|until|through|-)\s+(\d{4}-\d{2}-\d{2})/', $text, $matches)) {
             return [
                 'start' => $matches[1],
@@ -751,6 +956,32 @@ class SupportAssistant
                 'start' => $matches[1],
                 'end' => $matches[1],
             ];
+        }
+
+        $months = [
+            'january' => 1, 'february' => 2, 'march' => 3, 'april' => 4, 'may' => 5, 'june' => 6,
+            'july' => 7, 'august' => 8, 'september' => 9, 'october' => 10, 'november' => 11, 'december' => 12,
+            'jan' => 1, 'feb' => 2, 'mar' => 3, 'apr' => 4, 'jun' => 6,
+            'jul' => 7, 'aug' => 8, 'sep' => 9, 'oct' => 10, 'nov' => 11, 'dec' => 12
+        ];
+
+        foreach ($months as $monthName => $monthNum) {
+            if (preg_match('/\b' . preg_quote($monthName, '/') . '\b/', $text)) {
+                $targetYear = $currentYear;
+                $currentMonthNum = (int) $today->format('m');
+                if ($monthNum > $currentMonthNum) {
+                    $targetYear = $currentYear - 1;
+                }
+
+                $startDate = sprintf('%04d-%02d-01', $targetYear, $monthNum);
+                $dateTime = new DateTimeImmutable($startDate);
+                $endDate = $dateTime->modify('last day of this month')->format('Y-m-d');
+
+                return [
+                    'start' => $startDate,
+                    'end' => $endDate,
+                ];
+            }
         }
 
         return null;

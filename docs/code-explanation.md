@@ -24,6 +24,7 @@ The system uses OOP mainly through model classes in `app/models/`.
 | `Room` | `app/models/Room.php` | Room inventory, prices, statuses, summaries, and room XML import/export. |
 | `Reservation` | `app/models/Reservation.php` | Booking records, validation, date-aware availability, room status sync, reports, and front desk actions. |
 | `Payment` | `app/models/Payment.php` | Payment logs, generated references, balances, overpayment rules, and payment review. |
+| `SupportAssistant` | `app/models/SupportAssistant.php` | AI support assistant with hybrid local-database-first and Gemini-fallback architecture, FAQ pattern matching with phrase-coverage scoring, step-by-step booking/reservation guides, date/month range parsing, and live context injection for both customer and admin scopes. |
 
 The PHP pages are mostly controllers/views. They process form requests, call model methods, and render HTML. The model classes contain the SQL and most of the business rules.
 
@@ -776,7 +777,67 @@ These limitations are acceptable for a student OOP PHP project because the syste
 - Chart.js dashboard visuals.
 - Room XML import/export with DOMDocument.
 
-## 23. Short Defense Script
+## 23. AI Support Assistant Architecture
+
+File: `app/models/SupportAssistant.php`
+
+The AI support assistant uses a hybrid local-database-first strategy to answer customer and admin questions. It resolves common queries from the live MySQL database and only falls back to the Gemini API for open-ended or conversational questions.
+
+### Decision Logic
+
+`SupportAssistant::respond()` processes queries sequentially:
+
+1. **Greeting Detection**: Uses word-boundary regex (`\b`) instead of naive substring matching to prevent false positives (e.g. `"history"` no longer triggers the `"hi"` greeting). Greetings combined with hotel keywords (e.g. `"hi, show me available rooms"`) bypass greeting replies and route to actual data queries.
+2. **Dataset FAQ Matching**: Evaluates all predefined FAQ entries using a phrase-coverage scoring formula. The formula uses pattern length and word-coverage ratio to score matches, enabling polite or verbose queries to still match short FAQ patterns.
+3. **Scoped Intent Routing**: Admin queries are checked for statistics, sales, operations, and overview keywords. Customer queries are checked for room availability, room types, room prices, hotel history, and booking guide keywords.
+4. **AI Fallback**: Unmatched queries return `kind = ai`, triggering Gemini with live database context.
+
+### Built-in Booking Guide
+
+The assistant provides step-by-step booking instructions when customers ask `"how to book"`, `"booking guide"`, `"how to make a reservation"`, or similar queries:
+
+- **Guest Guide**: Log in, go to User Dashboard, select stay dates, pick room card, choose payment mode (Cash or card/online), submit form, track status in Booking History.
+- **Admin Guide**: Go to Reservations page, fill guest/room details, submit, go to Booking Records, click Manage, use modal actions (Confirm, Check-in, Extend Stay, Check-out, Cancel, Payment, Receipt, Delete).
+
+### Date/Month Range Extraction
+
+`extractDateRange()` parses temporal references from queries:
+
+| Input | Parsed Range |
+| --- | --- |
+| `"june"` or `"jun"` | 2026-06-01 to 2026-06-30 |
+| `"december"` or `"dec"` | 2025-12-01 to 2025-12-31 (smart year resolution) |
+| `"yesterday"` | Previous day only |
+| `"last 30 days"` | 30 days back from today |
+| `"last 90 days"` | 90 days back from today |
+| `"on 2026-05-15"` | Single explicit date |
+| No date mentioned | Current month start to end |
+
+### Live Context Injection
+
+When Gemini is used, `composeAiContext()` queries the MySQL database and injects:
+
+- **Customer scope**: Hotel profile (name, description, founding year, support email, support phone), available rooms with pricing, room catalog descriptions, and included perks.
+- **Admin scope**: Dashboard counters (users, customers, revenue, available rooms, pending reservations, upcoming check-outs), monthly performance (last 6 months of bookings and confirmed revenue), room inventory by type, operational alerts (overdue check-outs with room/guest details), and range-specific revenue/occupancy.
+
+### Gemini API Protocol
+
+`public/support/api.php` structures the Gemini request:
+
+- Uses `systemInstruction` (camelCase) instead of the deprecated `system_instruction` snake_case field.
+- Formats conversation history as alternating `user` and `model` role turns.
+- Merges consecutive same-role messages automatically to prevent API validation errors.
+- Injects scoped system prompt based on whether the user is admin or customer.
+
+### Widget Table Rendering
+
+`public/assets/js/support-widget.js` renders Markdown tables in the chat:
+
+- Normalizes Windows CRLF (`\r\n`) to LF (`\n`) before parsing.
+- Groups consecutive pipe-delimited lines and validates table structure using divider regex.
+- Strips leading/trailing empty cells from pipe splits instead of filtering all empty values, preserving correct column alignment.
+
+## 24. Short Defense Script
 
 Use this if you need to explain the code quickly:
 
@@ -787,7 +848,10 @@ For example, reservation creation is handled by public/admin/reservations.php an
 
 The admin Booking Records table uses a Manage modal so the table stays readable. The modal shows reservation details, payment totals, and actions like confirm, check in, extend stay, check out, cancel, receipt, payment, and delete.
 
+The AI support assistant uses a hybrid approach: common questions about rooms, pricing, booking instructions, and admin statistics are answered from live database queries first. Only open-ended questions fall back to the Gemini API, which receives real-time hotel data as context so it cannot hallucinate room numbers or prices.
+
 The system also includes room XML import/export using DOMDocument, but XML is intentionally limited to room records. Other tables use normal PHP and MySQL CRUD pages.
 
 This makes the project a student-level OOP PHP hotel reservation and management system with clear separation between pages, models, database tables, and UI assets.
 ```
+

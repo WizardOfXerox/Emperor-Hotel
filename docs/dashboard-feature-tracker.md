@@ -30,6 +30,10 @@ Current source files:
 - `app/models/Payment.php`
 - `database/schema.sql`
 - `database/seed_rooms.sql`
+- `app/models/SupportAssistant.php`
+- `app/config/hotel.php`
+- `public/support/api.php`
+- `public/assets/js/support-widget.js`
 
 ## Status Legend
 
@@ -50,7 +54,11 @@ Current unresolved tracker rows:
 - Dashboard data is loaded from MySQL through model classes.
 - Chart.js is stored locally and used by the dashboard without Node.js.
 - Room, reservation, payment, and user admin modules are connected to the database.
-- The support widget now routes customer questions to live room and hotel data first, and admin questions to dashboard/report data first, before falling back to Gemini for open-ended replies.
+- The support widget uses a hybrid local-database-first strategy: customer questions about rooms, availability, pricing, policies, and booking instructions are answered from live database queries and built-in FAQ datasets; admin questions about dashboard metrics, sales, occupancy, and operational alerts are answered from live admin statistics. Only open-ended or conversational questions fall back to Gemini with scoped real-time database context injection.
+- The AI support assistant includes step-by-step booking guides for both guest self-service reservations and admin walk-in workflows.
+- Date and month range extraction supports specific month names (e.g. June, December), relative periods (yesterday, last 30 days, last 90 days), and smart year resolution based on the current system date.
+- The Gemini API integration uses camelCase systemInstruction, alternating user/model role turns, and consecutive-role merging to prevent schema validation errors.
+- The support widget JavaScript normalizes Windows CRLF line endings before Markdown table parsing and renders tables as structured HTML with correct column alignment.
 - Room type inclusions are stored as simple PHP catalog descriptions, not as a separate database table.
 - Room XML import/export is implemented with DOMDocument.
 - Public home and rooms pages are PHP pages backed by room catalog data and database-driven starting prices.
@@ -82,8 +90,12 @@ Current unresolved tracker rows:
 | Dashboard Overview | Room status chart | Done | Chart.js doughnut chart uses room status counts | Add click-through to filtered room table later |
 | Dashboard Overview | Payment status chart | Done | Chart.js doughnut chart uses payment status counts | Add payment date filters later |
 | Dashboard Overview | Alert panel | Done | Dashboard watchlist shows overdue check-outs, failed payments, and overlapping active reservation conflicts | Add notification delivery only if needed |
-| AI Support | Customer support chat widget | Done | The support widget answers customer room questions from the database, formats room availability and room types as tables, and falls back to Gemini for broader help | Add conversation logging only if needed |
-| AI Support | Admin support chat widget | Done | The support widget can read dashboard/reports context for admin questions and present room/report data in a table when useful | Add scoped audit logging later |
+| AI Support | Customer support chat widget | Done | The support widget answers customer room availability, room type, room price, hotel profile, and booking guide questions from the live database using pattern matching and phrase-coverage scoring; formats responses as HTML tables; and falls back to Gemini with real-time room catalog and hotel profile context for open-ended queries | Add conversation logging only if needed |
+| AI Support | Admin support chat widget | Done | The support widget compiles live dashboard counters, monthly performance snapshots, room inventory status, operational alerts, and range-specific revenue/occupancy data for admin questions; supports specific month names, yesterday, and last 30/90 days date parsing; and injects this real-time context into Gemini for open-ended admin queries | Add scoped audit logging later |
+| AI Support | Booking guide instructions | Done | The AI provides step-by-step guest booking instructions (login, dashboard, dates, room selection, payment, tracking) and admin walk-in reservation instructions (reservation creation, booking records management, modal actions) | Add visual screenshots later if desired |
+| AI Support | Date/month range parsing | Done | Admin queries support specific month names, relative periods (yesterday, last 30/90 days), smart year resolution, and explicit date formats for targeted data retrieval | Add custom date range input UI later if desired |
+| AI Support | Gemini API protocol | Done | Uses camelCase systemInstruction field, alternating user/model role turns with consecutive-role merging, and scoped real-time database context injection | Monitor for Gemini API spec changes |
+| AI Support | Markdown table rendering | Done | Support widget JS normalizes Windows CRLF line endings, parses consecutive pipe-delimited lines, validates table dividers, and preserves empty cell column alignment | Add sortable table headers later if desired |
 | Rooms | Room listing table | Done | Admin room table loads live records from the database with room number, type, floor, rate, status, and actions | Add search/filter controls later |
 | Rooms | Room CRUD | Done | Admin can create, edit, and delete room records | Add delete guard messaging when room has reservations |
 | Rooms | Bulk room type price update | Done | Admin can set one price for all rooms under a selected room type | Add audit trail if required |

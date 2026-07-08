@@ -406,21 +406,31 @@
             .replaceAll("'", '&#39;');
     }
 
-    function isTableBlock(lines) {
-        return lines.length >= 2 && /^\s*\|/.test(lines[0]) && /^\s*\|[\s:-|]+\|\s*$/.test(lines[1]);
-    }
-
-    function parseTableBlock(block) {
-        const lines = block.split('\n').map((line) => line.trim()).filter(Boolean);
-
-        if (!isTableBlock(lines)) {
+    function parseTableLines(lines) {
+        const cleanLines = lines.map((line) => line.trim()).filter(Boolean);
+        if (cleanLines.length < 2) {
             return null;
         }
 
-        const headers = lines[0].split('|').map((cell) => cell.trim()).filter(Boolean);
-        const rows = lines.slice(2).map((line) => line.split('|').map((cell) => cell.trim()).filter(Boolean)).filter((row) => row.length);
+        if (!/^\s*\|[\s:-|]+\|\s*$/.test(cleanLines[1])) {
+            return null;
+        }
 
-        if (!headers.length || !rows.length) {
+        const parseRow = (line) => {
+            const cells = line.split('|').map((cell) => cell.trim());
+            if (cells[0] === '') {
+                cells.shift();
+            }
+            if (cells[cells.length - 1] === '') {
+                cells.pop();
+            }
+            return cells;
+        };
+
+        const headers = parseRow(cleanLines[0]);
+        const rows = cleanLines.slice(2).map(parseRow).filter((row) => row.length);
+
+        if (!headers.length) {
             return null;
         }
 
@@ -434,57 +444,73 @@
     }
 
     function renderMessageContent(text) {
+        const normalizedText = String(text).replace(/\r\n/g, '\n');
+        const lines = normalizedText.split('\n');
         const container = document.createElement('div');
         container.className = 'support-message-content';
-        const blocks = String(text).split(/\n{2,}/);
 
-        blocks.forEach((block) => {
-            const trimmed = block.trim();
+        let currentTableLines = [];
 
-            if (!trimmed) {
-                return;
-            }
+        const flushTable = () => {
+            if (currentTableLines.length > 0) {
+                const table = parseTableLines(currentTableLines);
+                if (table) {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'support-message-table-wrap';
 
-            const table = parseTableBlock(trimmed);
-            if (table) {
-                const wrap = document.createElement('div');
-                wrap.className = 'support-message-table-wrap';
+                    const tableElement = document.createElement('table');
+                    tableElement.className = 'support-message-table';
 
-                const tableElement = document.createElement('table');
-                tableElement.className = 'support-message-table';
-
-                const thead = document.createElement('thead');
-                const headRow = document.createElement('tr');
-                table.headers.forEach((header) => {
-                    const th = document.createElement('th');
-                    th.textContent = header;
-                    headRow.appendChild(th);
-                });
-                thead.appendChild(headRow);
-
-                const tbody = document.createElement('tbody');
-                table.rows.forEach((row) => {
-                    const tr = document.createElement('tr');
-                    table.headers.forEach((_, index) => {
-                        const td = document.createElement('td');
-                        td.textContent = row[index] ?? '';
-                        tr.appendChild(td);
+                    const thead = document.createElement('thead');
+                    const headRow = document.createElement('tr');
+                    table.headers.forEach((header) => {
+                        const th = document.createElement('th');
+                        th.textContent = header;
+                        headRow.appendChild(th);
                     });
-                    tbody.appendChild(tr);
-                });
+                    thead.appendChild(headRow);
 
-                tableElement.appendChild(thead);
-                tableElement.appendChild(tbody);
-                wrap.appendChild(tableElement);
-                container.appendChild(wrap);
-                return;
+                    const tbody = document.createElement('tbody');
+                    table.rows.forEach((row) => {
+                        const tr = document.createElement('tr');
+                        table.headers.forEach((_, index) => {
+                            const td = document.createElement('td');
+                            td.textContent = row[index] ?? '';
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+
+                    tableElement.appendChild(thead);
+                    tableElement.appendChild(tbody);
+                    wrap.appendChild(tableElement);
+                    container.appendChild(wrap);
+                } else {
+                    currentTableLines.forEach((line) => {
+                        if (line.trim()) {
+                            container.appendChild(createTextBlock(line));
+                        }
+                    });
+                }
+                currentTableLines = [];
             }
+        };
 
-            const paragraphs = trimmed.split('\n');
-            paragraphs.forEach((line) => {
-                container.appendChild(createTextBlock(line));
-            });
-        });
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const trimmed = line.trim();
+
+            if (trimmed.startsWith('|')) {
+                currentTableLines.push(line);
+            } else {
+                flushTable();
+                if (trimmed) {
+                    container.appendChild(createTextBlock(line));
+                }
+            }
+        }
+
+        flushTable();
 
         return container;
     }

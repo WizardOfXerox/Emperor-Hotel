@@ -74,6 +74,13 @@ flowchart TD
     T --> T2[View Occupancy Report]
     T --> T3[View Revenue Report]
     T --> T4[View Reservation Trend Report]
+
+    B --> S1[Open Support Chat Widget]
+    G --> S1
+    M --> S1
+    S1 --> S2{Query Type}
+    S2 -->|FAQ / Room / Booking Guide| S3[Local Database Reply]
+    S2 -->|Open-ended| S4[Gemini AI Fallback with Live Context]
 ```
 
 ## Guest Flow
@@ -100,6 +107,10 @@ flowchart TD
     F -->|Yes| G[Reservation is saved]
     F -->|No| H[Show availability error]
     G --> I[Reservation appears in booking history below the form]
+    B --> J[Open Support Chat]
+    J --> K{Matched FAQ?}
+    K -->|Yes| L[Local Database Reply]
+    K -->|No| M[Gemini AI with Room Context]
 ```
 
 ## Admin Flow
@@ -148,6 +159,11 @@ flowchart TD
     I --> I2[Review occupancy by room type]
     I --> I3[Review revenue by room type or payment method]
     I --> I4[Review daily reservation trends]
+
+    B --> S[Open Support Chat]
+    S --> S1{Query Type}
+    S1 -->|Statistics / Sales / Operations| S2[Live Database Reply]
+    S1 -->|Open-ended| S3[Gemini AI with Admin Context]
 ```
 
 ## Page Route Summary
@@ -170,3 +186,4 @@ flowchart TD
 | Admin Receipt | `public/admin/receipt.php` | Admin |
 | Admin Reports | `public/admin/reports.php` | Admin |
 | Admin Users | `public/admin/users.php` | Admin |
+| Support Chat API | `public/support/api.php` | User, Admin |
