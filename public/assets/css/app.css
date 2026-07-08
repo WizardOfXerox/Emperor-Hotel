@@ -50,7 +50,7 @@ a {
 
 .eyebrow {
     color: #fdd700;
-    font-size: 0.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -144,7 +144,6 @@ a {
 .admin-page .panel-card,
 .admin-page .stat-tile {
     background-color: rgba(2, 6, 23, 0.9);
-    backdrop-filter: blur(8px);
 }
 
 .content-card {

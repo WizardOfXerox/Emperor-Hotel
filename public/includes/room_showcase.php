@@ -62,12 +62,11 @@ function renderRoomShowcaseSection(): void
 
     echo '<section class="site-section" id="suites-rooms">';
     echo '<div class="container">';
-    echo '<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">';
+    echo '<div class="d-flex flex-column flex-lg-row justify-content-center align-items-center gap-3 mb-4">';
     echo '<div>';
-    echo '<p class="eyebrow mb-2">Suites & Rooms</p>';
+    echo '<p class="mb-2 text-center eyebrow">Suites & Rooms</p>';
     echo '<h2 class="section-title mb-0">Explore room types and live availability</h2>';
     echo '</div>';
-    echo '<a class="btn btn-warning fw-semibold" href="' . e($reservationHref) . '">' . e($reservationLabel) . '</a>';
     echo '</div>';
 
     if ($roomDataUnavailable) {

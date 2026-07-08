@@ -247,8 +247,8 @@ body.rooms-showcase-page {
     width: 100%;
     display: flex;
     gap: 40px;
-    min-height: 100vh;
-    padding: 80px 72px;
+    min-height: 60vh;
+    padding: 20px 72px;
     box-sizing: border-box;
     align-items: center;
     justify-content: center;
