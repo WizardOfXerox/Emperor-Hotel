@@ -2,6 +2,8 @@
 
 A robust, local-first web application designed for guest self-service booking and hotel administrative operations. Built using **Core PHP (OOP)**, **MySQL (PDO)**, and **Bootstrap 5**, the project features real-time database-driven workflows, dynamic reporting, local offline assets, and an intelligent hybrid AI Support Assistant.
 
+![Emperor Hotel Website Screenshot](docs/website_screenshot.png)
+
 ---
 
 ## 🚀 Key Features
