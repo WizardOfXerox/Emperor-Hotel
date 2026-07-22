@@ -60,7 +60,7 @@ renderSiteLayoutStart('Room #' . e($room['room_number']) . ' - ' . e($roomType),
 <div class="container py-4">
     <!-- Breadcrumb & Back Link -->
     <div class="d-flex align-items-center justify-content-between mb-4">
-        <a href="rooms.php" class="btn btn-sm btn-outline-gold rounded-pill px-3">
+        <a href="rooms.php#suite-catalog" class="btn btn-sm btn-outline-gold rounded-pill px-3">
             <i class="bi bi-arrow-left me-1"></i>Back to All Suites
         </a>
         <div class="text-muted small">
