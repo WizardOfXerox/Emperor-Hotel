@@ -242,19 +242,34 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                             </div>
                         </div>
 
-                        <!-- Selected Stay Dates Preview -->
-                        <div class="p-3 rounded-3 mb-4 border" style="background: rgba(7, 10, 16, 0.6); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <small class="text-light opacity-75 text-xs text-uppercase d-block fw-bold tracking-wider mb-1"><i class="bi bi-calendar-range text-warning me-1"></i>Selected Stay Dates</small>
-                                    <div class="fw-bold text-white font-serif"><?= date('M d, Y', strtotime($checkIn)) ?> – <?= date('M d, Y', strtotime($checkOut)) ?></div>
+                        <!-- Selected Stay Dates Interactive Form & Date Picker -->
+                        <form action="room-detail.php" method="GET" class="p-3 rounded-4 mb-4 border" style="background: rgba(7, 10, 16, 0.6); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+                            <input type="hidden" name="id" value="<?= (int)$room['room_id'] ?>">
+                            
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <small class="text-light opacity-75 text-xs text-uppercase d-block fw-bold tracking-wider">
+                                    <i class="bi bi-calendar-range text-warning me-1"></i>Selected Stay Dates
+                                </small>
+                                <button type="button" class="btn btn-xs btn-outline-warning rounded-pill px-3 py-1 text-xs fw-bold font-serif shadow-sm" data-bs-toggle="modal" data-bs-target="#calendarPickerModal">
+                                    <i class="bi bi-pencil-square me-1"></i>Change Dates
+                                </button>
+                            </div>
+
+                            <div class="row g-2 align-items-center mb-2">
+                                <div class="col-6 col-sm-5">
+                                    <label class="text-xs text-light opacity-75 d-block mb-1">Check-in</label>
+                                    <input type="date" name="check_in" value="<?= e($checkIn) ?>" class="form-control form-control-sm bg-dark text-white border-secondary rounded-3 text-xs fw-bold" onchange="this.form.submit()">
                                 </div>
-                                <div class="text-end">
-                                    <span class="badge rounded-pill px-3 py-2 fw-bold" style="background: rgba(212, 175, 55, 0.25); color: #FFDF73; border: 1px solid #D4AF37;"><?= $nights ?> Night<?= $nights > 1 ? 's' : '' ?></span>
+                                <div class="col-6 col-sm-5">
+                                    <label class="text-xs text-light opacity-75 d-block mb-1">Check-out</label>
+                                    <input type="date" name="check_out" value="<?= e($checkOut) ?>" class="form-control form-control-sm bg-dark text-white border-secondary rounded-3 text-xs fw-bold" onchange="this.form.submit()">
+                                </div>
+                                <div class="col-12 col-sm-2 text-end mt-2 mt-sm-0">
+                                    <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(212, 175, 55, 0.25); color: #FFDF73; border: 1px solid #D4AF37;"><?= $nights ?> Night<?= $nights > 1 ? 's' : '' ?></span>
                                     <div class="text-xs fw-bold mt-1" style="color: #FBBF24;">Total: ₱<?= number_format($totalStayPrice) ?></div>
                                 </div>
                             </div>
-                        </div>
+                        </form>
 
                         <!-- Included Perks -->
                         <div class="mb-4">
@@ -474,7 +489,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
         </div>
 </main>
 
-
+<?php renderCalendarPickerModal($checkIn, $checkOut); ?>
 
 <script>
 function switchHeroImage(src) {
