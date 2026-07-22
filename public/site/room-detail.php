@@ -331,8 +331,8 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                                                 <a href="room-detail.php?id=<?= (int)$fRoom['room_id'] ?><?= $dateParams ?>" 
                                                    class="list-group-item list-group-item-action rounded-3 p-2 mb-1 border-0 d-flex align-items-center justify-content-between text-xs transition-all <?= $isCurrent ? 'fw-bold shadow' : '' ?>"
                                                    style="<?= $isCurrent ? 'background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;' : 'background: rgba(30, 41, 59, 0.6); color: #F8FAFC;' ?>">
-                                                    <div class="text-truncate me-1" style="max-width: 140px;">
-                                                        <div class="fw-bold"><i class="bi bi-door-closed me-1"></i>#<?= e($fRoom['room_number']) ?> &mdash; <?= e($fRoom['room_type']) ?></div>
+                                                    <div class="me-2 text-wrap" style="line-height: 1.25; font-size: 0.8rem;">
+                                                        <i class="bi bi-door-closed me-1"></i><strong>#<?= e($fRoom['room_number']) ?></strong> &mdash; <span><?= e($fRoom['room_type']) ?></span>
                                                     </div>
                                                     <span class="badge text-xs px-2 py-1 rounded-pill fw-bold flex-shrink-0" style="<?= $fBadgeStyle ?>"><?= $fRoom['status'] ?></span>
                                                 </a>
