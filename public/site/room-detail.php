@@ -424,8 +424,8 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
         </div>
 </main>
 
-<!-- Offcanvas Slide-Out Side Navigation Drawer -->
-<div class="offcanvas offcanvas-start bg-dark text-light border-end" tabindex="-1" id="roomNavigatorOffcanvas" aria-labelledby="roomNavigatorOffcanvasLabel" style="background: rgba(15, 23, 42, 0.97) !important; backdrop-filter: blur(25px); border-color: rgba(212, 175, 55, 0.4) !important; width: 340px;">
+<!-- Offcanvas Slide-Out Side Navigation Drawer (Right Side) -->
+<div class="offcanvas offcanvas-end bg-dark text-light border-start" tabindex="-1" id="roomNavigatorOffcanvas" aria-labelledby="roomNavigatorOffcanvasLabel" style="background: rgba(15, 23, 42, 0.97) !important; backdrop-filter: blur(25px); border-color: rgba(212, 175, 55, 0.4) !important; width: 340px;">
     <div class="offcanvas-header border-bottom border-secondary pb-3">
         <div>
             <h5 class="offcanvas-title font-serif fw-bold m-0" id="roomNavigatorOffcanvasLabel" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);">
