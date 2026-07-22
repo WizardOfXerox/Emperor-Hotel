@@ -214,23 +214,23 @@ function renderRoomShowcaseSection(): void
                     });
                 });
 
-                carousel.style.cursor = 'grab';
+                carousel.style.cursor = "grab";
 
                 // Mouse Drag Events
                 let startX = 0;
                 let isDragging = false;
 
-                carousel.addEventListener('mousedown', (e) => {
+                carousel.addEventListener("mousedown", (e) => {
                     isDragging = true;
                     startX = e.clientX;
-                    carousel.style.cursor = 'grabbing';
+                    carousel.style.cursor = "grabbing";
                     stopAutoSlide();
                 });
 
-                carousel.addEventListener('mouseup', (e) => {
+                carousel.addEventListener("mouseup", (e) => {
                     if (!isDragging) return;
                     isDragging = false;
-                    carousel.style.cursor = 'grab';
+                    carousel.style.cursor = "grab";
                     const diffX = e.clientX - startX;
                     if (Math.abs(diffX) > 30) {
                         if (diffX < 0) {
@@ -242,21 +242,21 @@ function renderRoomShowcaseSection(): void
                     startAutoSlide();
                 });
 
-                carousel.addEventListener('mouseleave', () => {
+                carousel.addEventListener("mouseleave", () => {
                     if (isDragging) {
                         isDragging = false;
-                        carousel.style.cursor = 'grab';
+                        carousel.style.cursor = "grab";
                         startAutoSlide();
                     }
                 });
 
                 // Touch Swipe Events
-                carousel.addEventListener('touchstart', (e) => {
+                carousel.addEventListener("touchstart", (e) => {
                     startX = e.touches[0].clientX;
                     stopAutoSlide();
                 }, { passive: true });
 
-                carousel.addEventListener('touchend', (e) => {
+                carousel.addEventListener("touchend", (e) => {
                     const endX = e.changedTouches[0].clientX;
                     const diffX = endX - startX;
                     if (Math.abs(diffX) > 30) {
