@@ -92,21 +92,19 @@ function renderRoomShowcaseSection(): void
 
         echo '<section class="rooms">';
         echo '<div class="container-carousel">';
-        echo '<div class="carousel" data-carousel>';
+        echo '<div class="carousel-wrapper position-relative">';
         echo '<button class="carousel-control prev" type="button" data-carousel-prev aria-label="Previous ' . e($roomType) . ' image">&#10094;</button>';
+        echo '<div class="carousel-track" data-carousel>';
 
         foreach ($roomInfo['carousel'] as $slideIndex => $imagePath) {
-            echo '<div class="carousel-slide' . ($slideIndex === 0 ? ' is-active' : '') . '">';
-            echo '<img src="' . e($imagePath) . '" alt="' . e($roomType . ' room view ' . ($slideIndex + 1)) . '">';
+            echo '<div class="carousel-slide">';
+            echo '<img src="' . e($imagePath) . '" alt="' . e($roomType . ' room view ' . ($slideIndex + 1)) . '" draggable="false">';
             echo '</div>';
         }
 
+        echo '</div>';
         echo '<button class="carousel-control next" type="button" data-carousel-next aria-label="Next ' . e($roomType) . ' image">&#10095;</button>';
-        echo '<div class="carousel-indicators">';
-        foreach ($roomInfo['carousel'] as $slideIndex => $_) {
-            echo '<button class="carousel-indicator' . ($slideIndex === 0 ? ' is-active' : '') . '" type="button" data-carousel-indicator="' . e((string) $slideIndex) . '" aria-label="Show ' . e($roomType) . ' image ' . e((string) ($slideIndex + 1)) . '"></button>';
-        }
-        echo '</div></div></div>';
+        echo '</div></div>';
 
         $availCount = (int) ($stats['available'] ?? 0);
         $totalCount = (int) ($stats['total'] ?? 0);
@@ -151,133 +149,70 @@ function renderRoomShowcaseSection(): void
 
     echo '<script>
     (function() {
-        function initCarousels() {
-            const carousels = Array.from(document.querySelectorAll("[data-carousel]"));
-            carousels.forEach((carousel) => {
-                if (carousel.dataset.carouselInitialized) return;
-                carousel.dataset.carouselInitialized = "true";
+        function initDragScrollCarousels() {
+            const carouselWrappers = Array.from(document.querySelectorAll(".carousel-wrapper"));
+            
+            carouselWrappers.forEach((wrapper) => {
+                if (wrapper.dataset.dragInit) return;
+                wrapper.dataset.dragInit = "true";
 
-                const slides = Array.from(carousel.querySelectorAll(".carousel-slide"));
-                const indicators = Array.from(carousel.querySelectorAll("[data-carousel-indicator]"));
-                const previousButton = carousel.querySelector("[data-carousel-prev]");
-                const nextButton = carousel.querySelector("[data-carousel-next]");
-                let currentSlide = 0;
-                let autoSlideId = null;
+                const track = wrapper.querySelector("[data-carousel]");
+                const prevBtn = wrapper.querySelector("[data-carousel-prev]");
+                const nextBtn = wrapper.querySelector("[data-carousel-next]");
 
-                const showSlide = (index) => {
-                    slides.forEach((slide, slideIndex) => {
-                        slide.classList.toggle("is-active", slideIndex === index);
-                    });
+                if (!track) return;
 
-                    indicators.forEach((indicator, indicatorIndex) => {
-                        indicator.classList.toggle("is-active", indicatorIndex === index);
-                    });
-
-                    currentSlide = index;
-                };
-
-                const moveSlide = (step) => {
-                    const nextSlide = (currentSlide + step + slides.length) % slides.length;
-                    showSlide(nextSlide);
-                };
-
-                const stopAutoSlide = () => {
-                    if (autoSlideId) window.clearInterval(autoSlideId);
-                };
-
-                const startAutoSlide = () => {
-                    stopAutoSlide();
-                    autoSlideId = window.setInterval(() => moveSlide(1), 4000);
-                };
-
-                if (previousButton) {
-                    previousButton.addEventListener("click", (e) => {
-                        e.preventDefault();
-                        moveSlide(-1);
-                        startAutoSlide();
-                    });
-                }
-
-                if (nextButton) {
-                    nextButton.addEventListener("click", (e) => {
-                        e.preventDefault();
-                        moveSlide(1);
-                        startAutoSlide();
-                    });
-                }
-
-                indicators.forEach((indicator, index) => {
-                    indicator.addEventListener("click", (e) => {
-                        e.preventDefault();
-                        showSlide(index);
-                        startAutoSlide();
-                    });
-                });
-
-                carousel.style.cursor = "grab";
-
-                // Mouse Drag Events
+                let isDown = false;
                 let startX = 0;
-                let isDragging = false;
+                let scrollLeft = 0;
 
-                carousel.addEventListener("mousedown", (e) => {
-                    isDragging = true;
-                    startX = e.clientX;
-                    carousel.style.cursor = "grabbing";
-                    stopAutoSlide();
+                // Mouse Drag Scroll Events
+                track.addEventListener("mousedown", (e) => {
+                    isDown = true;
+                    track.classList.add("is-dragging");
+                    startX = e.pageX - track.offsetLeft;
+                    scrollLeft = track.scrollLeft;
                 });
 
-                carousel.addEventListener("mouseup", (e) => {
-                    if (!isDragging) return;
-                    isDragging = false;
-                    carousel.style.cursor = "grab";
-                    const diffX = e.clientX - startX;
-                    if (Math.abs(diffX) > 30) {
-                        if (diffX < 0) {
-                            moveSlide(1);
-                        } else {
-                            moveSlide(-1);
-                        }
-                    }
-                    startAutoSlide();
+                track.addEventListener("mouseleave", () => {
+                    isDown = false;
+                    track.classList.remove("is-dragging");
                 });
 
-                carousel.addEventListener("mouseleave", () => {
-                    if (isDragging) {
-                        isDragging = false;
-                        carousel.style.cursor = "grab";
-                        startAutoSlide();
-                    }
+                track.addEventListener("mouseup", () => {
+                    isDown = false;
+                    track.classList.remove("is-dragging");
                 });
 
-                // Touch Swipe Events
-                carousel.addEventListener("touchstart", (e) => {
-                    startX = e.touches[0].clientX;
-                    stopAutoSlide();
-                }, { passive: true });
+                track.addEventListener("mousemove", (e) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - track.offsetLeft;
+                    const walk = (x - startX) * 1.8;
+                    track.scrollLeft = scrollLeft - walk;
+                });
 
-                carousel.addEventListener("touchend", (e) => {
-                    const endX = e.changedTouches[0].clientX;
-                    const diffX = endX - startX;
-                    if (Math.abs(diffX) > 30) {
-                        if (diffX < 0) {
-                            moveSlide(1);
-                        } else {
-                            moveSlide(-1);
-                        }
-                    }
-                    startAutoSlide();
-                }, { passive: true });
+                // Arrow Controls Scroll
+                if (prevBtn) {
+                    prevBtn.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        track.scrollBy({ left: -track.clientWidth, behavior: "smooth" });
+                    });
+                }
 
-                showSlide(0);
-                startAutoSlide();
+                if (nextBtn) {
+                    nextBtn.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        track.scrollBy({ left: track.clientWidth, behavior: "smooth" });
+                    });
+                }
             });
         }
 
         if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", initCarousels);
+            document.addEventListener("DOMContentLoaded", initDragScrollCarousels);
         } else {
-            initCarousels();
+            initDragScrollCarousels();
         }
     })();
     </script>';
