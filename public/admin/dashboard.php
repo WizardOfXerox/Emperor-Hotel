@@ -49,8 +49,6 @@ $dashboardChartData = [
 ];
 $dashboardChartJson = json_encode($dashboardChartData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 
-require_once __DIR__ . '/../includes/hotel_map.php';
-
 $reviewModel = new Review($db);
 $reviewDist = $reviewModel->overallRatingDistribution();
 $reviewPerType = $reviewModel->averageRatingPerRoomType();
@@ -118,12 +116,6 @@ renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/
         <p class="eyebrow mb-2">Pending Reservations</p>
         <div class="stat-value"><?php echo e($reservationSummary['pending_reservations']); ?></div>
         <p class="muted-copy mb-0">Reservations waiting for action</p>
-    </article>
-</section>
-
-<!-- Interactive Hotel Floor Map Section -->
-<section class="mb-4">
-    <?php renderHotelFloorMap($db, 'admin'); ?>
 </section>
 
 <section class="dashboard-alert-panel panel-card p-4 mb-4">

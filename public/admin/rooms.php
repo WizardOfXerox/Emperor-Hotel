@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/room_catalog.php';
+require_once __DIR__ . '/../includes/hotel_map.php';
 
 requireAuth('../auth/login.php');
 requireRole('admin', '../user/dashboard.php');
@@ -146,6 +147,11 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
         <p class="eyebrow mb-2">Filtered Rooms</p>
         <div class="stat-value"><?php echo e($roomData['total']); ?></div>
     </article>
+</section>
+
+<!-- Interactive 2D Hotel Floor Map Section -->
+<section class="mb-4">
+    <?php renderHotelFloorMap($db, 'admin'); ?>
 </section>
 
 <section class="panel-card p-4 mb-4">
