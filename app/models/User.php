@@ -60,12 +60,14 @@ class User
             'INSERT INTO users (full_name, email, password_hash, role) VALUES (:full_name, :email, :password_hash, :role)'
         );
 
-        return $statement->execute([
+        $statement->execute([
             'full_name' => trim($data['full_name']),
             'email' => trim($data['email']),
             'password_hash' => password_hash($data['password'], PASSWORD_DEFAULT),
             'role' => $role,
         ]);
+
+        return (int) $this->db->lastInsertId();
     }
 
     public function authenticate(string $email, string $password): ?array

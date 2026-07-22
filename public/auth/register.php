@@ -16,6 +16,7 @@ $allowAdminRole = $userModel->countUsers() === 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fullName = trim((string) ($_POST['full_name'] ?? ''));
     $email = trim((string) ($_POST['email'] ?? ''));
+    $phone = trim((string) ($_POST['phone'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
     $confirmPassword = (string) ($_POST['confirm_password'] ?? '');
     $role = $allowAdminRole ? (string) ($_POST['role'] ?? 'user') : 'user';
@@ -35,12 +36,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('register.php');
     }
 
-    $userModel->create([
+    $userId = $userModel->create([
         'full_name' => $fullName,
         'email' => $email,
         'password' => $password,
         'role' => $role,
     ]);
+
+    if ($userId > 0) {
+        $guestModel = new Guest(Database::connect());
+        $nameParts = splitFullName($fullName);
+        $guestModel->create([
+            'user_id' => $userId,
+            'first_name' => $nameParts['first_name'],
+            'last_name' => $nameParts['last_name'],
+            'phone' => $phone,
+            'email' => $email,
+        ]);
+    }
 
     setFlash('success', 'Registration successful. You can now log in.');
     redirect('login.php');
@@ -62,6 +75,10 @@ renderHeader('Register', ['../assets/css/auth/register.css']);
             <div>
                 <label class="form-label" for="email">Email</label>
                 <input class="form-control" id="email" name="email" type="email" required>
+            </div>
+            <div>
+                <label class="form-label" for="phone">Contact Phone</label>
+                <input class="form-control" id="phone" name="phone" type="tel" placeholder="+63 917 123 4567" required>
             </div>
             <div>
                 <label class="form-label" for="password">Password</label>
