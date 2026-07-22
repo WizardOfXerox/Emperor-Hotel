@@ -148,4 +148,85 @@ function renderRoomShowcaseSection(): void
     }
 
     echo '</div></section>';
+
+    echo '<script>
+    (function() {
+        function initCarousels() {
+            const carousels = Array.from(document.querySelectorAll("[data-carousel]"));
+            carousels.forEach((carousel) => {
+                if (carousel.dataset.carouselInitialized) return;
+                carousel.dataset.carouselInitialized = "true";
+
+                const slides = Array.from(carousel.querySelectorAll(".carousel-slide"));
+                const indicators = Array.from(carousel.querySelectorAll("[data-carousel-indicator]"));
+                const previousButton = carousel.querySelector("[data-carousel-prev]");
+                const nextButton = carousel.querySelector("[data-carousel-next]");
+                let currentSlide = 0;
+                let autoSlideId = null;
+
+                const showSlide = (index) => {
+                    slides.forEach((slide, slideIndex) => {
+                        slide.classList.toggle("is-active", slideIndex === index);
+                    });
+
+                    indicators.forEach((indicator, indicatorIndex) => {
+                        indicator.classList.toggle("is-active", indicatorIndex === index);
+                    });
+
+                    currentSlide = index;
+                };
+
+                const moveSlide = (step) => {
+                    const nextSlide = (currentSlide + step + slides.length) % slides.length;
+                    showSlide(nextSlide);
+                };
+
+                const stopAutoSlide = () => {
+                    if (autoSlideId) window.clearInterval(autoSlideId);
+                };
+
+                const startAutoSlide = () => {
+                    stopAutoSlide();
+                    autoSlideId = window.setInterval(() => moveSlide(1), 4000);
+                };
+
+                if (previousButton) {
+                    previousButton.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        moveSlide(-1);
+                        startAutoSlide();
+                    });
+                }
+
+                if (nextButton) {
+                    nextButton.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        moveSlide(1);
+                        startAutoSlide();
+                    });
+                }
+
+                indicators.forEach((indicator, index) => {
+                    indicator.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        showSlide(index);
+                        startAutoSlide();
+                    });
+                });
+
+                carousel.addEventListener("mouseenter", stopAutoSlide);
+                carousel.addEventListener("mouseleave", startAutoSlide);
+
+                showSlide(0);
+                startAutoSlide();
+            });
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initCarousels);
+        } else {
+            initCarousels();
+        }
+    })();
+    </script>';
 }
