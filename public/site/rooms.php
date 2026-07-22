@@ -158,7 +158,7 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
 
         <!-- RIGHT: SIDEBAR FILTER PANEL -->
         <div class="col-12 col-lg-4 col-xl-3">
-            <div class="position-sticky" style="top: 96px; z-index: 10;">
+            <div class="position-sticky-desktop" style="z-index: 10;">
                 <div class="card rounded-4 p-4 shadow-lg text-light border d-flex flex-column gap-4" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
 
                     <!-- 1. Search Bar -->
@@ -270,6 +270,12 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
 
 <!-- Compact 7-Column Calendar Cell Styles -->
 <style>
+@media (min-width: 992px) {
+    .position-sticky-desktop {
+        position: sticky;
+        top: 96px;
+    }
+}
 .rooms-cal-day-btn {
     width: 26px;
     height: 26px;

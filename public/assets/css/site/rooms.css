@@ -450,3 +450,63 @@ body.rooms-showcase-page .rooms .room-price:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
 }
+
+/* Responsive Media Queries for Mobile & Tablet */
+@media (max-width: 991.98px) {
+    body.rooms-showcase-page .rooms {
+        flex-direction: column !important;
+        padding: 30px 20px !important;
+        gap: 24px !important;
+    }
+
+    body.rooms-showcase-page .rooms .container-carousel {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        justify-content: center !important;
+    }
+
+    .carousel-wrapper {
+        max-width: 100% !important;
+        aspect-ratio: 16 / 10 !important;
+    }
+
+    .carousel-track, .carousel-slide {
+        aspect-ratio: 16 / 10 !important;
+    }
+
+    body.rooms-showcase-page .rooms .container-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+    }
+
+    body.rooms-showcase-page .rooms .cards {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    body.rooms-showcase-page .rooms .card {
+        width: 100% !important;
+        min-height: auto !important;
+    }
+
+    body.rooms-showcase-page .rooms .room-actions {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    body.rooms-showcase-page .rooms .room-price {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    body.rooms-showcase-page .rooms {
+        padding: 20px 12px !important;
+    }
+
+    body.rooms-showcase-page .rooms-hero__content {
+        padding: 0 16px !important;
+    }
+}
