@@ -22,10 +22,37 @@ $checkOut = trim((string) ($_GET['check_out'] ?? ''));
 if ($checkIn === '') $checkIn = (new DateTimeImmutable('today'))->format('Y-m-d');
 if ($checkOut === '') $checkOut = (new DateTimeImmutable('today'))->modify('+1 day')->format('Y-m-d');
 
-renderSiteLayoutStart('Rooms Directory | Emperor Hotel', $user, '');
+renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css', '../assets/css/site/rooms.css'], 'home-showcase-page rooms-showcase-page');
 ?>
 
-<div class="container py-4">
+<nav class="home-nav" aria-label="Primary navigation">
+    <div class="home-nav__container">
+        <a class="home-nav__logo" href="home.php" aria-label="Emperor Hotel home">
+            <img src="../assets/images/branding/emperors-hotel-logo.svg" alt="Emperor Hotel logo">
+        </a>
+
+        <div class="home-nav__links">
+            <a class="home-nav__link" href="home.php">HOME</a>
+            <a class="home-nav__link home-nav__link--active" href="rooms.php">ROOMS</a>
+            <a class="home-nav__link" href="suites.php">SUITES</a>
+        </div>
+
+        <div class="home-nav__auth">
+            <?php if ($user): ?>
+                <a class="home-nav__cta home-nav__cta--primary" href="<?= e($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php') ?>">DASHBOARD</a>
+                <a class="home-nav__cta home-nav__cta--secondary" href="../auth/logout.php">LOG OUT</a>
+            <?php else: ?>
+                <a class="home-nav__cta home-nav__cta--primary" href="../auth/login.php">LOG IN</a>
+                <a class="home-nav__cta home-nav__cta--secondary" href="../auth/register.php">REGISTER</a>
+            <?php endif; ?>
+        </div>
+    </div>
+</nav>
+
+<main class="py-4">
+    <div class="container mb-3">
+        <?php renderFlashBlock(); ?>
+    </div>
 
     <!-- Rooms Banner & Stay Date Selection Header -->
     <div class="card rounded-4 p-4 p-md-5 mb-4 shadow-lg border text-white position-relative overflow-hidden" style="background: rgba(15, 23, 42, 0.94); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
@@ -236,5 +263,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+</main>
 
-<?php renderSiteLayoutEnd(); ?>
+<?php renderSupportWidget('customer'); ?>
+<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/support-widget.js" defer></script>
+</body>
+</html>
