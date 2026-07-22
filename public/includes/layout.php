@@ -93,7 +93,6 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
     echo '</div>';
     echo '</aside>';
     echo '<main class="content-panel">';
-    echo '<div class="content-card">';
     echo '<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">';
     echo '<div><p class="eyebrow mb-1">Hotel Reservation System</p><h2 class="page-title mb-0">' . e($title) . '</h2></div>';
     echo '<div class="d-flex align-items-center gap-3">';
@@ -119,7 +118,6 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
 
 function renderAdminLayoutEnd(): void
 {
-    echo '</div>';
     echo '</main>';
     echo '</div>';
     renderSupportWidget('admin');
