@@ -97,9 +97,9 @@ function renderRoomChoiceCards(array $rooms, ?int $selectedRoomId = null, bool $
             echo '</span>';
             echo '<span class="room-choice-card__room-number">Room ' . e($room['room_number']) . '</span>';
             echo '<strong>' . e($roomType) . '</strong>';
-            echo '<span>' . e($includedPerks) . '</span>';
+            $maxCapacity = (int) ($room['max_capacity'] ?? ($roomType === 'Emperor Presidential' ? 6 : ($roomType === 'Royal Executive' ? 4 : 2)));
             echo '<small>' . e(formatMoney((float) $room['price_per_night'])) . ' / night</small>';
-            echo '<small>Good for up to 5 people</small>';
+            echo '<small><i class="bi bi-people me-1"></i>Max ' . e($maxCapacity) . ' Guests</small>';
             echo '</label>';
         }
 
