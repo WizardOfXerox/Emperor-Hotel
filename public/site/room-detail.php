@@ -22,7 +22,40 @@ if ($roomId > 0) {
     $room = $roomModel->findByNumber($roomNumber);
 }
 
+$checkIn = trim((string) ($_GET['check_in'] ?? ''));
+$checkOut = trim((string) ($_GET['check_out'] ?? ''));
+if ($checkIn === '') $checkIn = (new DateTimeImmutable('today'))->format('Y-m-d');
+if ($checkOut === '') $checkOut = (new DateTimeImmutable('today'))->modify('+1 day')->format('Y-m-d');
+
+$dateParams = '';
+if (!empty($checkIn) && !empty($checkOut)) {
+    $dateParams = '&check_in=' . urlencode($checkIn) . '&check_out=' . urlencode($checkOut);
+}
+
+// Dynamic reservation overlap query for check_in and check_out
+$reservedRoomIds = [];
+if (!empty($checkIn) && !empty($checkOut)) {
+    $resStmt = $db->prepare("
+        SELECT DISTINCT room_id 
+        FROM reservations 
+        WHERE status IN ('Pending', 'Confirmed', 'Checked-in')
+          AND check_in < :check_out 
+          AND check_out > :check_in
+    ");
+    $resStmt->execute(['check_in' => $checkIn, 'check_out' => $checkOut]);
+    $reservedRoomIds = array_map('intval', $resStmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
+}
+
 $allRooms = $roomModel->all();
+foreach ($allRooms as &$r) {
+    if (in_array((int)$r['room_id'], $reservedRoomIds, true)) {
+        $r['status'] = 'Reserved';
+    } elseif ($r['status'] === 'Reserved') {
+        $r['status'] = 'Available';
+    }
+}
+unset($r);
+
 if (!$room) {
     $room = $allRooms[0] ?? null;
 }
@@ -30,6 +63,12 @@ if (!$room) {
 if (!$room) {
     setFlash('danger', 'Room not found.');
     redirect('rooms.php');
+}
+
+if ($room && in_array((int)$room['room_id'], $reservedRoomIds, true)) {
+    $room['status'] = 'Reserved';
+} elseif ($room && $room['status'] === 'Reserved') {
+    $room['status'] = 'Available';
 }
 
 $currentIdx = 0;
@@ -68,22 +107,12 @@ $typeCatalog = $catalog[$roomType] ?? [
 $reviews = $reviewModel->reviewsForRoom((int) $room['room_id'], 10);
 $ratingData = $reviewModel->averageRatingForRoom((int) $room['room_id']);
 
-$checkIn = trim((string) ($_GET['check_in'] ?? ''));
-$checkOut = trim((string) ($_GET['check_out'] ?? ''));
-if ($checkIn === '') $checkIn = (new DateTimeImmutable('today'))->format('Y-m-d');
-if ($checkOut === '') $checkOut = (new DateTimeImmutable('today'))->modify('+1 day')->format('Y-m-d');
-
 $isAvailable = $room['status'] === 'Available';
 
 $inD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkIn) ?: new DateTimeImmutable('today');
 $outD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkOut) ?: (new DateTimeImmutable('today'))->modify('+1 day');
 $nights = max(1, (int) round(($outD->getTimestamp() - $inD->getTimestamp()) / 86400));
 $totalStayPrice = (float)$room['price_per_night'] * $nights;
-
-$dateParams = '';
-if (!empty($checkIn) && !empty($checkOut)) {
-    $dateParams = '&check_in=' . urlencode($checkIn) . '&check_out=' . urlencode($checkOut);
-}
 
 renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../assets/css/site/home.css', '../assets/css/site/rooms.css'], 'home-showcase-page rooms-showcase-page');
 ?>

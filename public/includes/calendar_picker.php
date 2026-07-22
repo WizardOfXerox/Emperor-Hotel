@@ -16,14 +16,9 @@ function renderCalendarPickerModal(string $checkInVal = '', string $checkOutVal 
   <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
     <div class="modal-content rounded-4 shadow-lg bg-dark text-light border" style="background: rgba(15, 23, 42, 0.96) !important; backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
       <div class="modal-header border-bottom border-secondary px-4 py-3">
-        <div class="d-flex align-items-center justify-content-between w-100 me-2">
-            <div>
-                <h4 class="font-serif fw-bold m-0" style="color: #FFDF73 !important; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-calendar-range me-2"></i>Select Stay Dates</h4>
-                <p class="text-light opacity-90 text-xs m-0 fw-semibold">Click check-in and check-out dates on the grid below.</p>
-            </div>
-            <div id="modalStayDurationBadge" class="badge bg-gold text-dark text-xs px-3 py-2 fw-bold rounded-pill shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important; color: #070A10 !important; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
-                Select dates below
-            </div>
+        <div>
+            <h4 class="font-serif fw-bold m-0" style="color: #FFDF73 !important; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-calendar-range me-2"></i>Select Stay Dates</h4>
+            <p class="text-light opacity-90 text-xs m-0 fw-semibold">Click check-in and check-out dates on the grid below.</p>
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -69,10 +64,6 @@ function renderCalendarPickerModal(string $checkInVal = '', string $checkOutVal 
             <!-- Days Grid -->
             <div class="calendar-grid-days text-center" id="calendarDaysGrid"></div>
         </div>
-      </div>
-      <div class="modal-footer border-top border-secondary px-4 py-2">
-        <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-sm font-serif fw-bold rounded-pill px-4 text-dark" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none;" onclick="applySelectedDatesFromModal()">Done</button>
       </div>
     </div>
   </div>
