@@ -23,7 +23,6 @@ if ($roomId > 0) {
 }
 
 if (!$room) {
-    // Default to first room if not specified
     $all = $roomModel->all();
     $room = $all[0] ?? null;
 }
@@ -38,10 +37,10 @@ $roomType = $room['room_type'];
 $typeCatalog = $catalog[$roomType] ?? [
     'hero' => '../assets/images/rooms/hero.jpg',
     'carousel' => [],
-    'tagline' => 'Luxury accommodation at Emperor Hotel',
-    'details' => 'Experience refined luxury and comfort.',
-    'included_perks' => ['Complimentary amenities'],
-    'features' => ['King bed', 'Wi-Fi', 'Smart TV'],
+    'tagline' => 'Where smart comfort meets timeless elegance.',
+    'details' => 'Experience refined luxury and unmatched comfort crafted for guests who appreciate warm luxury styling and efficient space.',
+    'included_perks' => ['Complimentary breakfast set', 'High-speed priority Wi-Fi'],
+    'features' => ['Plush luxury linen', 'Ergonomic work desk', 'Modern rainfall shower', 'Smart TV & climate control'],
 ];
 
 $reviews = $reviewModel->reviewsForRoom((int) $room['room_id'], 10);
@@ -52,185 +51,297 @@ $checkOut = trim((string) ($_GET['check_out'] ?? ''));
 if ($checkIn === '') $checkIn = (new DateTimeImmutable('today'))->format('Y-m-d');
 if ($checkOut === '') $checkOut = (new DateTimeImmutable('today'))->modify('+1 day')->format('Y-m-d');
 
-$isAvailable = $roomModel->find((int)$room['room_id'])['status'] === 'Available';
+$isAvailable = $room['status'] === 'Available';
 
-renderSiteLayoutStart('Room #' . e($room['room_number']) . ' - ' . e($roomType), $user, '', ['../assets/css/site/rooms.css']);
+$inD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkIn) ?: new DateTimeImmutable('today');
+$outD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkOut) ?: (new DateTimeImmutable('today'))->modify('+1 day');
+$nights = max(1, (int) round(($outD->getTimestamp() - $inD->getTimestamp()) / 86400));
+$totalStayPrice = (float)$room['price_per_night'] * $nights;
+
+renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../assets/css/site/home.css', '../assets/css/site/rooms.css'], 'home-showcase-page rooms-showcase-page');
 ?>
 
-<div class="container py-4">
-    <!-- Breadcrumb & Back Link -->
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <a href="rooms.php#suite-catalog" class="btn btn-sm btn-outline-gold rounded-pill px-3">
-            <i class="bi bi-arrow-left me-1"></i>Back to All Suites
+<nav class="home-nav" aria-label="Primary navigation">
+    <div class="home-nav__container">
+        <a class="home-nav__logo" href="home.php" aria-label="Emperor Hotel home">
+            <img src="../assets/images/branding/emperors-hotel-logo.svg" alt="Emperor Hotel logo">
         </a>
-        <div class="text-muted small">
-            <span>Suites</span> / <span class="text-gold"><?= e($roomType) ?></span> / <span>Room #<?= e($room['room_number']) ?></span>
+
+        <div class="home-nav__links">
+            <a class="home-nav__link" href="home.php">HOME</a>
+            <a class="home-nav__link home-nav__link--active" href="rooms.php">SUITES</a>
+        </div>
+
+        <div class="home-nav__auth">
+            <?php if ($user): ?>
+                <a class="home-nav__cta home-nav__cta--primary" href="<?= e($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php') ?>">MY DASHBOARD</a>
+                <a class="home-nav__cta home-nav__cta--secondary" href="../auth/logout.php">LOG OUT</a>
+            <?php else: ?>
+                <a class="home-nav__cta home-nav__cta--primary" href="../auth/login.php">LOG IN</a>
+                <a class="home-nav__cta home-nav__cta--secondary" href="../auth/register.php">REGISTER</a>
+            <?php endif; ?>
         </div>
     </div>
+</nav>
 
-    <!-- Main Room Detail Row -->
-    <div class="row g-4 mb-5">
-        <!-- Room Hero & Gallery -->
-        <div class="col-lg-7">
-            <div class="card bg-dark text-light border-gold-glow rounded-4 overflow-hidden shadow-lg">
-                <div class="position-relative">
-                    <img src="<?= e($typeCatalog['hero']) ?>" class="card-img-top w-100 object-fit-cover" style="height: 420px;" alt="<?= e($roomType) ?>">
-                    <span class="position-absolute top-0 start-0 m-3 badge bg-gold text-dark font-serif fs-6 px-3 py-2 fw-bold rounded-pill">
-                        Room #<?= e($room['room_number']) ?>
-                    </span>
-                    <span class="position-absolute top-0 end-0 m-3 badge <?= $isAvailable ? 'bg-success' : 'bg-warning text-dark' ?> fs-6 px-3 py-2 rounded-pill">
-                        <?= e($room['status']) ?>
-                    </span>
-                </div>
-                
-                <!-- Room Image Carousel Thumbnails -->
-                <?php if (!empty($typeCatalog['carousel'])): ?>
-                    <div class="card-body p-3 bg-black bg-opacity-40">
-                        <div class="row g-2">
-                            <?php foreach ($typeCatalog['carousel'] as $img): ?>
-                                <div class="col-4">
-                                    <img src="<?= e($img) ?>" class="img-fluid rounded-3 border border-secondary object-fit-cover" style="height: 90px; width: 100%;" alt="Room preview">
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
+<main class="py-5" style="background: #070A10; min-height: 100vh;">
+    <div class="container py-3">
+        <!-- Navigation Breadcrumb -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-2">
+            <a href="rooms.php#suite-catalog" class="btn btn-sm rounded-pill px-4 py-2 font-serif fw-bold shadow text-uppercase tracking-wider" style="background: rgba(30, 41, 59, 0.85); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.45);">
+                <i class="bi bi-arrow-left me-2"></i>Back to All Suites
+            </a>
+            <div class="text-light opacity-90 small fw-semibold font-serif">
+                <a href="home.php" class="text-decoration-none text-light opacity-75">Home</a> / 
+                <a href="rooms.php" class="text-decoration-none text-light opacity-75">Suites</a> / 
+                <span style="color: #FFDF73;"><?= e($roomType) ?></span> / 
+                <span class="text-white fw-bold">Room #<?= e($room['room_number']) ?></span>
             </div>
         </div>
 
-        <!-- Room Specs & Fast Booking Box -->
-        <div class="col-lg-5">
-            <div class="card bg-dark text-light border-gold-glow rounded-4 p-4 shadow-lg h-100 d-flex flex-column justify-content-between">
-                <div>
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <small class="text-gold text-uppercase tracking-wider fw-bold">Floor <?= e($room['floor']) ?></small>
-                        <div class="text-warning">
-                            <i class="bi bi-star-fill me-1"></i>
-                            <span class="fw-bold"><?= number_format($ratingData['avg_rating'], 1) ?></span>
-                            <span class="text-muted text-xs">(<?= $ratingData['review_count'] ?> reviews)</span>
-                        </div>
+        <!-- Main Room Showcase Row -->
+        <div class="row g-4 mb-5">
+            <!-- Room Hero & Gallery -->
+            <div class="col-12 col-lg-7">
+                <div class="card rounded-4 overflow-hidden shadow-lg border" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+                    <div class="position-relative">
+                        <img src="<?= e($typeCatalog['hero']) ?>" id="mainRoomHeroImage" class="card-img-top w-100 object-fit-cover transition-all" style="height: 440px;" alt="<?= e($roomType) ?>">
+                        
+                        <span class="position-absolute top-0 start-0 m-3 badge font-serif fs-6 px-3 py-2 fw-bold rounded-pill shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.5);">
+                            <i class="bi bi-door-open me-1"></i>Room #<?= e($room['room_number']) ?>
+                        </span>
+                        
+                        <?php
+                        $badgeBg = match ($room['status']) {
+                            'Available' => 'background: rgba(16, 185, 129, 0.9); border: 1.5px solid #10B981; color: #FFFFFF;',
+                            'Reserved' => 'background: rgba(59, 130, 246, 0.9); border: 1.5px solid #3B82F6; color: #FFFFFF;',
+                            'Occupied' => 'background: rgba(245, 158, 11, 0.9); border: 1.5px solid #F59E0B; color: #FFFFFF;',
+                            'Cleaning' => 'background: rgba(168, 85, 247, 0.9); border: 1.5px solid #A855F7; color: #FFFFFF;',
+                            default => 'background: rgba(244, 63, 94, 0.9); border: 1.5px solid #F43F5E; color: #FFFFFF;',
+                        };
+                        ?>
+                        <span class="position-absolute top-0 end-0 m-3 badge fs-6 px-4 py-2 rounded-pill shadow-lg fw-bold" style="<?= $badgeBg ?>">
+                            <i class="bi bi-circle-fill me-1 fs-6"></i><?= e($room['status']) ?>
+                        </span>
                     </div>
-
-                    <h2 class="font-serif text-gold fw-bold mb-2"><?= e($roomType) ?></h2>
-                    <p class="text-muted small mb-4"><?= e($typeCatalog['tagline']) ?></p>
-
-                    <!-- Key Spec Grid -->
-                    <div class="row row-cols-2 g-3 p-3 bg-black bg-opacity-40 rounded-3 mb-4 border border-secondary">
-                        <div class="col">
-                            <small class="text-muted text-xs text-uppercase d-block">Bed Type</small>
-                            <span class="fw-bold text-light"><i class="bi bi-door-closed text-gold me-1"></i><?= e($room['bed_type'] ?? 'King Bed') ?></span>
+                    
+                    <!-- Room Image Gallery Thumbnails -->
+                    <?php if (!empty($typeCatalog['carousel'])): ?>
+                        <div class="card-body p-3" style="background: rgba(7, 10, 16, 0.6); border-top: 1px solid rgba(212, 175, 55, 0.3);">
+                            <div class="row g-2">
+                                <div class="col-3">
+                                    <img src="<?= e($typeCatalog['hero']) ?>" class="img-fluid rounded-3 border object-fit-cover gallery-thumb active" style="height: 85px; width: 100%; cursor: pointer; border-color: #D4AF37 !important;" onclick="switchHeroImage(this.src)" alt="Main view">
+                                </div>
+                                <?php foreach ($typeCatalog['carousel'] as $img): ?>
+                                    <div class="col-3">
+                                        <img src="<?= e($img) ?>" class="img-fluid rounded-3 border object-fit-cover gallery-thumb" style="height: 85px; width: 100%; cursor: pointer; border-color: rgba(212, 175, 55, 0.3) !important;" onclick="switchHeroImage(this.src)" alt="Suite photo">
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
-                        <div class="col">
-                            <small class="text-muted text-xs text-uppercase d-block">Capacity</small>
-                            <span class="fw-bold text-light"><i class="bi bi-people text-gold me-1"></i>Up to <?= e($room['max_capacity'] ?? 2) ?> Guests</span>
-                        </div>
-                        <div class="col">
-                            <small class="text-muted text-xs text-uppercase d-block">View Type</small>
-                            <span class="fw-bold text-light"><i class="bi bi-eye text-gold me-1"></i><?= e($room['view_type'] ?? 'City View') ?></span>
-                        </div>
-                        <div class="col">
-                            <small class="text-muted text-xs text-uppercase d-block">Nightly Rate</small>
-                            <span class="fw-bold text-gold fs-5">₱<?= number_format((float)$room['price_per_night'], 2) ?></span>
-                        </div>
-                    </div>
-
-                    <!-- Included Perks -->
-                    <div class="mb-4">
-                        <h6 class="text-gold font-serif mb-2"><i class="bi bi-gift-fill me-2"></i>Included Perks</h6>
-                        <ul class="list-unstyled mb-0 small">
-                            <?php foreach ($typeCatalog['included_perks'] as $perk): ?>
-                                <li class="text-muted mb-1"><i class="bi bi-check-circle-fill text-gold me-2"></i><?= e($perk) ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Express Booking CTA -->
-                <div class="border-top border-secondary pt-3 mt-3">
-                    <?php if ($isAvailable): ?>
-                        <a href="../user/dashboard.php?selected_room=<?= (int)$room['room_id'] ?>&check_in=<?= e($checkIn) ?>&check_out=<?= e($checkOut) ?>" 
-                           class="btn btn-gold w-100 rounded-pill py-3 font-serif fw-bold fs-6 shadow">
-                            <i class="bi bi-lightning-charge-fill me-2"></i>Reserve Room #<?= e($room['room_number']) ?> Now
-                        </a>
-                    <?php else: ?>
-                        <button class="btn btn-secondary w-100 rounded-pill py-3 fw-bold disabled" disabled>
-                            Currently <?= e($room['status']) ?>
-                        </button>
                     <?php endif; ?>
                 </div>
             </div>
+
+            <!-- Room Specs & Fast Booking Box -->
+            <div class="col-12 col-lg-5">
+                <div class="card rounded-4 p-4 shadow-lg h-100 d-flex flex-column justify-content-between border" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-secondary">
+                            <span class="badge px-3 py-1 rounded-pill font-serif fw-bold" style="background: rgba(212, 175, 55, 0.2); border: 1px solid rgba(212, 175, 55, 0.5); color: #FFDF73;">
+                                <i class="bi bi-layers me-1"></i>Floor <?= e($room['floor']) ?>
+                            </span>
+                            <div style="color: #FBBF24;" class="fw-bold fs-6">
+                                <i class="bi bi-star-fill me-1"></i><?= number_format($ratingData['avg_rating'], 1) ?> <span class="text-light opacity-75 text-xs font-normal">(<?= $ratingData['review_count'] ?> Guest Reviews)</span>
+                            </div>
+                        </div>
+
+                        <h2 class="font-serif fw-bold mb-1" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><?= e($roomType) ?></h2>
+                        <p class="text-light opacity-90 small mb-4 fw-semibold"><?= e($typeCatalog['tagline']) ?></p>
+
+                        <!-- Key Spec Grid -->
+                        <div class="row row-cols-2 g-3 p-3 rounded-4 mb-4 border" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+                            <div class="col">
+                                <small class="text-light opacity-75 text-xs text-uppercase d-block fw-bold tracking-wider mb-1">Bed Configuration</small>
+                                <span class="fw-bold text-white"><i class="bi bi-door-closed me-1" style="color: #FFDF73;"></i><?= e($room['bed_type'] ?? 'King Bed') ?></span>
+                            </div>
+                            <div class="col">
+                                <small class="text-light opacity-75 text-xs text-uppercase d-block fw-bold tracking-wider mb-1">Capacity</small>
+                                <span class="fw-bold text-white"><i class="bi bi-people me-1" style="color: #FFDF73;"></i>Up to <?= e($room['max_capacity'] ?? 2) ?> Guests</span>
+                            </div>
+                            <div class="col">
+                                <small class="text-light opacity-75 text-xs text-uppercase d-block fw-bold tracking-wider mb-1">View Aspect</small>
+                                <span class="fw-bold text-white"><i class="bi bi-eye me-1" style="color: #FFDF73;"></i><?= e($room['view_type'] ?? 'City View') ?></span>
+                            </div>
+                            <div class="col">
+                                <small class="text-light opacity-75 text-xs text-uppercase d-block fw-bold tracking-wider mb-1">Nightly Rate</small>
+                                <span class="fw-bold fs-5" style="color: #FBBF24;">₱<?= number_format((float)$room['price_per_night']) ?><span class="fs-6 text-light opacity-75 font-normal">/night</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Selected Stay Dates Preview -->
+                        <div class="p-3 rounded-3 mb-4 border" style="background: rgba(7, 10, 16, 0.6); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <small class="text-light opacity-75 text-xs text-uppercase d-block fw-bold tracking-wider mb-1"><i class="bi bi-calendar-range text-warning me-1"></i>Selected Stay Dates</small>
+                                    <div class="fw-bold text-white font-serif"><?= date('M d, Y', strtotime($checkIn)) ?> – <?= date('M d, Y', strtotime($checkOut)) ?></div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge rounded-pill px-3 py-2 fw-bold" style="background: rgba(212, 175, 55, 0.25); color: #FFDF73; border: 1px solid #D4AF37;"><?= $nights ?> Night<?= $nights > 1 ? 's' : '' ?></span>
+                                    <div class="text-xs fw-bold mt-1" style="color: #FBBF24;">Total: ₱<?= number_format($totalStayPrice) ?></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Included Perks -->
+                        <div class="mb-4">
+                            <h6 class="font-serif mb-2 fw-bold" style="color: #FFDF73;"><i class="bi bi-gift-fill me-2"></i>Included Executive Perks</h6>
+                            <ul class="list-unstyled mb-0 small">
+                                <?php foreach ($typeCatalog['included_perks'] as $perk): ?>
+                                    <li class="text-light opacity-90 mb-2 d-flex align-items-center fw-semibold">
+                                        <i class="bi bi-check-circle-fill me-2 fs-6" style="color: #FFDF73;"></i><?= e($perk) ?>
+                                    </li>
+                                <?php endforeach; ?>
+                                <li class="text-light opacity-90 mb-1 d-flex align-items-center fw-semibold">
+                                    <i class="bi bi-check-circle-fill me-2 fs-6" style="color: #FFDF73;"></i>Nespresso Espresso Machine & Premium Teas
+                                </li>
+                                <li class="text-light opacity-90 mb-1 d-flex align-items-center fw-semibold">
+                                    <i class="bi bi-check-circle-fill me-2 fs-6" style="color: #FFDF73;"></i>Complimentary High-Speed Priority Fiber Wi-Fi
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Express Booking CTA -->
+                    <div class="pt-3 border-top border-secondary">
+                        <?php if ($isAvailable): ?>
+                            <a href="../user/dashboard.php?selected_room=<?= (int)$room['room_id'] ?>&check_in=<?= e($checkIn) ?>&check_out=<?= e($checkOut) ?>" 
+                               class="btn w-100 rounded-pill py-3 font-serif fw-bold fs-6 shadow text-uppercase tracking-wider" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);">
+                                <i class="bi bi-lightning-charge-fill me-2"></i>Reserve Room #<?= e($room['room_number']) ?> Now
+                            </a>
+                        <?php else: ?>
+                            <div class="p-3 rounded-pill text-center fw-bold" style="background: rgba(30, 41, 59, 0.85); color: #94A3B8; border: 1px solid rgba(255, 255, 255, 0.15);">
+                                <i class="bi bi-info-circle me-2"></i>Room #<?= e($room['room_number']) ?> is Currently <?= e($room['status']) ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- Suite Architectural Details & Features -->
-    <div class="row g-4 mb-5">
-        <div class="col-md-8">
-            <div class="card bg-dark text-light border-gold-glow rounded-4 p-4 shadow">
-                <h4 class="font-serif text-gold fw-bold mb-3"><i class="bi bi-file-text me-2"></i>Suite Overview</h4>
-                <p class="text-muted leading-relaxed mb-4"><?= e($typeCatalog['details']) ?></p>
+        <!-- Suite Overview & Features -->
+        <div class="row g-4 mb-5">
+            <div class="col-12 col-md-8">
+                <div class="card rounded-4 p-4 shadow-lg border h-100" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+                    <h4 class="font-serif fw-bold mb-3" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-file-text-fill me-2"></i>Suite Architectural Overview</h4>
+                    <p class="text-light opacity-90 leading-relaxed mb-4 fs-6 fw-normal"><?= e($typeCatalog['details']) ?></p>
 
-                <h5 class="font-serif text-gold fw-bold mb-3"><i class="bi bi-sliders me-2"></i>Room Amenities & Features</h5>
-                <div class="row row-cols-1 row-cols-sm-2 g-3">
-                    <?php foreach ($typeCatalog['features'] as $feature): ?>
+                    <h5 class="font-serif fw-bold mb-3" style="color: #FFDF73;"><i class="bi bi-sliders me-2"></i>Room Amenities & Features</h5>
+                    <div class="row row-cols-1 row-cols-sm-2 g-3">
+                        <?php foreach ($typeCatalog['features'] as $feature): ?>
+                            <div class="col">
+                                <div class="p-3 rounded-3 border d-flex align-items-center h-100" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+                                    <i class="bi bi-check2-square fs-5 me-3" style="color: #FFDF73;"></i>
+                                    <span class="small fw-semibold text-white"><?= e($feature) ?></span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="card rounded-4 p-4 shadow-lg border h-100" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+                    <h5 class="font-serif fw-bold mb-4" style="color: #FFDF73;"><i class="bi bi-shield-check me-2"></i>5-Star Guarantees</h5>
+                    <ul class="list-unstyled text-light opacity-90 small mb-0">
+                        <li class="mb-3 d-flex align-items-start">
+                            <i class="bi bi-award-fill fs-5 me-3 mt-1" style="color: #FFDF73;"></i>
+                            <div>
+                                <strong class="d-block text-white">Best Rate Guarantee</strong>
+                                Direct reservation assurance with zero booking surcharges.
+                            </div>
+                        </li>
+                        <li class="mb-3 d-flex align-items-start">
+                            <i class="bi bi-clock-history fs-5 me-3 mt-1" style="color: #FFDF73;"></i>
+                            <div>
+                                <strong class="d-block text-white">24/7 Butler & Concierge</strong>
+                                Dedicated front desk support & luggage assistance.
+                            </div>
+                        </li>
+                        <li class="mb-3 d-flex align-items-start">
+                            <i class="bi bi-wifi fs-5 me-3 mt-1" style="color: #FFDF73;"></i>
+                            <div>
+                                <strong class="d-block text-white">Ultra Fiber Wi-Fi</strong>
+                                High-speed unmetered connection for all Devices.
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start">
+                            <i class="bi bi-arrow-repeat fs-5 me-3 mt-1" style="color: #FFDF73;"></i>
+                            <div>
+                                <strong class="d-block text-white">Flexible Date Rescheduling</strong>
+                                Easy stay date adjustment prior to check-in.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verified Guest Reviews Section -->
+        <div class="card rounded-4 p-4 shadow-lg border" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+            <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-2 pb-3 border-bottom border-secondary">
+                <h4 class="font-serif fw-bold m-0" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-chat-square-heart me-2"></i>Verified Guest Reviews</h4>
+                <div class="badge fs-6 px-4 py-2 fw-bold rounded-pill shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;">
+                    ★ <?= number_format($ratingData['avg_rating'], 1) ?> / 5.0 (<?= $ratingData['review_count'] ?> Reviews)
+                </div>
+            </div>
+
+            <?php if (empty($reviews)): ?>
+                <div class="text-center py-5 text-light opacity-75">
+                    <i class="bi bi-chat-quote fs-1 text-warning opacity-50 d-block mb-3"></i>
+                    <p class="m-0 fs-6 fw-semibold">No reviews yet for Room #<?= e($room['room_number']) ?>. Be the first guest to experience this suite!</p>
+                </div>
+            <?php else: ?>
+                <div class="row row-cols-1 row-cols-md-2 g-3">
+                    <?php foreach ($reviews as $rev): ?>
                         <div class="col">
-                            <div class="p-3 bg-black bg-opacity-40 rounded-3 border border-secondary d-flex align-items-center">
-                                <i class="bi bi-check2-square text-gold fs-5 me-3"></i>
-                                <span class="small font-semibold text-light"><?= e($feature) ?></span>
+                            <div class="p-3 rounded-4 border h-100" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="fw-bold font-serif" style="color: #FFDF73;"><?= e($rev['full_name']) ?></span>
+                                    <div class="text-warning small">
+                                        <?php for ($s = 1; $s <= 5; $s++): ?>
+                                            <i class="bi bi-star-<?= $s <= (int)$rev['rating'] ? 'fill' : 'blank' ?>"></i>
+                                        <?php endfor; ?>
+                                    </div>
+                                </div>
+                                <p class="text-light opacity-90 small mb-2">"<?= e($rev['comment'] ?: 'Great stay!') ?>"</p>
+                                <small class="text-light opacity-50 text-xs d-block text-end"><?= date('M d, Y', strtotime($rev['created_at'])) ?></small>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card bg-dark text-light border-gold-glow rounded-4 p-4 shadow">
-                <h5 class="font-serif text-gold fw-bold mb-3"><i class="bi bi-shield-check me-2"></i>Hotel Guarantees</h5>
-                <ul class="list-unstyled text-muted small mb-0">
-                    <li class="mb-3 d-flex"><i class="bi bi-clock-history text-gold fs-5 me-2"></i><span><strong>24/7 Front Desk:</strong> Concierge support always available.</span></li>
-                    <li class="mb-3 d-flex"><i class="bi bi-wifi text-gold fs-5 me-2"></i><span><strong>Free High-Speed Wi-Fi:</strong> Unlimited priority fiber connection.</span></li>
-                    <li class="mb-3 d-flex"><i class="bi bi-arrow-repeat text-gold fs-5 me-2"></i><span><strong>Easy Rescheduling:</strong> Flexible date updates up to 24 hours prior.</span></li>
-                </ul>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
+</main>
 
-    <!-- Verified Guest Reviews Section -->
-    <div class="card bg-dark text-light border-gold-glow rounded-4 p-4 shadow">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <h4 class="font-serif text-gold fw-bold m-0"><i class="bi bi-chat-square-heart me-2"></i>Verified Guest Reviews</h4>
-            <div class="badge bg-gold text-dark fs-6 px-3 py-2 fw-bold rounded-pill">
-                ★ <?= number_format($ratingData['avg_rating'], 1) ?> / 5.0 (<?= $ratingData['review_count'] ?> Reviews)
-            </div>
-        </div>
+<script>
+function switchHeroImage(src) {
+    const heroImg = document.getElementById('mainRoomHeroImage');
+    if (heroImg) {
+        heroImg.src = src;
+    }
+    document.querySelectorAll('.gallery-thumb').forEach(el => {
+        el.style.borderColor = 'rgba(212, 175, 55, 0.3)';
+    });
+    if (event && event.target) {
+        event.target.style.borderColor = '#D4AF37';
+    }
+}
+</script>
 
-        <?php if (empty($reviews)): ?>
-            <div class="text-center py-4 text-muted">
-                <i class="bi bi-chat-quote fs-1 text-gold opacity-50 d-block mb-2"></i>
-                <p class="m-0">No reviews yet for Room #<?= e($room['room_number']) ?>. Be the first guest to stay and leave a review!</p>
-            </div>
-        <?php else: ?>
-            <div class="row row-cols-1 row-cols-md-2 g-3">
-                <?php foreach ($reviews as $rev): ?>
-                    <div class="col">
-                        <div class="p-3 bg-black bg-opacity-40 rounded-3 border border-secondary h-100">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <span class="fw-bold text-gold"><?= e($rev['full_name']) ?></span>
-                                <div class="text-warning small">
-                                    <?php for ($s = 1; $s <= 5; $s++): ?>
-                                        <i class="bi bi-star-<?= $s <= (int)$rev['rating'] ? 'fill' : 'blank' ?>"></i>
-                                    <?php endfor; ?>
-                                </div>
-                            </div>
-                            <p class="text-muted small mb-2">"<?= e($rev['comment'] ?: 'Great stay!') ?>"</p>
-                            <small class="text-muted text-xs d-block text-end"><?= date('M d, Y', strtotime($rev['created_at'])) ?></small>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </div>
-</div>
-
-<?php
-renderSiteLayoutEnd();
+<?php renderSupportWidget('customer'); ?>
+<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/support-widget.js" defer></script>
+</body>
+</html>
