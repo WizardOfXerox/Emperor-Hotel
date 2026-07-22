@@ -77,6 +77,9 @@ function isLoggedIn(): bool
 function requireAuth(string $loginPath): void
 {
     if (!isLoggedIn()) {
+        if (isset($_SERVER['REQUEST_URI'])) {
+            $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
+        }
         setFlash('warning', 'Please log in to continue.');
         redirect($loginPath);
     }

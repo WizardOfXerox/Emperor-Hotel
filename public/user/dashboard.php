@@ -144,6 +144,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $rooms = $roomModel->all();
+$selectedRoomId = isset($_GET['selected_room']) ? (int) $_GET['selected_room'] : (isset($_GET['room_id']) ? (int) $_GET['room_id'] : null);
+$checkIn = trim((string) ($_GET['check_in'] ?? ''));
+$checkOut = trim((string) ($_GET['check_out'] ?? ''));
+
+$selectedRoomObj = $selectedRoomId ? $roomModel->find($selectedRoomId) : null;
+$selectedRoomType = $selectedRoomObj ? $selectedRoomObj['room_type'] : null;
+
 $reservations = $reservationModel->userReservations((int) $user['user_id']);
 $paymentTotals = $paymentModel->totalsByReservation();
 $paymentsByReservation = [];
@@ -175,11 +182,11 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label" for="check_in">Check In</label>
-                    <input class="form-control" id="check_in" name="check_in" type="date" required>
+                    <input class="form-control" id="check_in" name="check_in" type="date" value="<?php echo e($checkIn); ?>" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label" for="check_out">Check Out</label>
-                    <input class="form-control" id="check_out" name="check_out" type="date" required>
+                    <input class="form-control" id="check_out" name="check_out" type="date" value="<?php echo e($checkOut); ?>" required>
                 </div>
             </div>
             <div class="row g-3">
@@ -197,7 +204,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
             </div>
             <div>
                 <label class="form-label">Room Inclusions</label>
-                <?php renderRoomInclusionPreview(); ?>
+                <?php renderRoomInclusionPreview($selectedRoomType); ?>
             </div>
             <?php renderReservationCostTracker(); ?>
             <div class="panel-card p-3">
@@ -222,7 +229,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                 </div>
                 <span class="badge-soft">Date-aware cards</span>
             </div>
-            <?php renderRoomChoiceCards($rooms, null, false, $db); ?>
+            <?php renderRoomChoiceCards($rooms, $selectedRoomId, true, $db); ?>
             <div class="form-text" data-room-availability-note>Use the filters for all, available, or unavailable rooms. Room cards update automatically when check-in and check-out dates change.</div>
         </aside>
     </form>
@@ -357,6 +364,20 @@ document.querySelectorAll("[data-customer-payment-method]").forEach((methodSelec
 
     methodSelect.addEventListener("change", syncPaymentRoute);
     syncPaymentRoute();
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => {
+        const checkedInput = document.querySelector(".room-choice-input:checked");
+        if (checkedInput) {
+            checkedInput.dispatchEvent(new Event("change", { bubbles: true }));
+            const card = checkedInput.closest("[data-room-card]");
+            if (card) {
+                card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+        }
+    }, 300);
 });
 </script>
 <?php renderRoomAvailabilityUpdater(); ?>

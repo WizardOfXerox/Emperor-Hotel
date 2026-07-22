@@ -30,7 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     loginUser($user);
     setFlash('success', 'Welcome back, ' . $user['full_name'] . '!');
-    redirect($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php');
+    $target = $_SESSION['redirect_after_login'] ?? ($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php');
+    unset($_SESSION['redirect_after_login']);
+    redirect($target);
 }
 
 renderHeader('Log In', ['../assets/css/auth/login.css']);
