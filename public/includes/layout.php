@@ -95,6 +95,23 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
     echo '<div class="content-card">';
     echo '<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">';
     echo '<div><p class="eyebrow mb-1">Hotel Reservation System</p><h2 class="page-title mb-0">' . e($title) . '</h2></div>';
+    echo '<div class="d-flex align-items-center gap-3">';
+    echo '<div class="dropdown position-relative" id="adminNotifDropdown">';
+    echo '<button class="btn btn-outline-warning rounded-circle p-2 position-relative shadow-sm d-flex align-items-center justify-content-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 44px; height: 44px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.4); background: rgba(15, 23, 42, 0.85);">';
+    echo '<i class="bi bi-bell-fill fs-5"></i>';
+    echo '<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger fw-bold" id="adminNotifBadge" style="display: none; font-size: 0.7rem; border: 2px solid #020617;">0</span>';
+    echo '</button>';
+    echo '<ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg rounded-4 p-3" style="width: 360px; max-height: 480px; overflow-y: auto; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(212, 175, 55, 0.45);" id="adminNotifList">';
+    echo '<li class="dropdown-header text-uppercase tracking-wider font-serif fw-bold px-0 pb-2 mb-2 border-bottom border-secondary d-flex align-items-center justify-content-between text-warning">';
+    echo '<span><i class="bi bi-bell-fill me-2"></i>New Reservations</span>';
+    echo '<span class="badge bg-gold text-dark font-sans fw-bold text-xs" id="adminNotifHeaderBadge">0 Pending</span>';
+    echo '</li>';
+    echo '<div id="adminNotifItems" class="d-flex flex-column gap-2">';
+    echo '<li class="text-center py-3 text-muted small"><i class="bi bi-check2-circle me-1 text-success"></i>No unread new reservations</li>';
+    echo '</div>';
+    echo '</ul>';
+    echo '</div>';
+    echo '</div>';
     echo '</div>';
     renderFlashBlock();
 }
@@ -107,6 +124,7 @@ function renderAdminLayoutEnd(): void
     renderSupportWidget('admin');
     echo '<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>';
     echo '<script src="../assets/js/support-widget.js" defer></script>';
+    echo '<script src="../assets/js/admin-notifications.js" defer></script>';
     echo '</body></html>';
 }
 
