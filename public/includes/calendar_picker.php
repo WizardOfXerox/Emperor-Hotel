@@ -387,15 +387,15 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
 
     <form action="javascript:void(0);" method="GET" id="inlineCalendarForm" onsubmit="event.preventDefault(); handleInlineCalendarSearch();">
         <div class="row g-2 mb-4 align-items-end">
-            <div class="col-12 col-md-5">
+            <div class="col-12 col-sm-5 col-lg-5">
                 <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
                 <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);">
             </div>
-            <div class="col-12 col-md-5">
+            <div class="col-12 col-sm-5 col-lg-5">
                 <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-right text-warning me-1"></i>Check-Out</label>
                 <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);">
             </div>
-            <div class="col-12 col-md-2 mt-2 mt-md-0">
+            <div class="col-12 col-sm-2 col-lg-2 mt-2 mt-sm-0">
                 <button type="submit" class="btn btn-sm w-100 rounded-pill py-2 font-serif fw-bold shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
                     <i class="bi bi-search me-1"></i>Search
                 </button>

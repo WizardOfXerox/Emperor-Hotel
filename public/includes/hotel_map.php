@@ -94,7 +94,7 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
     <div class="tab-content" id="hotelMapFloorContent">
         <?php foreach ($floors as $floorNum => $floorRooms): ?>
             <div class="tab-pane fade <?= $floorNum === 1 ? 'show active' : '' ?>" id="map-pane-floor-<?= $floorNum ?>" role="tabpanel">
-                <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+                <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xxl-6 g-2 g-sm-3">
                     <?php foreach ($floorRooms as $room): 
                         $statusBadgeStyle = match ($room['status']) {
                             'Available' => 'background: rgba(16, 185, 129, 0.35); border: 1px solid #10B981; color: #A7F3D0;',
