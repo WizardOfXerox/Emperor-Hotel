@@ -295,6 +295,18 @@ body.rooms-showcase-page .rooms .carousel-control:hover {
     border-color: transparent;
 }
 
+body.rooms-showcase-page .rooms .carousel-control.prev,
+.rooms .carousel-control.prev {
+    left: 14px !important;
+    right: auto !important;
+}
+
+body.rooms-showcase-page .rooms .carousel-control.next,
+.rooms .carousel-control.next {
+    right: 14px !important;
+    left: auto !important;
+}
+
 body.rooms-showcase-page .rooms .container-content {
     flex: 1 1 620px;
     max-width: 760px;
