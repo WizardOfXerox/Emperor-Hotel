@@ -22,15 +22,30 @@ if ($roomId > 0) {
     $room = $roomModel->findByNumber($roomNumber);
 }
 
+$allRooms = $roomModel->all();
 if (!$room) {
-    $all = $roomModel->all();
-    $room = $all[0] ?? null;
+    $room = $allRooms[0] ?? null;
 }
 
 if (!$room) {
     setFlash('danger', 'Room not found.');
     redirect('rooms.php');
 }
+
+$currentIdx = 0;
+foreach ($allRooms as $idx => $r) {
+    if ((int)$r['room_id'] === (int)$room['room_id']) {
+        $currentIdx = $idx;
+        break;
+    }
+}
+
+$totalRoomCount = count($allRooms);
+$prevIdx = ($currentIdx - 1 + $totalRoomCount) % max(1, $totalRoomCount);
+$nextIdx = ($currentIdx + 1) % max(1, $totalRoomCount);
+
+$prevRoom = $allRooms[$prevIdx] ?? null;
+$nextRoom = $allRooms[$nextIdx] ?? null;
 
 $catalog = roomCatalog();
 $roomType = $room['room_type'];
@@ -57,6 +72,11 @@ $inD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkIn) ?: new DateTimeIm
 $outD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkOut) ?: (new DateTimeImmutable('today'))->modify('+1 day');
 $nights = max(1, (int) round(($outD->getTimestamp() - $inD->getTimestamp()) / 86400));
 $totalStayPrice = (float)$room['price_per_night'] * $nights;
+
+$dateParams = '';
+if (!empty($checkIn) && !empty($checkOut)) {
+    $dateParams = '&check_in=' . urlencode($checkIn) . '&check_out=' . urlencode($checkOut);
+}
 
 renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../assets/css/site/home.css', '../assets/css/site/rooms.css'], 'home-showcase-page rooms-showcase-page');
 ?>
@@ -86,11 +106,24 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
 
 <main class="py-5" style="background: #070A10; min-height: 100vh;">
     <div class="container py-3">
-        <!-- Navigation Breadcrumb -->
-        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-2">
-            <a href="rooms.php#suite-catalog" class="btn btn-sm rounded-pill px-4 py-2 font-serif fw-bold shadow text-uppercase tracking-wider" style="background: rgba(30, 41, 59, 0.85); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.45);">
-                <i class="bi bi-arrow-left me-2"></i>Back to All Suites
-            </a>
+        <!-- Navigation & Room Switcher Controls -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3 p-3 rounded-4" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.35);">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <a href="rooms.php#suite-catalog" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold shadow text-uppercase tracking-wider" style="background: rgba(30, 41, 59, 0.9); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.45);">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Catalog
+                </a>
+                <?php if ($prevRoom): ?>
+                    <a href="room-detail.php?id=<?= (int)$prevRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold text-light shadow-sm" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3);" title="Go to Room #<?= e($prevRoom['room_number']) ?>">
+                        <i class="bi bi-chevron-left me-1" style="color: #FFDF73;"></i>Prev: Room #<?= e($prevRoom['room_number']) ?>
+                    </a>
+                <?php endif; ?>
+                <?php if ($nextRoom): ?>
+                    <a href="room-detail.php?id=<?= (int)$nextRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold text-light shadow-sm" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3);" title="Go to Room #<?= e($nextRoom['room_number']) ?>">
+                        Next: Room #<?= e($nextRoom['room_number']) ?><i class="bi bi-chevron-right ms-1" style="color: #FFDF73;"></i>
+                    </a>
+                <?php endif; ?>
+            </div>
+            
             <div class="text-light opacity-90 small fw-semibold font-serif">
                 <a href="home.php" class="text-decoration-none text-light opacity-75">Home</a> / 
                 <a href="rooms.php" class="text-decoration-none text-light opacity-75">Suites</a> / 
@@ -321,6 +354,38 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
+        </div>
+
+        <!-- Quick Room Switcher Carousel/Grid -->
+        <div class="card rounded-4 p-4 shadow-lg border mt-4" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
+                <h5 class="font-serif fw-bold m-0" style="color: #FFDF73;"><i class="bi bi-grid-3x3-gap-fill me-2"></i>Explore Other Suites & Rooms</h5>
+                <a href="rooms.php#suite-catalog" class="btn btn-outline-warning btn-sm rounded-pill font-serif fw-bold">View Catalog Grid</a>
+            </div>
+            
+            <div class="d-flex overflow-x-auto gap-3 pb-2 custom-scrollbar" style="scroll-behavior: smooth;">
+                <?php foreach ($allRooms as $otherRoom): 
+                    $isSelf = (int)$otherRoom['room_id'] === (int)$room['room_id'];
+                    $otherBadgeStyle = match ($otherRoom['status']) {
+                        'Available' => 'background: rgba(16, 185, 129, 0.35); border: 1px solid #10B981; color: #A7F3D0;',
+                        'Reserved' => 'background: rgba(59, 130, 246, 0.35); border: 1px solid #3B82F6; color: #BFDBFE;',
+                        'Occupied' => 'background: rgba(245, 158, 11, 0.35); border: 1px solid #F59E0B; color: #FDE68A;',
+                        'Cleaning' => 'background: rgba(168, 85, 247, 0.35); border: 1px solid #A855F7; color: #DDD6FE;',
+                        default => 'background: rgba(148, 163, 184, 0.3); color: #F1F5F9;',
+                    };
+                ?>
+                    <a href="room-detail.php?id=<?= (int)$otherRoom['room_id'] ?><?= $dateParams ?>" 
+                       class="card text-decoration-none transition-all flex-shrink-0 rounded-4 p-3 <?= $isSelf ? 'border-warning shadow-lg' : '' ?>" 
+                       style="width: 220px; background: <?= $isSelf ? 'rgba(212, 175, 55, 0.15)' : 'rgba(30, 41, 59, 0.7)' ?>; border: 1px solid <?= $isSelf ? '#D4AF37' : 'rgba(212, 175, 55, 0.3)' ?>;">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge text-xs px-2 py-1 rounded-pill fw-bold" style="<?= $otherBadgeStyle ?>"><?= $otherRoom['status'] ?></span>
+                            <small class="fw-bold font-serif" style="color: #FFDF73;">#<?= e($otherRoom['room_number']) ?></small>
+                        </div>
+                        <h6 class="text-white font-serif fw-bold text-truncate mb-1" style="font-size: 0.9rem;"><?= e($otherRoom['room_type']) ?></h6>
+                        <div class="text-xs fw-bold" style="color: #FBBF24;">₱<?= number_format((float)$otherRoom['price_per_night']) ?><span class="text-light opacity-75 font-sans fw-normal">/night</span></div>
+                    </a>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 </main>
