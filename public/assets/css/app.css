@@ -63,8 +63,22 @@ a {
 }
 
 .muted-copy {
-    color: rgba(248, 250, 252, 0.72);
+    color: rgba(248, 250, 252, 0.78) !important;
     font-size: 0.78rem;
+}
+
+.text-muted,
+.text-secondary,
+.text-light-emphasis,
+.text-muted-emphasis,
+.small.text-muted,
+td.text-muted,
+small.text-muted,
+div.text-muted,
+span.text-muted,
+p.text-muted,
+td.small.text-muted {
+    color: rgba(248, 250, 252, 0.78) !important;
 }
 
 .stats-grid {
