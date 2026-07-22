@@ -33,16 +33,21 @@
             font-family: inherit;
         }
         .support-launcher {
-            width: 60px;
-            height: 60px;
-            border: 0;
+            width: 56px;
+            height: 56px;
+            border: 1px solid rgba(212, 175, 55, 0.5);
             border-radius: 999px;
-            background: linear-gradient(135deg, #fdd700, #d1a500);
-            color: #020617;
-            box-shadow: 0 18px 34px rgba(0, 0, 0, 0.45);
+            background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%);
+            color: #070A10;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             display: grid;
             place-items: center;
             cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .support-launcher:hover {
+            transform: scale(1.08);
+            box-shadow: 0 14px 35px rgba(212, 175, 55, 0.4);
         }
         .support-launcher svg {
             width: 26px;

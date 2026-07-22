@@ -60,29 +60,29 @@ renderHeader('Home | Emperor Hotel', ['../assets/css/site/home.css', '../assets/
             <p>SMART LUXURY & UNMATCHED ELEGANCE</p>
             
             <!-- Quick Date Search Bar -->
-            <div class="hero-search-bar bg-dark bg-opacity-80 p-3 rounded-4 border border-gold-glow shadow-lg mt-3 text-start" style="max-width: 600px; margin: 0 auto;">
-                <form action="rooms.php" method="GET" id="availabilitySearchForm" class="row g-2 align-items-center">
-                    <div class="col-6 col-sm-5">
-                        <label class="text-xs text-uppercase tracking-wider text-muted mb-1 d-block">Stay Dates</label>
-                        <button type="button" class="btn btn-outline-warning btn-sm w-100 rounded-pill text-truncate fw-bold" data-bs-toggle="modal" data-bs-target="#calendarPickerModal">
-                            <i class="bi bi-calendar-range me-1"></i>Pick Dates
+            <div class="hero-search-bar shadow-lg mt-4 text-start" style="max-width: 840px; width: 100%; margin: 0 auto; background: rgba(7, 10, 16, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 50px; padding: 16px 28px;">
+                <form action="rooms.php" method="GET" id="availabilitySearchForm" class="row g-3 align-items-center m-0">
+                    <div class="col-12 col-md-5 p-0 pe-md-2">
+                        <label class="text-xs text-uppercase tracking-wider text-muted mb-1 d-block fw-bold"><i class="bi bi-calendar-event text-gold me-1"></i>Stay Dates</label>
+                        <button type="button" class="btn btn-outline-warning btn-sm w-100 rounded-pill py-2 px-3 text-truncate fw-bold text-start" data-bs-toggle="modal" data-bs-target="#calendarPickerModal">
+                            <i class="bi bi-calendar-range me-1"></i><?= date('M d', strtotime($checkIn)) ?> – <?= date('M d', strtotime($checkOut)) ?> (1 Night)
                         </button>
                         <input type="hidden" name="check_in" value="<?= e($checkIn) ?>">
                         <input type="hidden" name="check_out" value="<?= e($checkOut) ?>">
                     </div>
-                    <div class="col-6 col-sm-4">
-                        <label class="text-xs text-uppercase tracking-wider text-muted mb-1 d-block">Bed Preference</label>
-                        <select name="bed_type" class="form-select form-select-sm bg-dark text-light border-secondary rounded-pill">
-                            <option value="">All Bed Types</option>
+                    <div class="col-12 col-md-4 p-0 px-md-2 mt-2 mt-md-0">
+                        <label class="text-xs text-uppercase tracking-wider text-muted mb-1 d-block fw-bold"><i class="bi bi-door-open text-gold me-1"></i>Bed Preference</label>
+                        <select name="bed_type" class="form-select form-select-sm bg-dark text-light border-secondary rounded-pill py-2 px-3">
+                            <option value="">All Bed Sizes</option>
                             <option value="Queen Bed">Queen Bed</option>
                             <option value="King Bed">King Bed</option>
                             <option value="Super King Master Suite">Super King Suite</option>
                         </select>
                     </div>
-                    <div class="col-12 col-sm-3 mt-2 mt-sm-0">
-                        <label class="d-none d-sm-block text-xs mb-1">&nbsp;</label>
-                        <button type="submit" class="btn btn-gold btn-sm w-100 rounded-pill fw-bold py-2">
-                            Search
+                    <div class="col-12 col-md-3 p-0 ps-md-2 mt-3 mt-md-0">
+                        <label class="d-none d-md-block text-xs mb-1">&nbsp;</label>
+                        <button type="submit" class="btn btn-gold btn-sm w-100 rounded-pill fw-bold py-2 shadow">
+                            <i class="bi bi-search me-1"></i>Search
                         </button>
                     </div>
                 </form>
