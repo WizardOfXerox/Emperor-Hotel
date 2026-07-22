@@ -698,10 +698,13 @@ class Reservation
     public function roomHasActiveOverlap(int $roomId, string $checkIn, string $checkOut, ?int $excludeReservationId = null): bool
     {
         // SQL: Counts active overlapping reservations for extension validation.
+        // Active reservations (Confirmed, Checked-in) block dates permanently.
+        // Unpaid Pending reservations only hold dates for a 24-hour grace window from creation time.
         $sql = "SELECT COUNT(*)
                 FROM reservations
                 WHERE room_id = :room_id
                   AND status NOT IN ('Cancelled', 'Checked-out')
+                  AND (status IN ('Confirmed', 'Checked-in') OR (status = 'Pending' AND created_at >= NOW() - INTERVAL 24 HOUR))
                   AND NOT (check_out <= :check_in OR check_in >= :check_out)";
         $params = [
             'room_id' => $roomId,
@@ -750,6 +753,16 @@ class Reservation
 
         if ($checkInDate < $today) {
             throw new RuntimeException('Check-in date cannot be in the past.');
+        }
+
+        $nights = (int) $checkInDate->diff($checkOutDate)->days;
+        if ($nights > 30) {
+            throw new RuntimeException('Maximum stay duration for online reservations is 30 consecutive nights. For long-term corporate stays, please contact front desk.');
+        }
+
+        $maxAdvanceDate = $today->modify('+180 days');
+        if ($checkInDate > $maxAdvanceDate) {
+            throw new RuntimeException('Reservations can only be booked up to 180 days (6 months) in advance.');
         }
     }
 
