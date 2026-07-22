@@ -366,7 +366,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                                 <span class="fw-bold text-white">₱<?= number_format((float)($selectedRoomObj['price_per_night'] ?? 0)) ?></span>
                             </div>
                             <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary">
-                                <strong class="text-gold font-serif">Estimated Total:</strong>
+                                <strong class="font-serif fw-bold" style="color: #FFDF73;">Estimated Total:</strong>
                                 <strong class="fs-5 text-warning font-serif">₱<?= number_format($calcTotal) ?></strong>
                             </div>
                         </div>
