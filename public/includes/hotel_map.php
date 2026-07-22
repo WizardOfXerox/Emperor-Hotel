@@ -71,66 +71,23 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
         </div>
     </div>
 
-    <!-- Floor Tabs & Floors > Rooms Dropdown -->
-    <ul class="nav nav-pills mb-4 border-bottom border-secondary pb-3 gap-2 align-items-center justify-content-between" id="hotelMapFloorTabs" role="tablist">
-        <div class="d-flex flex-wrap gap-2">
-            <?php foreach ($floors as $floorNum => $floorRooms): 
-                $isActive = ($floorNum === 1);
-            ?>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link btn-sm <?= $isActive ? 'active' : '' ?> rounded-pill px-4 py-2 fw-bold font-serif floor-tab-btn" 
-                            id="map-tab-floor-<?= $floorNum ?>" 
-                            data-bs-toggle="tab" 
-                            data-bs-target="#map-pane-floor-<?= $floorNum ?>" 
-                            type="button" 
-                            role="tab"
-                            style="<?= $isActive ? 'background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important; color: #070A10 !important; border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.5);' : 'background: rgba(30, 41, 59, 0.8); color: #F1F5F9; border: 1px solid rgba(212, 175, 55, 0.4);' ?>">
-                        Floor <?= $floorNum ?> (<?= count($floorRooms) ?> Rooms)
-                    </button>
-                </li>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Hover Floor > Side Popup Rooms Dropdown -->
-        <li class="nav-item ms-auto" role="presentation">
-            <div class="dropdown custom-floors-dropdown">
-                <button class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(30, 41, 59, 0.9); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.45);">
-                    <i class="bi bi-layers-fill me-1"></i>Select Floor &amp; Room
+    <!-- Floor Tabs -->
+    <ul class="nav nav-pills mb-4 border-bottom border-secondary pb-3 gap-2 align-items-center" id="hotelMapFloorTabs" role="tablist">
+        <?php foreach ($floors as $floorNum => $floorRooms): 
+            $isActive = ($floorNum === 1);
+        ?>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link btn-sm <?= $isActive ? 'active' : '' ?> rounded-pill px-4 py-2 fw-bold font-serif floor-tab-btn" 
+                        id="map-tab-floor-<?= $floorNum ?>" 
+                        data-bs-toggle="tab" 
+                        data-bs-target="#map-pane-floor-<?= $floorNum ?>" 
+                        type="button" 
+                        role="tab"
+                        style="<?= $isActive ? 'background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important; color: #070A10 !important; border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.5);' : 'background: rgba(30, 41, 59, 0.8); color: #F1F5F9; border: 1px solid rgba(212, 175, 55, 0.4);' ?>">
+                    Floor <?= $floorNum ?> (<?= count($floorRooms) ?> Rooms)
                 </button>
-                <ul class="dropdown-menu dropdown-menu-dark shadow-lg rounded-4 p-2 custom-floors-menu dropdown-menu-end" style="background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(212, 175, 55, 0.4); min-width: 220px; overflow: visible;">
-                    <?php foreach ($floors as $flNum => $fRooms): ?>
-                        <li class="dropdown-submenu position-relative">
-                            <a class="dropdown-item rounded-3 py-2 px-3 d-flex align-items-center justify-content-between text-xs font-serif fw-bold my-1" href="javascript:void(0);" style="color: #F8FAFC;">
-                                <span><i class="bi bi-building me-2 text-warning"></i>Floor <?= $flNum ?> (<?= count($fRooms) ?> Rooms)</span>
-                                <i class="bi bi-chevron-right text-warning ms-2"></i>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark shadow-lg rounded-4 p-2 submenu-flyout" style="background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(212, 175, 55, 0.4); min-width: 260px; max-height: 380px; overflow-y: auto;">
-                                <li><h6 class="dropdown-header text-uppercase tracking-wider font-serif fw-bold" style="color: #FBBF24;"><i class="bi bi-door-open me-1"></i>Floor <?= $flNum ?> Rooms</h6></li>
-                                <?php foreach ($fRooms as $fRoom): 
-                                    $fBadgeStyle = match ($fRoom['status']) {
-                                        'Available' => 'background: rgba(16, 185, 129, 0.35); color: #A7F3D0;',
-                                        'Reserved' => 'background: rgba(59, 130, 246, 0.35); color: #BFDBFE;',
-                                        'Occupied' => 'background: rgba(245, 158, 11, 0.35); color: #FDE68A;',
-                                        'Cleaning' => 'background: rgba(168, 85, 247, 0.35); color: #DDD6FE;',
-                                        default => 'background: rgba(148, 163, 184, 0.3); color: #F1F5F9;',
-                                    };
-                                ?>
-                                    <li>
-                                        <a class="dropdown-item rounded-3 py-2 px-3 d-flex align-items-center justify-content-between text-xs mb-1" 
-                                           href="javascript:void(0);"
-                                           onclick="onHotelMapRoomClick(<?= (int)$fRoom['room_id'] ?>, '<?= e($fRoom['room_number']) ?>', '<?= e($fRoom['room_type']) ?>', '<?= number_format((float)$fRoom['price_per_night'], 2) ?>', '<?= $fRoom['status'] ?>')"
-                                           style="color: #F8FAFC;">
-                                            <span><i class="bi bi-door-closed me-2"></i>Room #<?= e($fRoom['room_number']) ?> &mdash; <?= e($fRoom['room_type']) ?></span>
-                                            <span class="badge text-xs px-2 py-1 ms-2 rounded-pill fw-bold" style="<?= $fBadgeStyle ?>"><?= $fRoom['status'] ?></span>
-                                        </a>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        </li>
+            </li>
+        <?php endforeach; ?>
     </ul>
 
     <!-- Floor Tab Panes -->

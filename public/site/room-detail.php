@@ -131,8 +131,8 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
 
         <div class="home-nav__auth">
             <?php if ($user): ?>
-                <a class="home-nav__cta home-nav__cta--primary" href="<?= e($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php') ?>">MY DASHBOARD</a>
-                <a class="home-nav__cta home-nav__cta--secondary" href="../auth/logout.php">LOG OUT</a>
+                <a class="home-nav__cta home-nav__cta--primary" href="<?= e($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php') ?>">DASHBOARD</a>
+                <a class="home-nav__cta home-nav__cta--secondary" href="../auth/logout.php" title="Log Out"><i class="bi bi-box-arrow-right d-sm-none"></i><span class="d-none d-sm-inline">LOG OUT</span></a>
             <?php else: ?>
                 <a class="home-nav__cta home-nav__cta--primary" href="../auth/login.php">LOG IN</a>
                 <a class="home-nav__cta home-nav__cta--secondary" href="../auth/register.php">REGISTER</a>
