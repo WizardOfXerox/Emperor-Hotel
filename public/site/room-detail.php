@@ -567,7 +567,15 @@ document.addEventListener('DOMContentLoaded', function() {
             track.scrollBy({ left: step, behavior: 'smooth' });
         });
 
-        // Mouse Drag to Scroll
+        // 1. Mouse Wheel Scroll Handler (Converts vertical wheel scroll to horizontal carousel movement)
+        track.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                track.scrollLeft += e.deltaY * 1.2;
+            }
+        }, { passive: false });
+
+        // 2. Desktop Mouse Drag to Scroll
         let isDown = false;
         let startX, scrollLeft;
         track.addEventListener('mousedown', (e) => {
@@ -581,9 +589,25 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isDown) return;
             e.preventDefault();
             const x = e.pageX - track.offsetLeft;
-            const walk = (x - startX) * 2;
+            const walk = (x - startX) * 1.8;
             track.scrollLeft = scrollLeft - walk;
         });
+
+        // 3. Mobile Touch Drag & Swipe Support
+        let touchStartX = 0;
+        let touchScrollLeft = 0;
+        track.addEventListener('touchstart', (e) => {
+            if (e.touches[0]) {
+                touchStartX = e.touches[0].pageX - track.offsetLeft;
+                touchScrollLeft = track.scrollLeft;
+            }
+        }, { passive: true });
+        track.addEventListener('touchmove', (e) => {
+            if (!e.touches[0]) return;
+            const x = e.touches[0].pageX - track.offsetLeft;
+            const walk = (x - touchStartX) * 1.5;
+            track.scrollLeft = touchScrollLeft - walk;
+        }, { passive: true });
     }
 });
 
