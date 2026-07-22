@@ -142,44 +142,10 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                     <i class="bi bi-arrow-left me-1"></i>Back to Catalog
                 </a>
 
-                <!-- Hover Floor > Side Popup Rooms Dropdown Menu -->
-                <div class="dropdown custom-floors-dropdown">
-                    <button class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(30, 41, 59, 0.9); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.45);">
-                        <i class="bi bi-layers-fill me-1"></i>Select Floor &amp; Room
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-dark shadow-lg rounded-4 p-2 custom-floors-menu" style="background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(212, 175, 55, 0.4); min-width: 220px; overflow: visible;">
-                        <?php foreach ($floorsGrouped as $flNum => $fRooms): ?>
-                            <li class="dropdown-submenu position-relative">
-                                <a class="dropdown-item rounded-3 py-2 px-3 d-flex align-items-center justify-content-between text-xs font-serif fw-bold my-1" href="javascript:void(0);" style="color: #F8FAFC;">
-                                    <span><i class="bi bi-building me-2 text-warning"></i>Floor <?= $flNum ?> (<?= count($fRooms) ?> Rooms)</span>
-                                    <i class="bi bi-chevron-right text-warning ms-2"></i>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-dark shadow-lg rounded-4 p-2 submenu-flyout" style="background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(212, 175, 55, 0.4); min-width: 260px; max-height: 380px; overflow-y: auto;">
-                                    <li><h6 class="dropdown-header text-uppercase tracking-wider font-serif fw-bold" style="color: #FBBF24;"><i class="bi bi-door-open me-1"></i>Floor <?= $flNum ?> Rooms</h6></li>
-                                    <?php foreach ($fRooms as $fRoom): 
-                                        $isCurrent = (int)$fRoom['room_id'] === (int)$room['room_id'];
-                                        $fBadgeStyle = match ($fRoom['status']) {
-                                            'Available' => 'background: rgba(16, 185, 129, 0.35); color: #A7F3D0;',
-                                            'Reserved' => 'background: rgba(59, 130, 246, 0.35); color: #BFDBFE;',
-                                            'Occupied' => 'background: rgba(245, 158, 11, 0.35); color: #FDE68A;',
-                                            'Cleaning' => 'background: rgba(168, 85, 247, 0.35); color: #DDD6FE;',
-                                            default => 'background: rgba(148, 163, 184, 0.3); color: #F1F5F9;',
-                                        };
-                                    ?>
-                                        <li>
-                                            <a class="dropdown-item rounded-3 py-2 px-3 d-flex align-items-center justify-content-between text-xs mb-1 <?= $isCurrent ? 'active fw-bold' : '' ?>" 
-                                               href="room-detail.php?id=<?= (int)$fRoom['room_id'] ?><?= $dateParams ?>"
-                                               style="<?= $isCurrent ? 'background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;' : 'color: #F8FAFC;' ?>">
-                                                <span><i class="bi bi-door-closed me-2"></i>Room #<?= e($fRoom['room_number']) ?> &mdash; <?= e($fRoom['room_type']) ?></span>
-                                                <span class="badge text-xs px-2 py-1 ms-2 rounded-pill fw-bold" style="<?= $fBadgeStyle ?>"><?= $fRoom['status'] ?></span>
-                                            </a>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
+                <!-- Slide-Out Offcanvas Side Navigation Trigger Button -->
+                <button class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold shadow-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#roomNavigatorOffcanvas" aria-controls="roomNavigatorOffcanvas" style="background: rgba(30, 41, 59, 0.9); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.45);">
+                    <i class="bi bi-compass-fill me-1"></i>Floor &amp; Room Directory
+                </button>
 
                 <?php if ($prevRoom): ?>
                     <a href="room-detail.php?id=<?= (int)$prevRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold text-light shadow-sm" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3);" title="Go to Room #<?= e($prevRoom['room_number']) ?>">
@@ -456,8 +422,63 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                 <?php endforeach; ?>
             </div>
         </div>
-    </div>
 </main>
+
+<!-- Offcanvas Slide-Out Side Navigation Drawer -->
+<div class="offcanvas offcanvas-start bg-dark text-light border-end" tabindex="-1" id="roomNavigatorOffcanvas" aria-labelledby="roomNavigatorOffcanvasLabel" style="background: rgba(15, 23, 42, 0.97) !important; backdrop-filter: blur(25px); border-color: rgba(212, 175, 55, 0.4) !important; width: 340px;">
+    <div class="offcanvas-header border-bottom border-secondary pb-3">
+        <div>
+            <h5 class="offcanvas-title font-serif fw-bold m-0" id="roomNavigatorOffcanvasLabel" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);">
+                <i class="bi bi-compass-fill me-2"></i>Floor &amp; Room Directory
+            </h5>
+            <small class="text-light opacity-75 text-xs">Browse all floors &amp; active room statuses</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-3">
+        <div class="accordion accordion-flush" id="floorsAccordion">
+            <?php foreach ($floorsGrouped as $flNum => $fRooms): 
+                $accordionId = "floorCollapse" . $flNum;
+                $headingId = "floorHeading" . $flNum;
+                $isFloorActive = ((int)$room['floor'] === (int)$flNum);
+            ?>
+                <div class="accordion-item bg-transparent border-secondary mb-3 rounded-4 overflow-hidden" style="border: 1px solid rgba(212, 175, 55, 0.25) !important;">
+                    <h2 class="accordion-header" id="<?= $headingId ?>">
+                        <button class="accordion-button <?= $isFloorActive ? '' : 'collapsed' ?> font-serif fw-bold text-sm text-light p-3" type="button" data-bs-toggle="collapse" data-bs-target="#<?= $accordionId ?>" aria-expanded="<?= $isFloorActive ? 'true' : 'false' ?>" aria-controls="<?= $accordionId ?>" style="background: rgba(30, 41, 59, 0.85);">
+                            <i class="bi bi-building text-warning me-2"></i>Floor <?= $flNum ?> (<?= count($fRooms) ?> Rooms)
+                        </button>
+                    </h2>
+                    <div id="<?= $accordionId ?>" class="accordion-collapse collapse <?= $isFloorActive ? 'show' : '' ?>" aria-labelledby="<?= $headingId ?>" data-bs-parent="#floorsAccordion">
+                        <div class="accordion-body p-2 bg-dark">
+                            <div class="list-group list-group-flush">
+                                <?php foreach ($fRooms as $fRoom): 
+                                    $isCurrent = (int)$fRoom['room_id'] === (int)$room['room_id'];
+                                    $fBadgeStyle = match ($fRoom['status']) {
+                                        'Available' => 'background: rgba(16, 185, 129, 0.35); color: #A7F3D0;',
+                                        'Reserved' => 'background: rgba(59, 130, 246, 0.35); color: #BFDBFE;',
+                                        'Occupied' => 'background: rgba(245, 158, 11, 0.35); color: #FDE68A;',
+                                        'Cleaning' => 'background: rgba(168, 85, 247, 0.35); color: #DDD6FE;',
+                                        default => 'background: rgba(148, 163, 184, 0.3); color: #F1F5F9;',
+                                    };
+                                ?>
+                                    <a href="room-detail.php?id=<?= (int)$fRoom['room_id'] ?><?= $dateParams ?>" 
+                                       class="list-group-item list-group-item-action rounded-3 p-2 mb-1 border-0 d-flex align-items-center justify-content-between text-xs transition-all <?= $isCurrent ? 'fw-bold shadow' : '' ?>"
+                                       style="<?= $isCurrent ? 'background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;' : 'background: rgba(30, 41, 59, 0.6); color: #F8FAFC;' ?>">
+                                        <div>
+                                            <div class="fw-bold"><i class="bi bi-door-closed me-1"></i>Room #<?= e($fRoom['room_number']) ?></div>
+                                            <small class="opacity-75 font-serif" style="font-size: 0.75rem;"><?= e($fRoom['room_type']) ?></small>
+                                        </div>
+                                        <span class="badge text-xs px-2 py-1 rounded-pill fw-bold" style="<?= $fBadgeStyle ?>"><?= $fRoom['status'] ?></span>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
 
 <script>
 function switchHeroImage(src) {
