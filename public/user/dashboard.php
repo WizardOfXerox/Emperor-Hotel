@@ -474,9 +474,13 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                         <?php endif; ?>
                     </div>
 
-                    <div class="col-12 col-md-3 text-end d-flex align-items-center justify-content-md-end gap-2 mt-2 mt-md-0">
+                    <div class="col-12 col-md-3 text-end d-flex flex-wrap align-items-center justify-content-md-end gap-2 mt-2 mt-md-0">
+                        <a class="btn btn-xs btn-outline-warning rounded-pill px-3 fw-bold font-serif" href="receipt.php?reservation_id=<?= $reservationId ?>" title="View & Print Official Receipt">
+                            <i class="bi bi-receipt me-1"></i>Receipt
+                        </a>
+
                         <?php if ($activeBalanceDue > 0.01 && in_array($reservation['status'], ['Pending', 'Confirmed'], true)): ?>
-                            <a class="btn btn-xs btn-warning rounded-pill px-3 fw-bold font-serif" href="payment.php?reservation_id=<?= $reservationId ?>&payment_method=Online%20Payment">Pay Now</a>
+                            <a class="btn btn-xs btn-warning rounded-pill px-3 fw-bold font-serif text-dark" href="payment.php?reservation_id=<?= $reservationId ?>&payment_method=Online%20Payment">Pay Now</a>
                         <?php endif; ?>
 
                         <?php if (in_array($reservation['status'], ['Checked-out', 'Confirmed'], true)): ?>
