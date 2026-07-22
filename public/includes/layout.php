@@ -122,7 +122,8 @@ function renderSiteLayoutStart(string $title, ?array $user = null, string $siteP
     echo '</a>';
     echo '<div class="d-flex flex-wrap align-items-center gap-2">';
     echo '<a class="btn btn-outline-light btn-sm" href="' . e($sitePrefix . 'home.php') . '">Home</a>';
-    echo '<a class="btn btn-outline-warning btn-sm fw-bold font-serif" href="' . e($sitePrefix . 'suites.php') . '"><i class="bi bi-door-open-fill me-1 text-warning"></i>Rooms</a>';
+    echo '<a class="btn btn-outline-warning btn-sm fw-bold font-serif" href="' . e($sitePrefix . 'rooms.php') . '"><i class="bi bi-door-open-fill me-1 text-warning"></i>Rooms</a>';
+    echo '<a class="btn btn-outline-light btn-sm" href="' . e($sitePrefix . 'suites.php') . '">Suites</a>';
 
     if ($user) {
         if ($user['role'] === 'admin') {
