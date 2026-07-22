@@ -86,9 +86,9 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
 
     echo '</nav>';
     echo '</div>';
-    echo '<div class="d-grid gap-2">';
-    echo '<a class="btn btn-warning fw-semibold" href="../site/home.php">View Site</a>';
-    echo '<a class="btn btn-outline-light" href="../auth/logout.php">Log Out</a>';
+    echo '<div class="sidebar-actions d-grid gap-2 mt-auto pt-3 border-top border-secondary-subtle" style="position: sticky; bottom: 0; background: #020617; z-index: 5; margin-top: auto; padding-bottom: 0.5rem;">';
+    echo '<a class="btn btn-warning fw-semibold" href="../site/home.php"><i class="bi bi-house-door-fill me-2"></i>Home</a>';
+    echo '<a class="btn btn-outline-light" href="../auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Log Out</a>';
     echo '</div>';
     echo '</aside>';
     echo '<main class="content-panel">';
