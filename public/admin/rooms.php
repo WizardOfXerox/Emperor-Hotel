@@ -42,6 +42,10 @@ if (isset($_GET['export']) && $_GET['export'] === 'xml') {
     exit;
 }
 
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = (int) ($_GET['per_page'] ?? (getenv('ROOMS_PER_PAGE') ?: 10));
+$perPage = max(5, min(50, $perPage));
+
 $filters = [
     'search' => trim((string) ($_GET['search'] ?? '')),
     'room_type' => trim((string) ($_GET['room_type'] ?? '')),
@@ -51,9 +55,6 @@ $filters = [
     'direction' => trim((string) ($_GET['direction'] ?? 'asc')),
     'per_page' => $perPage,
 ];
-$page = max(1, (int) ($_GET['page'] ?? 1));
-$perPage = (int) ($_GET['per_page'] ?? (getenv('ROOMS_PER_PAGE') ?: 10));
-$perPage = max(5, min(50, $perPage));
 $querySuffix = roomFiltersQuery($_GET);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
