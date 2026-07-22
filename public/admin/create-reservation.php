@@ -36,7 +36,7 @@ $reservationStatuses = Reservation::statuses();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if ((string) ($_POST['action'] ?? '') !== 'create') {
-            throw new RuntimeException('This page only creates new reservations. Use Booking Records to manage existing reservations.');
+            throw new RuntimeException('This page only creates new reservations. Use Reservation Records to manage existing reservations.');
         }
 
         $checkIn = (string) ($_POST['check_in'] ?? '');

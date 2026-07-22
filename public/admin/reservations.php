@@ -72,12 +72,12 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
         <div>
             <p class="eyebrow mb-1">Reservations</p>
-            <h3 class="mb-0">Booking Records</h3>
+            <h3 class="mb-0">Reservation Records</h3>
             <p class="muted-copy mb-0">Review reservation details, update front desk status, extend stays, collect payments, and print receipts.</p>
         </div>
         <div class="d-flex flex-wrap gap-2 align-items-center">
             <span class="badge-soft"><?php echo e(count($reservations)); ?> reservations</span>
-            <a class="btn btn-warning btn-sm fw-semibold" href="reservations.php">Create Reservation</a>
+            <a class="btn btn-warning btn-sm fw-semibold" href="create-reservation.php"><i class="bi bi-plus-circle me-1"></i>Create Reservation</a>
         </div>
     </div>
 
