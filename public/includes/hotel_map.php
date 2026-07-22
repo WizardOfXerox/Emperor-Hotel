@@ -94,7 +94,7 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
     <div class="tab-content" id="hotelMapFloorContent">
         <?php foreach ($floors as $floorNum => $floorRooms): ?>
             <div class="tab-pane fade <?= $floorNum === 1 ? 'show active' : '' ?>" id="map-pane-floor-<?= $floorNum ?>" role="tabpanel">
-                <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xxl-6 g-2 g-sm-3">
+                <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 row-cols-xl-4 row-cols-xxl-4 g-2 g-sm-3">
                     <?php foreach ($floorRooms as $room): 
                         $statusBadgeStyle = match ($room['status']) {
                             'Available' => 'background: rgba(16, 185, 129, 0.35); border: 1px solid #10B981; color: #A7F3D0;',
@@ -130,7 +130,7 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
                                         <span class="badge text-xs px-2 py-1 rounded-pill fw-bold" style="<?= $statusBadgeStyle ?>"><?= $room['status'] ?></span>
                                         <small class="fw-bold font-serif" style="color: #FFDF73;">#<?= e($room['room_number']) ?></small>
                                     </div>
-                                    <h6 class="card-title font-serif text-white fw-bold mb-1 text-truncate" style="font-size: 0.9rem; text-shadow: 0 1px 4px rgba(0,0,0,0.6);"><?= e($room['room_type']) ?></h6>
+                                    <h6 class="card-title font-serif text-white fw-bold mb-1 text-wrap" style="font-size: 0.85rem; line-height: 1.25; text-shadow: 0 1px 4px rgba(0,0,0,0.6);"><?= e($room['room_type']) ?></h6>
                                     <div class="text-xs fw-bold" style="color: #FBBF24;">₱<?= number_format((float)$room['price_per_night']) ?><span class="opacity-75 text-light font-sans fw-normal">/night</span></div>
                                 </div>
                             </div>
