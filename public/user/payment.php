@@ -53,8 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $payment = $paymentModel->find($paymentId);
         $reference = (string) ($payment['transaction_reference'] ?? ('Reservation #' . $reservationId));
 
-        setFlash('success', 'Payment submitted for admin review. Transaction reference: ' . $reference . '.');
-        redirect('dashboard.php');
+        setFlash('success', 'Payment submitted for admin review! Your official voucher is ready below.');
+        redirect('receipt.php?reservation_id=' . $reservationId);
     } catch (Throwable $exception) {
         setFlash('error', $exception->getMessage());
         redirect('payment.php?' . http_build_query([

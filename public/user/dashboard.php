@@ -134,8 +134,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $payment = $paymentModel->find($paymentId);
                 $reference = (string) ($payment['transaction_reference'] ?? ('Reservation #' . $reservationId));
 
-                setFlash('success', 'Reservation submitted. Payment reference: ' . $reference . '. Please pay this at the cashier.');
-                redirect('dashboard.php');
+                setFlash('success', 'Reservation submitted successfully! Your official voucher is ready below.');
+                redirect('receipt.php?reservation_id=' . $reservationId);
             }
 
             setFlash('success', 'Reservation submitted. Continue your simulated ' . $paymentMethod . ' payment.');
