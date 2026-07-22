@@ -50,52 +50,52 @@ a {
 
 .eyebrow {
     color: #fdd700;
-    font-size: 1.5rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
 }
 
 .display-brand {
     font-family: 'DM Serif Display', serif;
-    font-size: clamp(2.2rem, 4vw, 4rem);
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
     line-height: 1.05;
 }
 
 .muted-copy {
     color: rgba(248, 250, 252, 0.72);
+    font-size: 0.78rem;
 }
 
 .stats-grid {
     display: grid;
-    gap: 1rem;
-}
-
-.stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
 
 .stat-tile {
-    padding: 1.25rem;
-    border-radius: 18px;
+    padding: 0.9rem 1rem;
+    border-radius: 14px;
     background: rgba(30, 41, 59, 0.88);
-    border: 1px solid rgba(248, 250, 252, 0.05);
+    border: 1px solid rgba(248, 250, 252, 0.08);
 }
 
 .stat-tile h3 {
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: 700;
 }
 
 .stat-value {
     color: #fdd700;
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: 1.45rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0.25rem 0;
 }
 
 .app-shell {
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 240px 1fr;
     min-height: 100vh;
 }
 
@@ -103,7 +103,7 @@ a {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 2rem 1.25rem;
+    padding: 1.25rem 0.85rem;
     background: #020617;
     border-right: 1px solid rgba(248, 250, 252, 0.08);
     position: sticky;
@@ -116,19 +116,21 @@ a {
 
 .brand-block,
 .profile-card {
-    padding: 1.2rem;
-    border-radius: 18px;
+    padding: 0.85rem 1rem;
+    border-radius: 14px;
     background: rgba(15, 23, 42, 0.96);
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .sidebar-link {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
-    padding: 0.85rem 1rem;
-    border-radius: 14px;
+    gap: 0.7rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 10px;
     color: #f8fafc;
+    font-size: 0.88rem;
+    font-weight: 500;
     transition: background 0.2s ease, color 0.2s ease;
 }
 
@@ -139,7 +141,7 @@ a {
 }
 
 .content-panel {
-    padding: 2rem;
+    padding: 1.5rem 1.75rem;
     background:
         linear-gradient(rgba(2, 6, 23, 0.74), rgba(2, 6, 23, 0.9)),
         url('../images/home/hero.jpg') no-repeat center center fixed;
@@ -153,12 +155,12 @@ a {
 }
 
 .content-card {
-    padding: 2rem;
+    padding: 1.5rem 1.75rem;
 }
 
 .page-title {
     font-family: 'DM Serif Display', serif;
-    font-size: clamp(1.9rem, 3vw, 3rem);
+    font-size: clamp(1.4rem, 2vw, 1.85rem);
 }
 
 .table-dark-soft {
