@@ -242,59 +242,25 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                             </div>
                         </div>
 
-                        <!-- Selected Stay Dates Card with Dropdown Calendar -->
-                        <div class="dropdown mb-4">
-                            <div class="p-3 rounded-4 border transition-all" style="background: rgba(7, 10, 16, 0.6); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <small class="text-light opacity-75 text-xs text-uppercase d-block fw-bold tracking-wider mb-1">
-                                            <i class="bi bi-calendar-range text-warning me-1"></i>SELECTED STAY DATES
-                                        </small>
-                                        <button type="button" class="btn p-0 text-start border-0 text-white font-serif fw-bold fs-6 dropdown-toggle shadow-none" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="color: #FFFFFF;">
-                                            <?= date('M d, Y', strtotime($checkIn)) ?> – <?= date('M d, Y', strtotime($checkOut)) ?>
-                                        </button>
-                                    </div>
-                                    <div class="text-end">
-                                        <button type="button" class="btn btn-xs btn-outline-warning rounded-pill px-3 py-1 text-xs fw-bold font-serif shadow-sm dropdown-toggle mb-1" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                            <i class="bi bi-pencil-square me-1"></i>Change Dates
-                                        </button>
-                                        <div>
-                                            <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(212, 175, 55, 0.25); color: #FFDF73; border: 1px solid #D4AF37;"><?= $nights ?> Night<?= $nights > 1 ? 's' : '' ?></span>
-                                            <span class="text-xs fw-bold ms-1" style="color: #FBBF24;">Total: ₱<?= number_format($totalStayPrice) ?></span>
-                                        </div>
+                        <!-- Selected Stay Dates Card with Centered Modal Calendar Trigger -->
+                        <div class="p-3 rounded-4 mb-4 border transition-all" style="background: rgba(7, 10, 16, 0.6); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <small class="text-light opacity-75 text-xs text-uppercase d-block fw-bold tracking-wider mb-1">
+                                        <i class="bi bi-calendar-range text-warning me-1"></i>SELECTED STAY DATES
+                                    </small>
+                                    <div class="fw-bold text-white font-serif fs-6" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#calendarPickerModal" title="Click to change stay dates">
+                                        <?= date('M d, Y', strtotime($checkIn)) ?> – <?= date('M d, Y', strtotime($checkOut)) ?>
                                     </div>
                                 </div>
-
-                                <!-- Dropdown Calendar Menu -->
-                                <div class="dropdown-menu dropdown-menu-dark shadow-lg rounded-4 p-3 border mt-2" style="background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(212, 175, 55, 0.4) !important; width: 100%; min-width: 300px;">
-                                    <form action="room-detail.php" method="GET">
-                                        <input type="hidden" name="id" value="<?= (int)$room['room_id'] ?>">
-                                        
-                                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
-                                            <h6 class="font-serif fw-bold text-warning m-0 text-xs text-uppercase tracking-wider"><i class="bi bi-calendar-check me-1"></i>Adjust Stay Duration</h6>
-                                            <small class="text-light opacity-75 text-xs">Select Check-in &amp; Check-out</small>
-                                        </div>
-
-                                        <div class="row g-2 mb-3">
-                                            <div class="col-6">
-                                                <label class="form-label text-xs text-light opacity-75 fw-bold mb-1">Check-in Date</label>
-                                                <input type="date" name="check_in" value="<?= e($checkIn) ?>" class="form-control form-control-sm bg-dark text-white border-secondary rounded-3 text-xs fw-bold" required>
-                                            </div>
-                                            <div class="col-6">
-                                                <label class="form-label text-xs text-light opacity-75 fw-bold mb-1">Check-out Date</label>
-                                                <input type="date" name="check_out" value="<?= e($checkOut) ?>" class="form-control form-control-sm bg-dark text-white border-secondary rounded-3 text-xs fw-bold" required>
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary">
-                                            <button type="button" class="btn btn-xs btn-link text-light opacity-75 text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#calendarPickerModal">
-                                                <i class="bi bi-grid-3x3-gap-fill me-1 text-warning"></i>7-Day Calendar View
-                                            </button>
-                                            <button type="submit" class="btn btn-sm btn-warning rounded-pill px-3 font-serif fw-bold text-dark text-xs">
-                                                Apply Dates
-                                            </button>
-                                        </div>
-                                    </form>
+                                <div class="text-end">
+                                    <button type="button" class="btn btn-xs btn-outline-warning rounded-pill px-3 py-1 text-xs fw-bold font-serif shadow-sm mb-1" data-bs-toggle="modal" data-bs-target="#calendarPickerModal">
+                                        <i class="bi bi-pencil-square me-1"></i>Change Dates
+                                    </button>
+                                    <div>
+                                        <span class="badge rounded-pill px-2 py-1 text-xs fw-bold" style="background: rgba(212, 175, 55, 0.25); color: #FFDF73; border: 1px solid #D4AF37;"><?= $nights ?> Night<?= $nights > 1 ? 's' : '' ?></span>
+                                        <span class="text-xs fw-bold ms-1" style="color: #FBBF24;">Total: ₱<?= number_format($totalStayPrice) ?></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

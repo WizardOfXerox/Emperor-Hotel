@@ -263,8 +263,16 @@ function updateStayDurationBadge() {
 }
 
 function applySelectedDatesFromModal() {
-    const checkIn = document.getElementById('modalCheckInInput').value;
-    const checkOut = document.getElementById('modalCheckOutInput').value;
+    const checkIn = document.getElementById('modalCheckInInput')?.value;
+    const checkOut = document.getElementById('modalCheckOutInput')?.value;
+    if (!checkIn || !checkOut) return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('id');
+    if (roomId && window.location.pathname.includes('room-detail.php')) {
+        window.location.href = `room-detail.php?id=${encodeURIComponent(roomId)}&check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`;
+        return;
+    }
 
     const mainCheckIn = document.querySelector('input[name="check_in"]');
     const mainCheckOut = document.querySelector('input[name="check_out"]');
