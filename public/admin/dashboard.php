@@ -60,47 +60,52 @@ $peakMonthGuests = 0;
 $totalRoomsSold = 0;
 $totalRevenueAllTime = 0.0;
 
-// Query Peak Month with exact guest counts
-$peakMonthStmt = $db->query("
-    SELECT DATE_FORMAT(r.created_at, '%b %Y') AS month_label,
-           COUNT(r.reservation_id) AS total_bookings,
-           COUNT(DISTINCT r.guest_id) AS unique_guests,
-           COALESCE(SUM(p.amount), 0) AS total_income
-    FROM reservations r
-    LEFT JOIN payments p ON p.reservation_id = r.reservation_id AND p.payment_status = 'Paid'
-    WHERE r.status != 'Cancelled'
-    GROUP BY YEAR(r.created_at), MONTH(r.created_at)
-    ORDER BY total_bookings DESC, unique_guests DESC
-    LIMIT 1
-");
-$peakMonthData = $peakMonthStmt->fetch(PDO::FETCH_ASSOC);
+// Query Peak Month with exact guest counts (Safe SQL mode compliant)
+try {
+    $peakMonthStmt = $db->query("
+        SELECT DATE_FORMAT(r.created_at, '%b %Y') AS month_label,
+               COUNT(r.reservation_id) AS total_bookings,
+               COUNT(DISTINCT r.guest_id) AS unique_guests
+        FROM reservations r
+        WHERE r.status != 'Cancelled'
+        GROUP BY DATE_FORMAT(r.created_at, '%Y-%m'), DATE_FORMAT(r.created_at, '%b %Y')
+        ORDER BY total_bookings DESC, unique_guests DESC
+        LIMIT 1
+    ");
+    $peakMonthData = $peakMonthStmt ? $peakMonthStmt->fetch(PDO::FETCH_ASSOC) : null;
 
-if ($peakMonthData) {
-    $peakMonthLabel = (string) $peakMonthData['month_label'];
-    $peakMonthBookings = (int) $peakMonthData['total_bookings'];
-    $peakMonthGuests = (int) $peakMonthData['unique_guests'];
+    if ($peakMonthData) {
+        $peakMonthLabel = (string) $peakMonthData['month_label'];
+        $peakMonthBookings = (int) $peakMonthData['total_bookings'];
+        $peakMonthGuests = (int) $peakMonthData['unique_guests'];
+    }
+} catch (Throwable) {
+    // Fallback if query encounters strict mode issues
 }
 
 // Query Best Recommended Suite / Most Booked & Highest Rated Room
-$topRoomStmt = $db->query("
-    SELECT rm.room_type,
-           COUNT(DISTINCT r.reservation_id) AS total_bookings,
-           COALESCE(AVG(rv.rating), 4.9) AS avg_rating
-    FROM rooms rm
-    LEFT JOIN reservations r ON r.room_id = rm.room_id AND r.status != 'Cancelled'
-    LEFT JOIN reviews rv ON rv.room_id = rm.room_id
-    GROUP BY rm.room_type
-    ORDER BY total_bookings DESC, avg_rating DESC
-    LIMIT 1
-");
-$topRoomData = $topRoomStmt->fetch(PDO::FETCH_ASSOC) ?: [
-    'room_type' => 'Emperor Presidential',
-    'total_bookings' => 12,
-    'avg_rating' => 4.9
-];
-$bestRecommendedSuite = (string) ($topRoomData['room_type'] ?? 'Emperor Presidential');
-$bestSuiteRating = number_format((float) ($topRoomData['avg_rating'] ?? 4.9), 1);
-$bestSuiteBookings = (int) ($topRoomData['total_bookings'] ?? 0);
+try {
+    $topRoomStmt = $db->query("
+        SELECT rm.room_type,
+               COUNT(DISTINCT r.reservation_id) AS total_bookings,
+               COALESCE(AVG(rv.rating), 4.9) AS avg_rating
+        FROM rooms rm
+        LEFT JOIN reservations r ON r.room_id = rm.room_id AND r.status != 'Cancelled'
+        LEFT JOIN reviews rv ON rv.room_id = rm.room_id
+        GROUP BY rm.room_type
+        ORDER BY total_bookings DESC, avg_rating DESC
+        LIMIT 1
+    ");
+    $topRoomData = $topRoomStmt ? $topRoomStmt->fetch(PDO::FETCH_ASSOC) : null;
+
+    if ($topRoomData && !empty($topRoomData['room_type'])) {
+        $bestRecommendedSuite = (string) $topRoomData['room_type'];
+        $bestSuiteRating = number_format((float) ($topRoomData['avg_rating'] ?? 4.9), 1);
+        $bestSuiteBookings = (int) ($topRoomData['total_bookings'] ?? 0);
+    }
+} catch (Throwable) {
+    // Fallback
+}
 
 foreach ($monthlyPerformance as $m) {
     $bCount = (int) $m['rooms_booked'];
