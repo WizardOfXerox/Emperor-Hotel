@@ -54,34 +54,60 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
     <!-- Rooms Banner & Stay Date Selection Header -->
     <div class="card rounded-4 p-4 p-md-5 mb-4 shadow-lg border text-white position-relative overflow-hidden" style="background: rgba(15, 23, 42, 0.94); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
         <div class="row align-items-center g-4">
-            <div class="col-12 col-lg-7">
+            <div class="col-12 col-lg-6">
                 <div class="d-flex align-items-center gap-2 mb-2">
-                    <span class="badge bg-gold text-dark font-serif fw-bold px-3 py-1 text-xs"><i class="bi bi-door-open-fill me-1"></i>ROOM DIRECTORY &amp; SELECTION</span>
+                    <span class="badge rounded-pill px-3 py-2 font-serif fw-bold text-xs" style="background: rgba(212, 175, 55, 0.25); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.5);"><i class="bi bi-door-open-fill me-1 text-warning"></i>ROOM DIRECTORY &amp; SELECTION</span>
                     <span class="text-warning text-xs font-serif opacity-75">EMPEROR HOTEL</span>
                 </div>
                 <h1 class="display-6 font-serif fw-bold text-white mb-2">Explore &amp; Pick Your Suite</h1>
                 <p class="text-light opacity-75 text-xs m-0">Browse our complete room catalog below. Filter by category, inspect room specifications, and view room details to book.</p>
             </div>
 
-            <div class="col-12 col-lg-5">
-                <form method="get" action="rooms.php" class="p-3 rounded-4 border" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+            <!-- In-Place Visible Interactive 7-Column Calendar Date Filter -->
+            <div class="col-12 col-lg-6">
+                <div class="p-3 rounded-4 border shadow-sm" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="text-xs font-serif text-warning fw-bold text-uppercase"><i class="bi bi-calendar-range-fill me-1"></i>Filter Availability Dates</span>
+                        <span id="roomsStayDurationBadge" class="badge rounded-pill text-xs fw-bold" style="background: rgba(212, 175, 55, 0.2); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.4);">
+                            <?= date('M j', strtotime($checkIn)) ?> – <?= date('M j', strtotime($checkOut)) ?>
+                        </span>
                     </div>
-                    <div class="row g-2 mb-2">
-                        <div class="col-6">
-                            <label class="form-label text-xs text-light opacity-75 fw-bold mb-1">Check-In</label>
-                            <input type="date" name="check_in" value="<?= e($checkIn) ?>" class="form-control form-control-sm bg-dark text-white border-secondary text-xs fw-bold" required>
+
+                    <form method="get" action="rooms.php" id="roomsCalendarForm" class="mb-3">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-6">
+                                <label class="form-label text-xs text-light opacity-75 fw-bold mb-1">Check-In</label>
+                                <input type="date" name="check_in" id="roomsCheckInInput" value="<?= e($checkIn) ?>" class="form-control form-control-sm bg-dark text-white border-warning text-xs fw-bold py-1" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label text-xs text-light opacity-75 fw-bold mb-1">Check-Out</label>
+                                <input type="date" name="check_out" id="roomsCheckOutInput" value="<?= e($checkOut) ?>" class="form-control form-control-sm bg-dark text-white border-warning text-xs fw-bold py-1" required>
+                            </div>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label text-xs text-light opacity-75 fw-bold mb-1">Check-Out</label>
-                            <input type="date" name="check_out" value="<?= e($checkOut) ?>" class="form-control form-control-sm bg-dark text-white border-secondary text-xs fw-bold" required>
+                        <button type="submit" class="btn btn-warning btn-sm w-100 rounded-pill font-serif fw-bold text-dark shadow mt-2" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none;">
+                            <i class="bi bi-search me-1"></i>Update Stay Dates
+                        </button>
+                    </form>
+
+                    <!-- Compact Visual 7-Column Calendar Month Grid -->
+                    <div id="roomsCalendarGridContainer" class="p-2 rounded-3 border" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(212, 175, 55, 0.25) !important;">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <button type="button" class="btn btn-xs btn-outline-warning rounded-circle p-0" onclick="shiftRoomsCalendarMonth(-1)" style="width: 24px; height: 24px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.4);"><i class="bi bi-chevron-left text-xs"></i></button>
+                            <span class="font-serif fw-bold text-xs" id="roomsCalendarMonthTitle" style="color: #FFDF73;">July 2026</span>
+                            <button type="button" class="btn btn-xs btn-outline-warning rounded-circle p-0" onclick="shiftRoomsCalendarMonth(1)" style="width: 24px; height: 24px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.4);"><i class="bi bi-chevron-right text-xs"></i></button>
                         </div>
+                        <div class="calendar-grid-header mb-1 text-center font-serif fw-bold text-uppercase" style="font-size: 10px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;">
+                            <div style="color: #FBBF24;">Su</div>
+                            <div style="color: #F8FAFC;">Mo</div>
+                            <div style="color: #F8FAFC;">Tu</div>
+                            <div style="color: #F8FAFC;">We</div>
+                            <div style="color: #F8FAFC;">Th</div>
+                            <div style="color: #F8FAFC;">Fr</div>
+                            <div style="color: #FBBF24;">Sa</div>
+                        </div>
+                        <div id="roomsCalendarDaysGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;"></div>
                     </div>
-                    <button type="submit" class="btn btn-warning btn-sm w-100 rounded-pill font-serif fw-bold text-dark shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none;">
-                        <i class="bi bi-search me-1"></i>Update Stay Dates
-                    </button>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -200,8 +226,61 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
 
 </div>
 
-<!-- Interactive Kiosk Filter JavaScript -->
+<!-- Compact 7-Column Calendar Cell Styles -->
+<style>
+.rooms-cal-day-btn {
+    width: 28px;
+    height: 28px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 11px;
+    color: #F8FAFC;
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.rooms-cal-day-btn:hover:not(.is-disabled) {
+    background: rgba(212, 175, 55, 0.3) !important;
+    border-color: #D4AF37 !important;
+    color: #FFDF73 !important;
+    transform: scale(1.08);
+}
+.rooms-cal-day-btn.is-selected {
+    background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important;
+    color: #070A10 !important;
+    border: none !important;
+    font-weight: 900 !important;
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.6) !important;
+}
+.rooms-cal-day-btn.in-range {
+    background: rgba(212, 175, 55, 0.25) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    color: #FFDF73 !important;
+}
+.rooms-cal-day-btn.is-disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: rgba(15, 23, 42, 0.4);
+    border-color: transparent;
+}
+.rooms-cal-day-empty {
+    width: 28px;
+    height: 28px;
+    margin: 0 auto;
+    opacity: 0;
+}
+</style>
+
+<!-- Interactive Kiosk Filter & Calendar JavaScript -->
 <script>
+let roomsCalYear = 2026;
+let roomsCalMonth = 6;
+
 document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.kiosk-tab');
     const items = document.querySelectorAll('.kiosk-room-item');
@@ -258,7 +337,116 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchInput) {
         searchInput.addEventListener('input', filterGrid);
     }
+
+    initRoomsCalendar();
 });
+
+function initRoomsCalendar() {
+    const checkInInput = document.getElementById('roomsCheckInInput');
+    const checkOutInput = document.getElementById('roomsCheckOutInput');
+    if (!checkInInput || !checkOutInput) return;
+
+    const inVal = checkInInput.value ? new Date(checkInInput.value + 'T00:00:00') : new Date();
+    roomsCalYear = inVal.getFullYear();
+    roomsCalMonth = inVal.getMonth();
+
+    renderRoomsCalendarGrid();
+}
+
+function renderRoomsCalendarGrid() {
+    const daysGrid = document.getElementById('roomsCalendarDaysGrid');
+    const titleEl = document.getElementById('roomsCalendarMonthTitle');
+    const checkInInput = document.getElementById('roomsCheckInInput');
+    const checkOutInput = document.getElementById('roomsCheckOutInput');
+
+    if (!daysGrid || !titleEl || !checkInInput || !checkOutInput) return;
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    titleEl.textContent = `${monthNames[roomsCalMonth]} ${roomsCalYear}`;
+
+    const firstDay = new Date(roomsCalYear, roomsCalMonth, 1).getDay();
+    const totalDays = new Date(roomsCalYear, roomsCalMonth + 1, 0).getDate();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const checkInDate = checkInInput.value ? new Date(checkInInput.value + 'T00:00:00') : null;
+    const checkOutDate = checkOutInput.value ? new Date(checkOutInput.value + 'T00:00:00') : null;
+
+    let html = '';
+    for (let i = 0; i < firstDay; i++) {
+        html += '<div class="rooms-cal-day-empty"></div>';
+    }
+
+    for (let day = 1; day <= totalDays; day++) {
+        const cellDate = new Date(roomsCalYear, roomsCalMonth, day);
+        cellDate.setHours(0, 0, 0, 0);
+
+        const yyyymmdd = `${roomsCalYear}-${String(roomsCalMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        let cellClass = 'rooms-cal-day-btn';
+        const isPast = cellDate < today;
+
+        if (isPast) {
+            cellClass += ' is-disabled';
+        } else if (checkInDate && checkOutDate) {
+            const cellTime = cellDate.getTime();
+            const inTime = checkInDate.getTime();
+            const outTime = checkOutDate.getTime();
+
+            if (cellTime === inTime || cellTime === outTime) {
+                cellClass += ' is-selected';
+            } else if (cellTime > inTime && cellTime < outTime) {
+                cellClass += ' in-range';
+            }
+        }
+
+        html += `<button type="button" class="${cellClass}" onclick="selectRoomsCalDate('${yyyymmdd}')" ${isPast ? 'disabled' : ''}>${day}</button>`;
+    }
+
+    daysGrid.innerHTML = html;
+}
+
+function selectRoomsCalDate(dateStr) {
+    const checkInInput = document.getElementById('roomsCheckInInput');
+    const checkOutInput = document.getElementById('roomsCheckOutInput');
+    if (!checkInInput || !checkOutInput) return;
+
+    const parts = dateStr.split('-');
+    const selected = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    const checkIn = checkInInput.value ? new Date(checkInInput.value + 'T00:00:00') : null;
+
+    if (!checkInInput.dataset.selectingState || checkInInput.dataset.selectingState === 'end') {
+        checkInInput.value = dateStr;
+        checkInInput.dataset.selectingState = 'start';
+        const nextDay = new Date(selected);
+        nextDay.setDate(nextDay.getDate() + 1);
+        checkOutInput.value = nextDay.toISOString().split('T')[0];
+    } else {
+        if (checkIn && selected <= checkIn) {
+            checkInInput.value = dateStr;
+            const nextDay = new Date(selected);
+            nextDay.setDate(nextDay.getDate() + 1);
+            checkOutInput.value = nextDay.toISOString().split('T')[0];
+        } else {
+            checkOutInput.value = dateStr;
+            checkInInput.dataset.selectingState = 'end';
+        }
+    }
+
+    renderRoomsCalendarGrid();
+}
+
+function shiftRoomsCalendarMonth(delta) {
+    roomsCalMonth += delta;
+    if (roomsCalMonth > 11) {
+        roomsCalMonth = 0;
+        roomsCalYear++;
+    } else if (roomsCalMonth < 0) {
+        roomsCalMonth = 11;
+        roomsCalYear--;
+    }
+    renderRoomsCalendarGrid();
+}
 </script>
 
 <?php renderSupportWidget('customer'); ?>
