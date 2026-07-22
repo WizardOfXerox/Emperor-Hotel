@@ -280,7 +280,7 @@ renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/
                     <p class="eyebrow mb-1">Performance</p>
                     <h3 class="mb-0">Monthly Reservation Summary</h3>
                 </div>
-                <a class="btn btn-outline-light btn-sm" href="booking-records.php">Booking Records</a>
+                <a class="btn btn-outline-warning btn-sm" href="reservations.php"><i class="bi bi-calendar-check me-1"></i>Manage Reservations</a>
             </div>
             <div class="table-responsive">
                 <table class="table table-dark-soft align-middle mb-0">

@@ -52,9 +52,10 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
 
     $links = [
         'dashboard' => ['label' => 'Dashboard', 'href' => 'dashboard.php', 'icon' => 'bi-speedometer2'],
+        'create-reservation' => ['label' => 'Create Reservation', 'href' => 'create-reservation.php', 'icon' => 'bi-calendar-plus'],
+        'reservations' => ['label' => 'Reservations', 'href' => 'reservations.php', 'icon' => 'bi-calendar-check'],
+        'booking-records' => ['label' => 'Booking Logs', 'href' => 'booking-records.php', 'icon' => 'bi-clock-history'],
         'rooms' => ['label' => 'Rooms', 'href' => 'rooms.php', 'icon' => 'bi-door-open'],
-        'reservations' => ['label' => 'Reservations', 'href' => 'reservations.php', 'icon' => 'bi-calendar-plus'],
-        'booking-records' => ['label' => 'Booking Records', 'href' => 'booking-records.php', 'icon' => 'bi-journal-check'],
         'payments' => ['label' => 'Payments', 'href' => 'payments.php', 'icon' => 'bi-credit-card-2-back'],
         'guests' => ['label' => 'Guests', 'href' => 'guests.php', 'icon' => 'bi-person-lines-fill'],
         'reports' => ['label' => 'Reports', 'href' => 'reports.php', 'icon' => 'bi-graph-up-arrow'],

@@ -66,18 +66,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $reservations = $reservationModel->all();
 $paymentTotals = $paymentModel->totalsByReservation();
 
-renderAdminLayoutStart('Booking Records', 'booking-records', $currentAdmin, ['../assets/css/admin/reservations.css?v=20260530-booking-records']);
+renderAdminLayoutStart('Booking Logs', 'booking-records', $currentAdmin, ['../assets/css/admin/reservations.css?v=20260530-booking-logs']);
 ?>
 <section class="panel-card p-4">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
         <div>
-            <p class="eyebrow mb-1">Reservations</p>
-            <h3 class="mb-0">Booking Records</h3>
-            <p class="muted-copy mb-0">Review reservation details, update front desk status, extend stays, collect payments, and print receipts.</p>
+            <p class="eyebrow mb-1">System Archives & History</p>
+            <h3 class="mb-0">Booking Logs & Audit Trail</h3>
+            <p class="muted-copy mb-0">Historical log of all guest reservations, status transitions, check-in timestamps, and financial audit history.</p>
         </div>
         <div class="d-flex flex-wrap gap-2 align-items-center">
-            <span class="badge-soft"><?php echo e(count($reservations)); ?> reservations</span>
-            <a class="btn btn-warning btn-sm fw-semibold" href="reservations.php">Create Reservation</a>
+            <span class="badge-soft"><?php echo e(count($reservations)); ?> total log entries</span>
+            <a class="btn btn-warning btn-sm fw-semibold" href="reservations.php"><i class="bi bi-calendar-check me-1"></i>Manage Reservations</a>
+            <a class="btn btn-outline-warning btn-sm fw-semibold" href="create-reservation.php"><i class="bi bi-plus-circle me-1"></i>Create Reservation</a>
         </div>
     </div>
 
