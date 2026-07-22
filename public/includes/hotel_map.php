@@ -189,7 +189,13 @@ function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status) {
 async function updateHotelMapAvailability(checkIn, checkOut) {
     if (!checkIn || !checkOut) return;
     try {
-        const response = await fetch(`../site/map_availability.php?check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`);
+        let endpoint = 'map_availability.php';
+        if (window.location.pathname.includes('/admin/')) {
+            endpoint = '../site/map_availability.php';
+        } else if (window.location.pathname.includes('/site/')) {
+            endpoint = 'map_availability.php';
+        }
+        const response = await fetch(`${endpoint}?check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`);
         const data = await response.json();
         if (!data.success || !Array.isArray(data.rooms)) return;
 
