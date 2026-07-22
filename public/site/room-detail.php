@@ -479,35 +479,60 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
             <?php endif; ?>
         </div>
 
-        <!-- Quick Room Switcher Carousel/Grid -->
+        <!-- Quick Room Switcher Image Carousel -->
         <div class="card rounded-4 p-4 shadow-lg border mt-4" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
             <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
-                <h5 class="font-serif fw-bold m-0" style="color: #FFDF73;"><i class="bi bi-grid-3x3-gap-fill me-2"></i>Explore Other Suites & Rooms</h5>
-                <a href="rooms.php#suite-catalog" class="btn btn-outline-warning btn-sm rounded-pill font-serif fw-bold">View Catalog Grid</a>
+                <div>
+                    <h5 class="font-serif fw-bold m-0" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-grid-3x3-gap-fill me-2"></i>Explore Other Suites & Rooms</h5>
+                    <small class="text-light opacity-75 text-xs">Browse all luxury hotel suites across floors</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-warning rounded-circle shadow-sm" id="prevExploreCarousel" style="width: 36px; height: 36px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-left"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-warning rounded-circle shadow-sm" id="nextExploreCarousel" style="width: 36px; height: 36px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-right"></i></button>
+                    <a href="rooms.php#suite-catalog" class="btn btn-outline-warning btn-sm rounded-pill font-serif fw-bold ms-2">View Catalog Grid</a>
+                </div>
             </div>
             
-            <div class="d-flex overflow-x-auto gap-3 pb-2 custom-scrollbar" style="scroll-behavior: smooth;">
-                <?php foreach ($allRooms as $otherRoom): 
-                    $isSelf = (int)$otherRoom['room_id'] === (int)$room['room_id'];
-                    $otherBadgeStyle = match ($otherRoom['status']) {
-                        'Available' => 'background: rgba(16, 185, 129, 0.35); border: 1px solid #10B981; color: #A7F3D0;',
-                        'Reserved' => 'background: rgba(59, 130, 246, 0.35); border: 1px solid #3B82F6; color: #BFDBFE;',
-                        'Occupied' => 'background: rgba(245, 158, 11, 0.35); border: 1px solid #F59E0B; color: #FDE68A;',
-                        'Cleaning' => 'background: rgba(168, 85, 247, 0.35); border: 1px solid #A855F7; color: #DDD6FE;',
-                        default => 'background: rgba(148, 163, 184, 0.3); color: #F1F5F9;',
-                    };
-                ?>
-                    <a href="room-detail.php?id=<?= (int)$otherRoom['room_id'] ?><?= $dateParams ?>" 
-                       class="card text-decoration-none transition-all flex-shrink-0 rounded-4 p-3 <?= $isSelf ? 'border-warning shadow-lg' : '' ?>" 
-                       style="width: 220px; background: <?= $isSelf ? 'rgba(212, 175, 55, 0.15)' : 'rgba(30, 41, 59, 0.7)' ?>; border: 1px solid <?= $isSelf ? '#D4AF37' : 'rgba(212, 175, 55, 0.3)' ?>;">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="badge text-xs px-2 py-1 rounded-pill fw-bold" style="<?= $otherBadgeStyle ?>"><?= $otherRoom['status'] ?></span>
-                            <small class="fw-bold font-serif" style="color: #FFDF73;">#<?= e($otherRoom['room_number']) ?></small>
-                        </div>
-                        <h6 class="text-white font-serif fw-bold text-truncate mb-1" style="font-size: 0.9rem;"><?= e($otherRoom['room_type']) ?></h6>
-                        <div class="text-xs fw-bold" style="color: #FBBF24;">₱<?= number_format((float)$otherRoom['price_per_night']) ?><span class="text-light opacity-75 font-sans fw-normal">/night</span></div>
-                    </a>
-                <?php endforeach; ?>
+            <div class="position-relative overflow-hidden">
+                <div class="d-flex gap-3 custom-carousel-track py-2" id="exploreRoomsTrack" style="overflow-x: hidden; scroll-behavior: smooth;">
+                    <?php foreach ($allRooms as $otherRoom): 
+                        $isSelf = (int)$otherRoom['room_id'] === (int)$room['room_id'];
+                        $otherTypeCatalog = $catalog[$otherRoom['room_type']] ?? null;
+                        $otherImg = $otherTypeCatalog['hero'] ?? '../assets/images/rooms/hero.jpg';
+                        $otherBadgeStyle = match ($otherRoom['status']) {
+                            'Available' => 'background: rgba(16, 185, 129, 0.35); border: 1px solid #10B981; color: #A7F3D0;',
+                            'Reserved' => 'background: rgba(59, 130, 246, 0.35); border: 1px solid #3B82F6; color: #BFDBFE;',
+                            'Occupied' => 'background: rgba(245, 158, 11, 0.35); border: 1px solid #F59E0B; color: #FDE68A;',
+                            'Cleaning' => 'background: rgba(168, 85, 247, 0.35); border: 1px solid #A855F7; color: #DDD6FE;',
+                            default => 'background: rgba(148, 163, 184, 0.3); color: #F1F5F9;',
+                        };
+                    ?>
+                        <a href="room-detail.php?id=<?= (int)$otherRoom['room_id'] ?><?= $dateParams ?>" 
+                           class="card text-decoration-none transition-all flex-shrink-0 rounded-4 overflow-hidden shadow-sm <?= $isSelf ? 'border-warning shadow-lg' : '' ?>" 
+                           style="width: 250px; background: <?= $isSelf ? 'rgba(212, 175, 55, 0.15)' : 'rgba(30, 41, 59, 0.75)' ?>; border: 1px solid <?= $isSelf ? '#D4AF37' : 'rgba(212, 175, 55, 0.3)' ?>;">
+                            
+                            <!-- Room Image Header -->
+                            <div class="position-relative overflow-hidden" style="height: 140px;">
+                                <img src="<?= e($otherImg) ?>" alt="Room #<?= e($otherRoom['room_number']) ?>" class="w-100 h-100 object-fit-cover transition-transform">
+                                <div class="position-absolute top-0 start-0 p-2">
+                                    <span class="badge text-xs px-2 py-1 rounded-pill fw-bold" style="<?= $otherBadgeStyle ?>"><?= $otherRoom['status'] ?></span>
+                                </div>
+                                <div class="position-absolute top-0 end-0 p-2">
+                                    <span class="badge bg-dark bg-opacity-75 text-warning font-serif fw-bold px-2 py-1 border border-warning text-xs">#<?= e($otherRoom['room_number']) ?></span>
+                                </div>
+                            </div>
+
+                            <!-- Room Details Footer -->
+                            <div class="p-3">
+                                <h6 class="text-white font-serif fw-bold text-truncate mb-1" style="font-size: 0.9rem;"><?= e($otherRoom['room_type']) ?></h6>
+                                <div class="d-flex align-items-center justify-content-between mt-2">
+                                    <span class="text-xs fw-bold" style="color: #FBBF24;">₱<?= number_format((float)$otherRoom['price_per_night']) ?><span class="text-light opacity-75 font-sans fw-normal">/night</span></span>
+                                    <span class="btn btn-xs btn-outline-warning rounded-pill px-2 py-1 text-xs fw-bold font-serif">View Suite</span>
+                                </div>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
             </div>
         </div>
 </main>
@@ -515,6 +540,22 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
 <?php renderCalendarPickerModal($checkIn, $checkOut); ?>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const track = document.getElementById('exploreRoomsTrack');
+    const prevBtn = document.getElementById('prevExploreCarousel');
+    const nextBtn = document.getElementById('nextExploreCarousel');
+    
+    if (track && prevBtn && nextBtn) {
+        const step = 280;
+        prevBtn.addEventListener('click', function() {
+            track.scrollBy({ left: -step, behavior: 'smooth' });
+        });
+        nextBtn.addEventListener('click', function() {
+            track.scrollBy({ left: step, behavior: 'smooth' });
+        });
+    }
+});
+
 function switchHeroImage(src) {
     const heroImg = document.getElementById('mainRoomHeroImage');
     if (heroImg) {
