@@ -59,7 +59,7 @@ renderHeader('Home | Emperor Hotel', ['../assets/css/site/home.css', '../assets/
             <h1>EMPEROR'S HOTEL</h1>
             <p>SMART LUXURY & UNMATCHED ELEGANCE</p>
             
-            <a href="#calendar-search" class="btn btn-gold rounded-pill px-5 py-3 fw-bold font-serif shadow fs-5 mt-4" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);"><i class="bi bi-calendar-range me-2"></i>EXPLORE CALENDAR & STAY DATES</a>
+            <a href="#calendar-search" class="btn rounded-pill px-4 py-2 fw-semibold font-serif shadow text-sm text-uppercase tracking-wider mt-3" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);"><i class="bi bi-calendar-range me-2"></i>Select Stay Dates</a>
         </div>
     </section>
 
