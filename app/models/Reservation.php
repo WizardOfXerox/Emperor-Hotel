@@ -283,7 +283,6 @@ class Reservation
         return match ($status) {
             'Pending' => [
                 'confirm' => 'Confirm',
-                'check_in' => 'Check In',
                 'cancel' => 'Cancel',
             ],
             'Confirmed' => [
@@ -309,6 +308,10 @@ class Reservation
 
         if (!isset($allowedActions[$action], self::FRONT_DESK_ACTIONS[$action])) {
             throw new RuntimeException('That front desk action is not available for this reservation status.');
+        }
+
+        if ($action === 'check_in' && $reservation['status'] !== 'Confirmed') {
+            throw new RuntimeException('Reservation must be Confirmed with payment settlement before checking in.');
         }
 
         $newStatus = self::FRONT_DESK_ACTIONS[$action];
