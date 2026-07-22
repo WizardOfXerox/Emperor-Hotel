@@ -175,6 +175,7 @@ $inD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkIn) ?: new DateTimeIm
 $outD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkOut) ?: (new DateTimeImmutable('today'))->modify('+1 day');
 $calcNights = max(1, (int) round(($outD->getTimestamp() - $inD->getTimestamp()) / 86400));
 $calcTotal = $selectedRoomObj ? ((float)$selectedRoomObj['price_per_night'] * $calcNights) : 0.0;
+$isCurrentRoomAvailable = $selectedRoomObj ? $reservationModel->roomIsAvailable((int)$selectedRoomObj['room_id'], $checkIn, $checkOut) : false;
 
 $reservations = $reservationModel->userReservations((int) $user['user_id']);
 $paymentTotals = $paymentModel->totalsByReservation();
@@ -303,8 +304,18 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                         <i class="bi bi-info-circle text-warning me-1"></i>Cash creates a pending reservation reference to present at front desk check-in. Credit card or online methods will route to immediate simulated processing.
                     </small>
 
-                    <button class="btn btn-warning w-100 rounded-pill py-2 font-serif fw-bold text-dark shadow" type="submit" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none;">
-                        <i class="bi bi-check-circle-fill me-2"></i>Confirm &amp; Submit Reservation
+                    <?php if (!$isCurrentRoomAvailable): ?>
+                        <div class="alert p-2 rounded-3 text-xs mb-3 d-flex align-items-center gap-2" style="background: rgba(220, 38, 38, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); color: #FCA5A5;">
+                            <i class="bi bi-calendar-x-fill fs-5 text-danger"></i>
+                            <div>
+                                <strong>Room Unavailable for Stay Dates</strong>
+                                <div class="opacity-75 text-xs">Room #<?= e($selectedRoomObj['room_number'] ?? '') ?> is already reserved for <?= e($checkIn) ?> to <?= e($checkOut) ?>. Please select different stay dates or switch suites.</div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <button class="btn btn-warning w-100 rounded-pill py-2 font-serif fw-bold text-dark shadow" type="submit" <?= !$isCurrentRoomAvailable ? 'disabled style="opacity: 0.5; cursor: not-allowed; background: #64748B; border: none;"' : 'style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none;"' ?>>
+                        <i class="bi bi-check-circle-fill me-2"></i><?= !$isCurrentRoomAvailable ? 'Room Reserved for Selected Dates' : 'Confirm & Submit Reservation' ?>
                     </button>
                 </div>
             </div>
@@ -321,10 +332,19 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                                 <button type="button" class="btn btn-xs btn-outline-warning rounded-pill px-3 py-1 text-xs font-serif dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bi bi-arrow-repeat me-1"></i>Switch Room
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-dark shadow-lg rounded-3 p-2 border" style="max-height: 300px; overflow-y: auto; background: rgba(15, 23, 42, 0.98); min-width: 240px;">
-                                    <?php foreach ($rooms as $rm): ?>
-                                        <a class="dropdown-item rounded-2 py-1 px-2 text-xs d-flex align-items-center justify-content-between" href="dashboard.php?selected_room=<?= (int)$rm['room_id'] ?>&check_in=<?= urlencode($checkIn) ?>&check_out=<?= urlencode($checkOut) ?>">
-                                            <span>#<?= e($rm['room_number']) ?> &mdash; <?= e($rm['room_type']) ?></span>
+                                <div class="dropdown-menu dropdown-menu-dark shadow-lg rounded-3 p-2 border" style="max-height: 300px; overflow-y: auto; background: rgba(15, 23, 42, 0.98); min-width: 270px;">
+                                    <?php foreach ($rooms as $rm):
+                                        $rmAvail = $reservationModel->roomIsAvailable((int)$rm['room_id'], $checkIn, $checkOut);
+                                    ?>
+                                        <a class="dropdown-item rounded-2 py-1 px-2 text-xs d-flex align-items-center justify-content-between <?= !$rmAvail ? 'opacity-50' : '' ?>" href="dashboard.php?selected_room=<?= (int)$rm['room_id'] ?>&check_in=<?= urlencode($checkIn) ?>&check_out=<?= urlencode($checkOut) ?>">
+                                            <div>
+                                                <span>#<?= e($rm['room_number']) ?> &mdash; <?= e($rm['room_type']) ?></span>
+                                                <?php if (!$rmAvail): ?>
+                                                    <span class="badge bg-danger text-white text-xs ms-1">Booked</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-success text-white text-xs ms-1">Available</span>
+                                                <?php endif; ?>
+                                            </div>
                                             <span class="text-warning font-mono ms-2">₱<?= number_format((float)$rm['price_per_night']) ?></span>
                                         </a>
                                     <?php endforeach; ?>

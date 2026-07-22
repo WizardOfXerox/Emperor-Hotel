@@ -695,7 +695,7 @@ class Reservation
         ]);
     }
 
-    private function roomHasActiveOverlap(int $roomId, string $checkIn, string $checkOut, ?int $excludeReservationId = null): bool
+    public function roomHasActiveOverlap(int $roomId, string $checkIn, string $checkOut, ?int $excludeReservationId = null): bool
     {
         // SQL: Counts active overlapping reservations for extension validation.
         $sql = "SELECT COUNT(*)
