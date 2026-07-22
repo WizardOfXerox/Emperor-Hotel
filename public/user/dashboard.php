@@ -165,12 +165,16 @@ if (!$selectedRoomObj && !empty($rooms)) {
 }
 $selectedRoomType = $selectedRoomObj ? $selectedRoomObj['room_type'] : null;
 
+$catalog = roomCatalog();
+$selectedCapacity = (int)($selectedRoomObj['capacity'] ?? ($catalog[$selectedRoomType]['max_capacity'] ?? 2));
+
+$existingGuest = $guestModel->findByUserId((int) $user['user_id']);
+$userPhone = (string)($existingGuest['phone'] ?? ($user['phone'] ?? ''));
+
 $inD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkIn) ?: new DateTimeImmutable('today');
 $outD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkOut) ?: (new DateTimeImmutable('today'))->modify('+1 day');
 $calcNights = max(1, (int) round(($outD->getTimestamp() - $inD->getTimestamp()) / 86400));
 $calcTotal = $selectedRoomObj ? ((float)$selectedRoomObj['price_per_night'] * $calcNights) : 0.0;
-
-$catalog = roomCatalog();
 
 $reservations = $reservationModel->userReservations((int) $user['user_id']);
 $paymentTotals = $paymentModel->totalsByReservation();
@@ -271,13 +275,14 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
 
                     <div class="row g-2">
                         <div class="col-6">
-                            <label class="form-label text-xs text-light opacity-75 fw-bold mb-1" for="phone">Contact Phone</label>
-                            <input class="form-control form-control-sm bg-dark text-white border-secondary rounded-3 text-xs fw-bold" id="phone" name="phone" type="text" placeholder="+63 917 123 4567">
+                            <label class="form-label text-xs text-light opacity-75 fw-bold mb-1" for="phone"><i class="bi bi-telephone-fill text-warning me-1"></i>Contact Phone <span class="text-danger">*</span></label>
+                            <input class="form-control form-control-sm bg-dark text-white border-secondary rounded-3 text-xs fw-bold" id="phone" name="phone" type="tel" value="<?= e($userPhone) ?>" placeholder="+63 917 123 4567" required>
                         </div>
                         <div class="col-6">
-                            <label class="form-label text-xs text-light opacity-75 fw-bold mb-1">Suite Capacity</label>
-                            <div class="p-2 rounded-3 text-xs fw-semibold" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(212, 175, 55, 0.25); color: #FFDF73;">
-                                <i class="bi bi-people-fill me-1"></i>Up to 5 Guests Max
+                            <label class="form-label text-xs text-light opacity-75 fw-bold mb-1"><i class="bi bi-people-fill text-warning me-1"></i>Suite Capacity</label>
+                            <div class="p-2 rounded-3 text-xs fw-bold d-flex align-items-center justify-content-between" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(212, 175, 55, 0.35); color: #FFDF73;">
+                                <span>Up to <?= $selectedCapacity ?> Guests Max</span>
+                                <span class="badge bg-gold text-dark text-xs rounded-pill">Room #<?= e($selectedRoomObj['room_number'] ?? '') ?></span>
                             </div>
                         </div>
                     </div>
