@@ -149,70 +149,142 @@ function renderRoomShowcaseSection(): void
 
     echo '<script>
     (function() {
-        function initDragScrollCarousels() {
+        function initInfiniteCarousels() {
             const carouselWrappers = Array.from(document.querySelectorAll(".carousel-wrapper"));
             
             carouselWrappers.forEach((wrapper) => {
-                if (wrapper.dataset.dragInit) return;
-                wrapper.dataset.dragInit = "true";
+                if (wrapper.dataset.carouselInit) return;
+                wrapper.dataset.carouselInit = "true";
 
                 const track = wrapper.querySelector("[data-carousel]");
                 const prevBtn = wrapper.querySelector("[data-carousel-prev]");
                 const nextBtn = wrapper.querySelector("[data-carousel-next]");
+                const slides = track ? Array.from(track.querySelectorAll(".carousel-slide")) : [];
 
-                if (!track) return;
+                if (!track || slides.length === 0) return;
 
+                let currentIndex = 0;
+                let autoSlideTimer = null;
                 let isDown = false;
                 let startX = 0;
                 let scrollLeft = 0;
 
-                // Mouse Drag Scroll Events
-                track.addEventListener("mousedown", (e) => {
-                    isDown = true;
-                    track.classList.add("is-dragging");
-                    startX = e.pageX - track.offsetLeft;
-                    scrollLeft = track.scrollLeft;
-                });
+                const totalSlides = slides.length;
 
-                track.addEventListener("mouseleave", () => {
-                    isDown = false;
-                    track.classList.remove("is-dragging");
-                });
+                const scrollToSlide = (index, smooth = true) => {
+                    currentIndex = (index + totalSlides) % totalSlides;
+                    const slideWidth = track.clientWidth;
+                    track.scrollTo({
+                        left: currentIndex * slideWidth,
+                        behavior: smooth ? "smooth" : "auto"
+                    });
+                };
 
-                track.addEventListener("mouseup", () => {
-                    isDown = false;
-                    track.classList.remove("is-dragging");
-                });
+                const nextSlide = () => {
+                    scrollToSlide(currentIndex + 1);
+                };
 
-                track.addEventListener("mousemove", (e) => {
-                    if (!isDown) return;
-                    e.preventDefault();
-                    const x = e.pageX - track.offsetLeft;
-                    const walk = (x - startX) * 1.8;
-                    track.scrollLeft = scrollLeft - walk;
-                });
+                const prevSlide = () => {
+                    scrollToSlide(currentIndex - 1);
+                };
 
-                // Arrow Controls Scroll
+                const startAutoSlide = () => {
+                    stopAutoSlide();
+                    autoSlideTimer = setInterval(() => {
+                        nextSlide();
+                    }, 4000);
+                };
+
+                const stopAutoSlide = () => {
+                    if (autoSlideTimer) clearInterval(autoSlideTimer);
+                };
+
                 if (prevBtn) {
                     prevBtn.addEventListener("click", (e) => {
                         e.preventDefault();
-                        track.scrollBy({ left: -track.clientWidth, behavior: "smooth" });
+                        prevSlide();
+                        startAutoSlide();
                     });
                 }
 
                 if (nextBtn) {
                     nextBtn.addEventListener("click", (e) => {
                         e.preventDefault();
-                        track.scrollBy({ left: track.clientWidth, behavior: "smooth" });
+                        nextSlide();
+                        startAutoSlide();
                     });
                 }
+
+                track.addEventListener("mousedown", (e) => {
+                    isDown = true;
+                    track.classList.add("is-dragging");
+                    startX = e.pageX - track.offsetLeft;
+                    scrollLeft = track.scrollLeft;
+                    stopAutoSlide();
+                });
+
+                track.addEventListener("mouseleave", () => {
+                    if (isDown) {
+                        isDown = false;
+                        track.classList.remove("is-dragging");
+                        startAutoSlide();
+                    }
+                });
+
+                track.addEventListener("mouseup", (e) => {
+                    if (!isDown) return;
+                    isDown = false;
+                    track.classList.remove("is-dragging");
+                    const diffX = (e.pageX - track.offsetLeft) - startX;
+                    if (Math.abs(diffX) > 40) {
+                        if (diffX < 0) {
+                            nextSlide();
+                        } else {
+                            prevSlide();
+                        }
+                    } else {
+                        scrollToSlide(currentIndex);
+                    }
+                    startAutoSlide();
+                });
+
+                track.addEventListener("mousemove", (e) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - track.offsetLeft;
+                    const walk = (x - startX) * 1.5;
+                    track.scrollLeft = scrollLeft - walk;
+                });
+
+                track.addEventListener("touchstart", (e) => {
+                    startX = e.touches[0].clientX;
+                    stopAutoSlide();
+                }, { passive: true });
+
+                track.addEventListener("touchend", (e) => {
+                    const endX = e.changedTouches[0].clientX;
+                    const diffX = endX - startX;
+                    if (Math.abs(diffX) > 40) {
+                        if (diffX < 0) {
+                            nextSlide();
+                        } else {
+                            prevSlide();
+                        }
+                    }
+                    startAutoSlide();
+                }, { passive: true });
+
+                wrapper.addEventListener("mouseenter", stopAutoSlide);
+                wrapper.addEventListener("mouseleave", startAutoSlide);
+
+                startAutoSlide();
             });
         }
 
         if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", initDragScrollCarousels);
+            document.addEventListener("DOMContentLoaded", initInfiniteCarousels);
         } else {
-            initDragScrollCarousels();
+            initInfiniteCarousels();
         }
     })();
     </script>';
