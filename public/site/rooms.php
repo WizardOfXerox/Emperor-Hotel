@@ -5,80 +5,244 @@ declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/room_catalog.php';
-require_once __DIR__ . '/../includes/room_showcase.php';
 
 $user = currentUser();
 $catalog = roomCatalog();
-$rooms = [];
-$roomStats = [];
-$roomDataUnavailable = false;
 
-try {
-    $db = Database::connect();
-    $roomModel = new Room($db);
-    $rooms = $roomModel->all();
-    $roomStats = $roomModel->typeSummary();
-} catch (Throwable) {
-    $roomDataUnavailable = true;
-}
+$db = Database::connect();
+$roomModel = new Room($db);
+$reservationModel = new Reservation($db);
 
-renderHeader('Suites & Rooms | Emperor Hotel', ['../assets/css/site/home.css', '../assets/css/site/rooms.css'], 'home-showcase-page rooms-showcase-page');
+$rooms = $roomModel->all();
+$roomStats = $roomModel->typeSummary();
+
+$checkIn = trim((string) ($_GET['check_in'] ?? ''));
+$checkOut = trim((string) ($_GET['check_out'] ?? ''));
+
+if ($checkIn === '') $checkIn = (new DateTimeImmutable('today'))->format('Y-m-d');
+if ($checkOut === '') $checkOut = (new DateTimeImmutable('today'))->modify('+1 day')->format('Y-m-d');
+
+renderSiteLayoutStart('Rooms Kiosk & Selection Menu | Emperor Hotel', $user, '');
 ?>
 
-<nav class="home-nav" aria-label="Primary navigation">
-    <div class="home-nav__container">
-        <a class="home-nav__logo" href="home.php" aria-label="Emperor Hotel home">
-            <img src="../assets/images/branding/emperors-hotel-logo.svg" alt="Emperor Hotel logo">
-        </a>
+<div class="container py-4">
 
-        <div class="home-nav__links">
-            <a class="home-nav__link" href="home.php">HOME</a>
-            <a class="home-nav__link home-nav__link--active" href="rooms.php">SUITES</a>
-        </div>
+    <!-- Kiosk Banner & Stay Date Selection Header -->
+    <div class="card rounded-4 p-4 p-md-5 mb-4 shadow-lg border text-white position-relative overflow-hidden" style="background: rgba(15, 23, 42, 0.94); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+        <div class="row align-items-center g-4">
+            <div class="col-12 col-lg-7">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-gold text-dark font-serif fw-bold px-3 py-1 text-xs"><i class="bi bi-grid-3x3-gap-fill me-1"></i>SELF-SERVICE KIOSK MENU</span>
+                    <span class="text-warning text-xs font-serif opacity-75">EMPEROR HOTEL</span>
+                </div>
+                <h1 class="display-6 font-serif fw-bold text-white mb-2">Pick &amp; Book Your Luxury Suite</h1>
+                <p class="text-light opacity-75 text-xs m-0">Browse our complete room catalog below like a menu. Select your dates, filter by category or availability, and pick your suite instantly.</p>
+            </div>
 
-        <div class="home-nav__auth">
-            <?php if ($user): ?>
-                <a class="home-nav__cta home-nav__cta--primary" href="<?= e($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php') ?>">DASHBOARD</a>
-                <a class="home-nav__cta home-nav__cta--secondary" href="../auth/logout.php">LOG OUT</a>
-            <?php else: ?>
-                <a class="home-nav__cta home-nav__cta--primary" href="../auth/login.php">LOG IN</a>
-                <a class="home-nav__cta home-nav__cta--secondary" href="../auth/register.php">REGISTER</a>
-            <?php endif; ?>
+            <div class="col-12 col-lg-5">
+                <form method="get" action="rooms.php" class="p-3 rounded-4 border" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-xs font-serif text-warning fw-bold text-uppercase"><i class="bi bi-calendar-range-fill me-1"></i>Filter Availability Dates</span>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="form-label text-xs text-light opacity-75 fw-bold mb-1">Check-In</label>
+                            <input type="date" name="check_in" value="<?= e($checkIn) ?>" class="form-control form-control-sm bg-dark text-white border-secondary text-xs fw-bold" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-xs text-light opacity-75 fw-bold mb-1">Check-Out</label>
+                            <input type="date" name="check_out" value="<?= e($checkOut) ?>" class="form-control form-control-sm bg-dark text-white border-secondary text-xs fw-bold" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-sm w-100 rounded-pill font-serif fw-bold text-dark shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none;">
+                        <i class="bi bi-search me-1"></i>Update Stay Dates
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
-</nav>
 
-<main>
-    <div class="rooms-flash">
-        <?php renderFlashBlock(); ?>
+    <!-- Kiosk Filter Menu Bar -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 p-3 rounded-4 border" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+        
+        <!-- Category Filter Tabs -->
+        <div class="d-flex flex-wrap align-items-center gap-2" id="kioskCategoryTabs">
+            <button type="button" class="btn btn-xs rounded-pill px-3 py-2 font-serif fw-bold text-xs kiosk-tab active" data-filter="all" style="background: #D4AF37; color: #0F172A; border: 1px solid #D4AF37;">
+                All Suites (<?= count($rooms) ?>)
+            </button>
+            <button type="button" class="btn btn-xs btn-outline-warning rounded-pill px-3 py-2 font-serif fw-bold text-xs kiosk-tab" data-filter="Imperial Deluxe">
+                Imperial Deluxe
+            </button>
+            <button type="button" class="btn btn-xs btn-outline-warning rounded-pill px-3 py-2 font-serif fw-bold text-xs kiosk-tab" data-filter="Royal Executive">
+                Royal Executive
+            </button>
+            <button type="button" class="btn btn-xs btn-outline-warning rounded-pill px-3 py-2 font-serif fw-bold text-xs kiosk-tab" data-filter="Emperor Presidential">
+                Emperor Presidential
+            </button>
+            <button type="button" class="btn btn-xs btn-outline-success rounded-pill px-3 py-2 font-serif fw-bold text-xs kiosk-tab" data-filter="available-only">
+                <i class="bi bi-check-circle-fill me-1"></i>Available Only
+            </button>
+        </div>
+
+        <!-- Quick Search Filter Input -->
+        <div class="position-relative" style="min-width: 220px;">
+            <input type="text" id="kioskSearchInput" class="form-control form-control-sm bg-dark text-white border-secondary rounded-pill text-xs px-3 py-2 ps-4" placeholder="Search room # or perk...">
+            <i class="bi bi-search text-warning position-absolute top-50 start-0 translate-middle-y ms-2 text-xs"></i>
+        </div>
     </div>
 
-    <section class="rooms-hero" aria-label="Emperor Hotel suites page">
-        <img src="../assets/images/rooms/hero.jpg" alt="Luxury Suite at Emperor Hotel">
-        <div class="rooms-hero__content">
-            <h1>SUITES &amp; ROOMS</h1>
-            <p>DISCOVER EXTRAORDINARY ACCOMMODATIONS</p>
-            <a href="#suite-catalog">EXPLORE SUITES</a>
-        </div>
-    </section>
+    <!-- Kiosk Room Shopping Cards Grid -->
+    <div class="row g-4" id="kioskRoomGrid">
+        <?php foreach ($rooms as $rm): 
+            $rmType = $rm['room_type'];
+            $rmInfo = $catalog[$rmType] ?? null;
+            $heroImg = $rmInfo['hero'] ?? '../assets/images/rooms/hero.jpg';
+            $maxCap = (int)($rm['capacity'] ?? ($rmInfo['max_capacity'] ?? 2));
+            $isAvail = $reservationModel->roomIsAvailable((int)$rm['room_id'], $checkIn, $checkOut);
+            $perks = $rmInfo['included_perks'] ?? ['Complimentary breakfast', 'Priority Wi-Fi'];
+            
+            $bookUrl = $user 
+                ? ($user['role'] === 'admin' ? '../admin/reservations.php?room_id=' . (int)$rm['room_id'] : '../user/dashboard.php?selected_room=' . (int)$rm['room_id'] . '&check_in=' . urlencode($checkIn) . '&check_out=' . urlencode($checkOut))
+                : '../auth/login.php';
+        ?>
+            <div class="col-12 col-md-6 col-lg-4 kiosk-room-item" data-type="<?= e($rmType) ?>" data-avail="<?= $isAvail ? '1' : '0' ?>" data-room-num="<?= e($rm['room_number']) ?>">
+                <div class="card rounded-4 h-100 overflow-hidden border shadow-lg d-flex flex-column justify-content-between position-relative" style="background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 55, 0.3) !important; transition: transform 0.25s ease, box-shadow 0.25s ease;">
+                    
+                    <div>
+                        <!-- Suite Photo Banner & Status Badges -->
+                        <div class="position-relative overflow-hidden" style="height: 180px;">
+                            <img src="<?= e($heroImg) ?>" alt="<?= e($rmType) ?>" class="w-100 h-100 object-fit-cover">
+                            
+                            <div class="position-absolute top-0 start-0 p-2">
+                                <span class="badge bg-gold text-dark font-serif fw-bold px-2 py-1 text-xs">Floor <?= e($rm['floor']) ?></span>
+                            </div>
 
-    <div id="suite-catalog">
-        <?php renderRoomShowcaseSection(); ?>
+                            <div class="position-absolute top-0 end-0 p-2 d-flex flex-column align-items-end gap-1">
+                                <span class="badge bg-dark bg-opacity-75 text-warning font-serif fw-bold px-2 py-1 border border-warning text-xs">Room #<?= e($rm['room_number']) ?></span>
+                                <?php if ($isAvail): ?>
+                                    <span class="badge bg-success text-white font-serif fw-bold px-2 py-1 text-xs shadow"><i class="bi bi-check-circle-fill me-1"></i>Available</span>
+                                <?php else: ?>
+                                    <span class="badge bg-danger text-white font-serif fw-bold px-2 py-1 text-xs shadow"><i class="bi bi-calendar-x-fill me-1"></i>Reserved</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <!-- Room Details & Price Header -->
+                        <div class="p-3">
+                            <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                <div>
+                                    <span class="text-xs text-uppercase tracking-wider text-warning font-serif fw-bold d-block"><?= e($rmType) ?></span>
+                                    <h5 class="font-serif fw-bold text-white mb-0">Room #<?= e($rm['room_number']) ?></h5>
+                                </div>
+                                <div class="text-end">
+                                    <strong class="fs-5 text-warning font-serif d-block">₱<?= number_format((float)$rm['price_per_night']) ?></strong>
+                                    <small class="text-light opacity-75 text-xs">per night</small>
+                                </div>
+                            </div>
+
+                            <p class="text-light opacity-75 text-xs mb-3 line-clamp-2" style="min-height: 36px;"><?= e($rmInfo['tagline'] ?? '') ?></p>
+
+                            <!-- Key Specs Pills -->
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="badge rounded-pill text-xs fw-semibold px-2 py-1" style="background: rgba(212, 175, 55, 0.15); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.3);">
+                                    <i class="bi bi-people-fill me-1"></i>Up to <?= $maxCap ?> Guests
+                                </span>
+                                <span class="badge rounded-pill text-xs fw-semibold px-2 py-1" style="background: rgba(255, 255, 255, 0.1); color: #F8FAFC;">
+                                    <i class="bi bi-eye-fill me-1"></i><?= e($rmInfo['view_type'] ?? 'Skyline View') ?>
+                                </span>
+                            </div>
+
+                            <!-- Executive Perks -->
+                            <div class="border-top border-secondary pt-2">
+                                <small class="text-light opacity-75 text-xs fw-bold d-block mb-1"><i class="bi bi-stars text-warning me-1"></i>Suite Amenities:</small>
+                                <ul class="list-unstyled text-xs text-light opacity-80 m-0 ps-1">
+                                    <?php foreach (array_slice($perks, 0, 2) as $pk): ?>
+                                        <li class="mb-1"><i class="bi bi-check2 text-warning me-1"></i><?= e($pk) ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kiosk Order / Selection Action Button -->
+                    <div class="p-3 pt-0">
+                        <?php if ($isAvail): ?>
+                            <a href="<?= e($bookUrl) ?>" class="btn btn-warning w-100 rounded-pill py-2 font-serif fw-bold text-dark shadow-sm text-xs d-flex align-items-center justify-content-center gap-2" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none;">
+                                <i class="bi bi-plus-circle-fill fs-6"></i>Select &amp; Book Room #<?= e($rm['room_number']) ?>
+                            </a>
+                        <?php else: ?>
+                            <button type="button" disabled class="btn btn-secondary w-100 rounded-pill py-2 font-serif fw-bold text-xs opacity-50" style="cursor: not-allowed; background: #475569; border: none;">
+                                <i class="bi bi-lock-fill me-1"></i>Reserved for Selected Dates
+                            </button>
+                        <?php endif; ?>
+                    </div>
+
+                </div>
+            </div>
+        <?php endforeach; ?>
     </div>
 
-    <section class="container py-5 text-center">
-        <h3 class="font-serif text-gold mb-3">Looking for specific room specifications or guest reviews?</h3>
-        <p class="text-muted mb-4">Click any suite below to view detailed high-res photos, bed dimensions, and verified guest ratings.</p>
-        <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a href="room-detail.php?id=1" class="btn btn-gold rounded-pill px-4 py-2 fw-bold">Inspect Imperial Deluxe (#101)</a>
-            <a href="room-detail.php?id=13" class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold">Inspect Royal Executive (#201)</a>
-            <a href="room-detail.php?id=25" class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold">Inspect Emperor Presidential (#301)</a>
-        </div>
-    </section>
-</main>
+</div>
 
-<?php renderSupportWidget('customer'); ?>
-<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="../assets/js/support-widget.js" defer></script>
-</body>
-</html>
+<!-- Interactive Kiosk Filter JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.kiosk-tab');
+    const items = document.querySelectorAll('.kiosk-room-item');
+    const searchInput = document.getElementById('kioskSearchInput');
+
+    let activeFilter = 'all';
+
+    function filterGrid() {
+        const query = searchInput.value.toLowerCase().trim();
+
+        items.forEach(item => {
+            const type = item.getAttribute('data-type');
+            const avail = item.getAttribute('data-avail');
+            const roomNum = item.getAttribute('data-room-num');
+            const textContent = item.textContent.toLowerCase();
+
+            let matchCategory = false;
+            if (activeFilter === 'all') {
+                matchCategory = true;
+            } else if (activeFilter === 'available-only') {
+                matchCategory = (avail === '1');
+            } else {
+                matchCategory = (type === activeFilter);
+            }
+
+            let matchQuery = query === '' || textContent.includes(query) || roomNum.includes(query);
+
+            if (matchCategory && matchQuery) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            tabs.forEach(t => {
+                t.classList.remove('active');
+                t.style.background = 'transparent';
+                t.style.color = '#FFDF73';
+                t.style.borderColor = '#D4AF37';
+            });
+
+            this.classList.add('active');
+            this.style.background = '#D4AF37';
+            this.style.color = '#0F172A';
+
+            activeFilter = this.getAttribute('data-filter');
+            filterGrid();
+        });
+    });
+
+    if (searchInput) {
+        searchInput.addEventListener('input', filterGrid);
+    }
+});
+</script>
+
+<?php renderSiteLayoutEnd(); ?>
