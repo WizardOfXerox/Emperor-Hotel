@@ -245,7 +245,7 @@ class Payment
         $statement = $this->db->query(
             "SELECT reservation_id,
                     COALESCE(SUM(amount), 0) AS logged_amount,
-                    COALESCE(SUM(CASE WHEN payment_status = 'Confirmed' THEN amount ELSE 0 END), 0) AS confirmed_amount,
+                    COALESCE(SUM(CASE WHEN payment_status IN ('Confirmed', 'Paid') THEN amount ELSE 0 END), 0) AS confirmed_amount,
                     COALESCE(SUM(CASE WHEN payment_status = 'Pending' THEN amount ELSE 0 END), 0) AS pending_amount
              FROM payments
              GROUP BY reservation_id"
@@ -276,7 +276,7 @@ class Payment
         // SQL: Totals one reservation's payments and can exclude the payment currently being edited.
         $sql = "SELECT
                     COALESCE(SUM(amount), 0) AS logged_amount,
-                    COALESCE(SUM(CASE WHEN payment_status = 'Confirmed' THEN amount ELSE 0 END), 0) AS confirmed_amount,
+                    COALESCE(SUM(CASE WHEN payment_status IN ('Confirmed', 'Paid') THEN amount ELSE 0 END), 0) AS confirmed_amount,
                     COALESCE(SUM(CASE WHEN payment_status = 'Pending' THEN amount ELSE 0 END), 0) AS pending_amount
                 FROM payments
                 WHERE reservation_id = :reservation_id";

@@ -47,13 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'reservation_id' => $reservationId,
             'amount' => (float) ($_POST['amount'] ?? 0),
             'payment_method' => $paymentMethod,
-            'payment_status' => 'Pending',
+            'payment_status' => 'Paid',
             'is_simulated' => true,
         ]);
+        $paymentModel->syncFullyPaidReservation($reservationId);
         $payment = $paymentModel->find($paymentId);
         $reference = (string) ($payment['transaction_reference'] ?? ('Reservation #' . $reservationId));
 
-        setFlash('success', 'Payment submitted for admin review! Your official voucher is ready below.');
+        setFlash('success', 'Online payment received! Your reservation is now Confirmed.');
         redirect('receipt.php?reservation_id=' . $reservationId);
     } catch (Throwable $exception) {
         setFlash('error', $exception->getMessage());
