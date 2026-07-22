@@ -84,6 +84,10 @@ try {
 }
 
 // Query Best Recommended Suite / Most Booked & Highest Rated Room
+$bestRecommendedSuite = 'Emperor Presidential';
+$bestSuiteRating = '4.9';
+$bestSuiteBookings = 0;
+
 try {
     $topRoomStmt = $db->query("
         SELECT rm.room_type,
