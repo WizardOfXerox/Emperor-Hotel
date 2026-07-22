@@ -134,18 +134,13 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
         to { opacity: 1; transform: translateX(0); }
     }
     </style>
-    <div class="container py-3">
+    <div class="container-fluid px-lg-4 px-xl-5 py-3">
         <!-- Navigation & Room Switcher Controls -->
         <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3 p-3 rounded-4" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.35);">
             <div class="d-flex flex-wrap align-items-center gap-2">
                 <a href="rooms.php#suite-catalog" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold shadow text-uppercase tracking-wider" style="background: rgba(30, 41, 59, 0.9); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.45);">
                     <i class="bi bi-arrow-left me-1"></i>Back to Catalog
                 </a>
-
-                <!-- Slide-Out Offcanvas Side Navigation Trigger Button -->
-                <button class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold shadow-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#roomNavigatorOffcanvas" aria-controls="roomNavigatorOffcanvas" style="background: rgba(30, 41, 59, 0.9); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.45);">
-                    <i class="bi bi-compass-fill me-1"></i>Floor &amp; Room Directory
-                </button>
 
                 <?php if ($prevRoom): ?>
                     <a href="room-detail.php?id=<?= (int)$prevRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold text-light shadow-sm" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3);" title="Go to Room #<?= e($prevRoom['room_number']) ?>">
@@ -167,10 +162,10 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
             </div>
         </div>
 
-        <!-- Main Room Showcase Row -->
-        <div class="row g-4 mb-5">
-            <!-- Room Hero & Gallery -->
-            <div class="col-12 col-lg-7">
+        <!-- Main Room Showcase Row (3-Column Layout) -->
+        <div class="row g-3 g-xl-4 mb-5">
+            <!-- Col 1: Room Hero & Gallery -->
+            <div class="col-12 col-lg-5 col-xl-5">
                 <div class="card rounded-4 overflow-hidden shadow-lg border" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
                     <div class="position-relative">
                         <img src="<?= e($typeCatalog['hero']) ?>" id="mainRoomHeroImage" class="card-img-top w-100 object-fit-cover transition-all" style="min-height: 260px; height: 45vh; max-height: 440px;" alt="<?= e($roomType) ?>">
@@ -211,8 +206,8 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                 </div>
             </div>
 
-            <!-- Room Specs & Fast Booking Box -->
-            <div class="col-12 col-lg-5">
+            <!-- Col 2: Room Specs & Fast Booking Box -->
+            <div class="col-12 col-lg-4 col-xl-4">
                 <div class="card rounded-4 p-4 shadow-lg h-100 d-flex flex-column justify-content-between border" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
                     <div>
                         <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-secondary">
@@ -292,6 +287,61 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                                 <i class="bi bi-info-circle me-2"></i>Room #<?= e($room['room_number']) ?> is Currently <?= e($room['status']) ?>
                             </div>
                         <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Col 3: Always-Visible Right-Hand Floor & Room Directory Sidebar -->
+            <div class="col-12 col-lg-3 col-xl-3">
+                <div class="card rounded-4 p-3 shadow-lg border h-100 d-flex flex-column" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
+                        <h6 class="font-serif fw-bold m-0" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);">
+                            <i class="bi bi-compass-fill me-2"></i>Rooms Directory
+                        </h6>
+                        <span class="badge rounded-pill text-xs px-2 py-1" style="background: rgba(212, 175, 55, 0.2); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.4);">
+                            <?= count($allRooms) ?> Rooms
+                        </span>
+                    </div>
+
+                    <div class="accordion accordion-flush custom-scrollbar flex-grow-1" id="floorsSidebarAccordion" style="max-height: 580px; overflow-y: auto;">
+                        <?php foreach ($floorsGrouped as $flNum => $fRooms): 
+                            $accId = "sbFloorCollapse" . $flNum;
+                            $headId = "sbFloorHeading" . $flNum;
+                            $isFlActive = ((int)$room['floor'] === (int)$flNum);
+                        ?>
+                            <div class="accordion-item bg-transparent border-secondary mb-2 rounded-3 overflow-hidden" style="border: 1px solid rgba(212, 175, 55, 0.25) !important;">
+                                <h2 class="accordion-header" id="<?= $headId ?>">
+                                    <button class="accordion-button <?= $isFlActive ? '' : 'collapsed' ?> font-serif fw-bold text-xs text-light p-2" type="button" data-bs-toggle="collapse" data-bs-target="#<?= $accId ?>" aria-expanded="<?= $isFlActive ? 'true' : 'false' ?>" aria-controls="<?= $accId ?>" style="background: rgba(30, 41, 59, 0.85);">
+                                        <i class="bi bi-building text-warning me-2"></i>Floor <?= $flNum ?> (<?= count($fRooms) ?>)
+                                    </button>
+                                </h2>
+                                <div id="<?= $accId ?>" class="accordion-collapse collapse <?= $isFlActive ? 'show' : '' ?>" aria-labelledby="<?= $headId ?>" data-bs-parent="#floorsSidebarAccordion">
+                                    <div class="accordion-body p-2 bg-dark">
+                                        <div class="list-group list-group-flush">
+                                            <?php foreach ($fRooms as $fRoom): 
+                                                $isCurrent = (int)$fRoom['room_id'] === (int)$room['room_id'];
+                                                $fBadgeStyle = match ($fRoom['status']) {
+                                                    'Available' => 'background: rgba(16, 185, 129, 0.35); color: #A7F3D0;',
+                                                    'Reserved' => 'background: rgba(59, 130, 246, 0.35); color: #BFDBFE;',
+                                                    'Occupied' => 'background: rgba(245, 158, 11, 0.35); color: #FDE68A;',
+                                                    'Cleaning' => 'background: rgba(168, 85, 247, 0.35); color: #DDD6FE;',
+                                                    default => 'background: rgba(148, 163, 184, 0.3); color: #F1F5F9;',
+                                                };
+                                            ?>
+                                                <a href="room-detail.php?id=<?= (int)$fRoom['room_id'] ?><?= $dateParams ?>" 
+                                                   class="list-group-item list-group-item-action rounded-3 p-2 mb-1 border-0 d-flex align-items-center justify-content-between text-xs transition-all <?= $isCurrent ? 'fw-bold shadow' : '' ?>"
+                                                   style="<?= $isCurrent ? 'background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;' : 'background: rgba(30, 41, 59, 0.6); color: #F8FAFC;' ?>">
+                                                    <div class="text-truncate me-1" style="max-width: 140px;">
+                                                        <div class="fw-bold"><i class="bi bi-door-closed me-1"></i>#<?= e($fRoom['room_number']) ?> &mdash; <?= e($fRoom['room_type']) ?></div>
+                                                    </div>
+                                                    <span class="badge text-xs px-2 py-1 rounded-pill fw-bold flex-shrink-0" style="<?= $fBadgeStyle ?>"><?= $fRoom['status'] ?></span>
+                                                </a>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
@@ -424,61 +474,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
         </div>
 </main>
 
-<!-- Offcanvas Slide-Out Side Navigation Drawer (Right Side) -->
-<div class="offcanvas offcanvas-end bg-dark text-light border-start" tabindex="-1" id="roomNavigatorOffcanvas" aria-labelledby="roomNavigatorOffcanvasLabel" style="background: rgba(15, 23, 42, 0.97) !important; backdrop-filter: blur(25px); border-color: rgba(212, 175, 55, 0.4) !important; width: 340px;">
-    <div class="offcanvas-header border-bottom border-secondary pb-3">
-        <div>
-            <h5 class="offcanvas-title font-serif fw-bold m-0" id="roomNavigatorOffcanvasLabel" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);">
-                <i class="bi bi-compass-fill me-2"></i>Floor &amp; Room Directory
-            </h5>
-            <small class="text-light opacity-75 text-xs">Browse all floors &amp; active room statuses</small>
-        </div>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body p-3">
-        <div class="accordion accordion-flush" id="floorsAccordion">
-            <?php foreach ($floorsGrouped as $flNum => $fRooms): 
-                $accordionId = "floorCollapse" . $flNum;
-                $headingId = "floorHeading" . $flNum;
-                $isFloorActive = ((int)$room['floor'] === (int)$flNum);
-            ?>
-                <div class="accordion-item bg-transparent border-secondary mb-3 rounded-4 overflow-hidden" style="border: 1px solid rgba(212, 175, 55, 0.25) !important;">
-                    <h2 class="accordion-header" id="<?= $headingId ?>">
-                        <button class="accordion-button <?= $isFloorActive ? '' : 'collapsed' ?> font-serif fw-bold text-sm text-light p-3" type="button" data-bs-toggle="collapse" data-bs-target="#<?= $accordionId ?>" aria-expanded="<?= $isFloorActive ? 'true' : 'false' ?>" aria-controls="<?= $accordionId ?>" style="background: rgba(30, 41, 59, 0.85);">
-                            <i class="bi bi-building text-warning me-2"></i>Floor <?= $flNum ?> (<?= count($fRooms) ?> Rooms)
-                        </button>
-                    </h2>
-                    <div id="<?= $accordionId ?>" class="accordion-collapse collapse <?= $isFloorActive ? 'show' : '' ?>" aria-labelledby="<?= $headingId ?>" data-bs-parent="#floorsAccordion">
-                        <div class="accordion-body p-2 bg-dark">
-                            <div class="list-group list-group-flush">
-                                <?php foreach ($fRooms as $fRoom): 
-                                    $isCurrent = (int)$fRoom['room_id'] === (int)$room['room_id'];
-                                    $fBadgeStyle = match ($fRoom['status']) {
-                                        'Available' => 'background: rgba(16, 185, 129, 0.35); color: #A7F3D0;',
-                                        'Reserved' => 'background: rgba(59, 130, 246, 0.35); color: #BFDBFE;',
-                                        'Occupied' => 'background: rgba(245, 158, 11, 0.35); color: #FDE68A;',
-                                        'Cleaning' => 'background: rgba(168, 85, 247, 0.35); color: #DDD6FE;',
-                                        default => 'background: rgba(148, 163, 184, 0.3); color: #F1F5F9;',
-                                    };
-                                ?>
-                                    <a href="room-detail.php?id=<?= (int)$fRoom['room_id'] ?><?= $dateParams ?>" 
-                                       class="list-group-item list-group-item-action rounded-3 p-2 mb-1 border-0 d-flex align-items-center justify-content-between text-xs transition-all <?= $isCurrent ? 'fw-bold shadow' : '' ?>"
-                                       style="<?= $isCurrent ? 'background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;' : 'background: rgba(30, 41, 59, 0.6); color: #F8FAFC;' ?>">
-                                        <div>
-                                            <div class="fw-bold"><i class="bi bi-door-closed me-1"></i>Room #<?= e($fRoom['room_number']) ?></div>
-                                            <small class="opacity-75 font-serif" style="font-size: 0.75rem;"><?= e($fRoom['room_type']) ?></small>
-                                        </div>
-                                        <span class="badge text-xs px-2 py-1 rounded-pill fw-bold" style="<?= $fBadgeStyle ?>"><?= $fRoom['status'] ?></span>
-                                    </a>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</div>
+
 
 <script>
 function switchHeroImage(src) {
