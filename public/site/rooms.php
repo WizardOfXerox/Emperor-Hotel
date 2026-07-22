@@ -33,8 +33,7 @@ renderHeader('Suites & Rooms | Emperor Hotel', ['../assets/css/site/home.css', '
 
         <div class="home-nav__links">
             <a class="home-nav__link" href="home.php">HOME</a>
-            <a class="home-nav__link home-nav__link--active" href="rooms.php">SUITES</a>
-            <a class="home-nav__link" href="suites.php"><i class="bi bi-grid-3x3-gap-fill me-1 text-warning"></i>KIOSK</a>
+            <a class="home-nav__link home-nav__link--active" href="suites.php">ROOMS</a>
         </div>
 
         <div class="home-nav__auth">

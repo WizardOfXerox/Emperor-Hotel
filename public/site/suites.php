@@ -32,11 +32,11 @@ renderSiteLayoutStart('Suites Kiosk Menu | Emperor Hotel', $user, '');
         <div class="row align-items-center g-4">
             <div class="col-12 col-lg-7">
                 <div class="d-flex align-items-center gap-2 mb-2">
-                    <span class="badge bg-gold text-dark font-serif fw-bold px-3 py-1 text-xs"><i class="bi bi-grid-3x3-gap-fill me-1"></i>SELF-SERVICE KIOSK DIRECTORY</span>
+                    <span class="badge bg-gold text-dark font-serif fw-bold px-3 py-1 text-xs"><i class="bi bi-door-open-fill me-1"></i>ROOM DIRECTORY &amp; SELECTION</span>
                     <span class="text-warning text-xs font-serif opacity-75">EMPEROR HOTEL</span>
                 </div>
                 <h1 class="display-6 font-serif fw-bold text-white mb-2">Explore &amp; Pick Your Suite</h1>
-                <p class="text-light opacity-75 text-xs m-0">Browse our complete room catalog below like a menu kiosk. Filter by category, inspect room specifications, and view details to book.</p>
+                <p class="text-light opacity-75 text-xs m-0">Browse our complete room catalog below. Filter by category, inspect room specifications, and view room details to book.</p>
             </div>
 
             <div class="col-12 col-lg-5">
