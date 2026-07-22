@@ -8,13 +8,13 @@ body.home-showcase-page {
     font-family: 'DM Sans', sans-serif;
 }
 
-body.home-showcase-page .home-nav {
+.home-nav {
     top: 0;
     z-index: 1000;
     position: sticky;
 }
 
-body.home-showcase-page .home-nav__container {
+.home-nav__container {
     width: 100%;
     min-height: 80px;
     display: flex;
@@ -30,7 +30,7 @@ body.home-showcase-page .home-nav__container {
     justify-content: space-between;
 }
 
-body.home-showcase-page .home-nav__logo img {
+.home-nav__logo img {
     width: 75px;
     height: 52px;
     transition: transform 0.3s ease;
@@ -42,12 +42,12 @@ body.home-showcase-page .home-nav__logo img {
     padding: 4px;
 }
 
-body.home-showcase-page .home-nav__logo img:hover {
+.home-nav__logo img:hover {
     transform: scale(1.08);
 }
 
-body.home-showcase-page .home-nav__links,
-body.home-showcase-page .home-nav__auth {
+.home-nav__links,
+.home-nav__auth {
     gap: 20px;
     display: flex;
     min-height: 50px;
@@ -55,14 +55,14 @@ body.home-showcase-page .home-nav__auth {
     justify-content: center;
 }
 
-body.home-showcase-page .home-nav__links {
+.home-nav__links {
     position: absolute;
     left: 50%;
     width: 400px;
     transform: translateX(-50%);
 }
 
-body.home-showcase-page .home-nav__link {
+.home-nav__link {
     height: 42px;
     padding: 0 24px;
     display: inline-flex;
@@ -79,14 +79,14 @@ body.home-showcase-page .home-nav__link {
     letter-spacing: 1px;
 }
 
-body.home-showcase-page .home-nav__link:hover,
-body.home-showcase-page .home-nav__link--active {
+.home-nav__link:hover,
+.home-nav__link--active {
     color: #F8FAFC !important;
     background: rgba(212, 175, 55, 0.15) !important;
     border: 1px solid rgba(212, 175, 55, 0.3) !important;
 }
 
-body.home-showcase-page .home-nav__cta {
+.home-nav__cta {
     height: 44px;
     padding: 0 28px;
     display: inline-flex;
@@ -100,20 +100,20 @@ body.home-showcase-page .home-nav__cta {
     letter-spacing: 0.8px;
 }
 
-body.home-showcase-page .home-nav__cta--primary {
+.home-nav__cta--primary {
     color: #070A10 !important;
     background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important;
     box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
 }
 
-body.home-showcase-page .home-nav__cta--secondary {
+.home-nav__cta--secondary {
     color: #F8FAFC !important;
     background: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid rgba(212, 175, 55, 0.4) !important;
     backdrop-filter: blur(10px);
 }
 
-body.home-showcase-page .home-nav__cta:hover {
+.home-nav__cta:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
 }

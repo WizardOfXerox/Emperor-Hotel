@@ -22,8 +22,32 @@ $checkOut = trim((string) ($_GET['check_out'] ?? ''));
 if ($checkIn === '') $checkIn = (new DateTimeImmutable('today'))->format('Y-m-d');
 if ($checkOut === '') $checkOut = (new DateTimeImmutable('today'))->modify('+1 day')->format('Y-m-d');
 
-renderSiteLayoutStart('Rooms Directory | Emperor Hotel', $user, '');
+renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'], '');
 ?>
+
+<nav class="home-nav" aria-label="Primary navigation">
+    <div class="home-nav__container">
+        <a class="home-nav__logo" href="home.php" aria-label="Emperor Hotel home">
+            <img src="../assets/images/branding/emperors-hotel-logo.svg" alt="Emperor Hotel logo">
+        </a>
+
+        <div class="home-nav__links">
+            <a class="home-nav__link" href="home.php">HOME</a>
+            <a class="home-nav__link home-nav__link--active" href="rooms.php">ROOMS</a>
+            <a class="home-nav__link" href="suites.php">SUITES</a>
+        </div>
+
+        <div class="home-nav__auth">
+            <?php if ($user): ?>
+                <a class="home-nav__cta home-nav__cta--primary" href="<?= e($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php') ?>">DASHBOARD</a>
+                <a class="home-nav__cta home-nav__cta--secondary" href="../auth/logout.php">LOG OUT</a>
+            <?php else: ?>
+                <a class="home-nav__cta home-nav__cta--primary" href="../auth/login.php">LOG IN</a>
+                <a class="home-nav__cta home-nav__cta--secondary" href="../auth/register.php">REGISTER</a>
+            <?php endif; ?>
+        </div>
+    </div>
+</nav>
 
 <div class="container py-4">
 
@@ -237,4 +261,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php renderSiteLayoutEnd(); ?>
+<?php renderSupportWidget('customer'); ?>
+<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/support-widget.js" defer></script>
+</body>
+</html>
