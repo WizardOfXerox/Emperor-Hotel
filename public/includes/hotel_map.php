@@ -22,19 +22,19 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
     }
     ksort($floors);
 ?>
-<div class="hotel-map-container my-4 p-4 rounded-4 shadow-lg border" style="background: rgba(7, 10, 16, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+<div class="hotel-map-container my-4 p-4 rounded-4 shadow-lg border" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5) !important;">
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2 border-bottom border-secondary pb-3">
         <div>
-            <h4 class="m-0 text-gold font-serif fw-bold"><i class="bi bi-diagram-3-fill me-2"></i>Interactive Hotel Floor Map</h4>
-            <small class="text-muted">Click any room block to inspect details or select for booking</small>
+            <h4 class="m-0 text-gold font-serif fw-bold" style="color: #FFDF73 !important; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-diagram-3-fill me-2"></i>Interactive Hotel Floor Map</h4>
+            <small class="text-light opacity-90 fw-semibold">Click any room block to inspect details or select for booking</small>
         </div>
         <!-- Status Legend -->
         <div class="d-flex flex-wrap gap-2 text-xs small">
-            <span class="badge px-3 py-2 rounded-pill shadow-sm" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); color: #34D399;"><i class="bi bi-circle-fill me-1"></i>Available</span>
-            <span class="badge px-3 py-2 rounded-pill shadow-sm" style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.5); color: #60A5FA;"><i class="bi bi-circle-fill me-1"></i>Reserved</span>
-            <span class="badge px-3 py-2 rounded-pill shadow-sm" style="background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); color: #FBBF24;"><i class="bi bi-circle-fill me-1"></i>Occupied</span>
-            <span class="badge px-3 py-2 rounded-pill shadow-sm" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.5); color: #C084FC;"><i class="bi bi-circle-fill me-1"></i>Cleaning</span>
-            <span class="badge px-3 py-2 rounded-pill shadow-sm" style="background: rgba(244, 63, 94, 0.2); border: 1px solid rgba(244, 63, 94, 0.5); color: #FB7185;"><i class="bi bi-circle-fill me-1"></i>Maintenance</span>
+            <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold" style="background: rgba(16, 185, 129, 0.28); border: 1.5px solid #10B981; color: #6EE7B7;"><i class="bi bi-circle-fill me-1"></i>Available</span>
+            <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold" style="background: rgba(59, 130, 246, 0.28); border: 1.5px solid #3B82F6; color: #93C5FD;"><i class="bi bi-circle-fill me-1"></i>Reserved</span>
+            <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold" style="background: rgba(245, 158, 11, 0.28); border: 1.5px solid #F59E0B; color: #FDE68A;"><i class="bi bi-circle-fill me-1"></i>Occupied</span>
+            <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold" style="background: rgba(168, 85, 247, 0.28); border: 1.5px solid #A855F7; color: #E9D5FF;"><i class="bi bi-circle-fill me-1"></i>Cleaning</span>
+            <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold" style="background: rgba(244, 63, 94, 0.28); border: 1.5px solid #F43F5E; color: #FECDD3;"><i class="bi bi-circle-fill me-1"></i>Maintenance</span>
         </div>
     </div>
 
@@ -50,7 +50,7 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
                         data-bs-target="#map-pane-floor-<?= $floorNum ?>" 
                         type="button" 
                         role="tab"
-                        style="<?= $isActive ? 'background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important; color: #070A10 !important; border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);' : 'background: rgba(255, 255, 255, 0.05); color: #CBD5E1; border: 1px solid rgba(212, 175, 55, 0.25);' ?>">
+                        style="<?= $isActive ? 'background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important; color: #070A10 !important; border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.5);' : 'background: rgba(30, 41, 59, 0.8); color: #F1F5F9; border: 1px solid rgba(212, 175, 55, 0.4);' ?>">
                     Floor <?= $floorNum ?> (<?= count($floorRooms) ?> Rooms)
                 </button>
             </li>
@@ -64,27 +64,27 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
                 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
                     <?php foreach ($floorRooms as $room): 
                         $statusBadgeStyle = match ($room['status']) {
-                            'Available' => 'background: rgba(16, 185, 129, 0.25); border: 1px solid rgba(16, 185, 129, 0.6); color: #34D399;',
-                            'Reserved' => 'background: rgba(59, 130, 246, 0.25); border: 1px solid rgba(59, 130, 246, 0.6); color: #60A5FA;',
-                            'Occupied' => 'background: rgba(245, 158, 11, 0.25); border: 1px solid rgba(245, 158, 11, 0.6); color: #FBBF24;',
-                            'Cleaning' => 'background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(168, 85, 247, 0.6); color: #C084FC;',
-                            'Maintenance' => 'background: rgba(244, 63, 94, 0.25); border: 1px solid rgba(244, 63, 94, 0.6); color: #FB7185;',
-                            default => 'background: rgba(148, 163, 184, 0.2); color: #94A3B8;',
+                            'Available' => 'background: rgba(16, 185, 129, 0.35); border: 1px solid #10B981; color: #A7F3D0;',
+                            'Reserved' => 'background: rgba(59, 130, 246, 0.35); border: 1px solid #3B82F6; color: #BFDBFE;',
+                            'Occupied' => 'background: rgba(245, 158, 11, 0.35); border: 1px solid #F59E0B; color: #FDE68A;',
+                            'Cleaning' => 'background: rgba(168, 85, 247, 0.35); border: 1px solid #A855F7; color: #DDD6FE;',
+                            'Maintenance' => 'background: rgba(244, 63, 94, 0.35); border: 1px solid #F43F5E; color: #FECDD3;',
+                            default => 'background: rgba(148, 163, 184, 0.3); color: #F1F5F9;',
                         };
 
                         $cardBgStyle = match ($room['status']) {
-                            'Available' => 'background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3);',
-                            'Reserved' => 'background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3);',
-                            'Occupied' => 'background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3);',
-                            'Cleaning' => 'background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.3);',
-                            'Maintenance' => 'background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.3);',
-                            default => 'background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(212, 175, 55, 0.2);',
+                            'Available' => 'background: linear-gradient(145deg, rgba(16, 185, 129, 0.18) 0%, rgba(30, 41, 59, 0.85) 100%); border: 1.5px solid rgba(16, 185, 129, 0.45);',
+                            'Reserved' => 'background: linear-gradient(145deg, rgba(59, 130, 246, 0.18) 0%, rgba(30, 41, 59, 0.85) 100%); border: 1.5px solid rgba(59, 130, 246, 0.45);',
+                            'Occupied' => 'background: linear-gradient(145deg, rgba(245, 158, 11, 0.18) 0%, rgba(30, 41, 59, 0.85) 100%); border: 1.5px solid rgba(245, 158, 11, 0.45);',
+                            'Cleaning' => 'background: linear-gradient(145deg, rgba(168, 85, 247, 0.18) 0%, rgba(30, 41, 59, 0.85) 100%); border: 1.5px solid rgba(168, 85, 247, 0.45);',
+                            'Maintenance' => 'background: linear-gradient(145deg, rgba(244, 63, 94, 0.18) 0%, rgba(30, 41, 59, 0.85) 100%); border: 1.5px solid rgba(244, 63, 94, 0.45);',
+                            default => 'background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.3);',
                         };
 
                         $isSelected = ($selectedRoomId !== null && (int)$room['room_id'] === $selectedRoomId);
                     ?>
                         <div class="col">
-                            <div class="card h-100 room-map-card rounded-4 p-2 transition-all shadow-sm <?= $isSelected ? 'border-warning shadow-lg' : '' ?>" 
+                            <div class="card h-100 room-map-card rounded-4 p-2 transition-all shadow <?= $isSelected ? 'border-warning shadow-lg' : '' ?>" 
                                  style="<?= $cardBgStyle ?> cursor: pointer;"
                                  data-room-id="<?= $room['room_id'] ?>"
                                  data-room-number="<?= $room['room_number'] ?>"
@@ -94,13 +94,13 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
                                  onclick="onHotelMapRoomClick(<?= (int)$room['room_id'] ?>, '<?= e($room['room_number']) ?>', '<?= e($room['room_type']) ?>', '<?= number_format((float)$room['price_per_night'], 2) ?>', '<?= $room['status'] ?>')">
                                 <div class="card-body p-2 text-center">
                                     <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <span class="badge text-xs px-2 py-1 rounded-pill" style="<?= $statusBadgeStyle ?>"><?= $room['status'] ?></span>
-                                        <small class="text-gold fw-bold font-serif">#<?= e($room['room_number']) ?></small>
+                                        <span class="badge text-xs px-2 py-1 rounded-pill fw-bold" style="<?= $statusBadgeStyle ?>"><?= $room['status'] ?></span>
+                                        <small class="fw-bold font-serif" style="color: #FFDF73;">#<?= e($room['room_number']) ?></small>
                                     </div>
-                                    <h6 class="card-title font-serif text-light fw-bold mb-1 text-truncate" style="font-size: 0.88rem;"><?= e($room['room_type']) ?></h6>
-                                    <div class="small text-gold fw-bold">₱<?= number_format((float)$room['price_per_night'], 0) ?><span class="text-muted text-xs">/night</span></div>
-                                    <div class="text-xs text-muted mt-2">
-                                        <i class="bi bi-square-fill text-gold me-1"></i><?= e($room['bed_type'] ?? 'King Bed') ?>
+                                    <h6 class="card-title font-serif text-white fw-bold mb-1 text-truncate" style="font-size: 0.9rem; text-shadow: 0 1px 4px rgba(0,0,0,0.6);"><?= e($room['room_type']) ?></h6>
+                                    <div class="small fw-bold" style="color: #FBBF24;">₱<?= number_format((float)$room['price_per_night'], 0) ?><span class="text-light opacity-75 text-xs">/night</span></div>
+                                    <div class="text-xs text-light opacity-90 mt-2 fw-semibold">
+                                        <i class="bi bi-square-fill me-1" style="color: #D4AF37;"></i><?= e($room['bed_type'] ?? 'King Bed') ?>
                                     </div>
                                 </div>
                             </div>
