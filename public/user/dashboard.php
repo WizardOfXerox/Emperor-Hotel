@@ -283,7 +283,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                             <label class="form-label text-xs text-light opacity-75 fw-bold mb-1"><i class="bi bi-people-fill text-warning me-1"></i>Suite Capacity</label>
                             <div class="p-2 rounded-3 text-xs fw-bold d-flex align-items-center justify-content-between" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(212, 175, 55, 0.35); color: #FFDF73;">
                                 <span>Up to <?= $selectedCapacity ?> Guests Max</span>
-                                <span class="badge bg-gold text-dark text-xs rounded-pill">Room #<?= e($selectedRoomObj['room_number'] ?? '') ?></span>
+                                <span class="badge rounded-pill text-xs fw-bold px-2 py-1" style="background: rgba(212, 175, 55, 0.25); color: #FFDF73; border: 1px solid #D4AF37;">Room #<?= e($selectedRoomObj['room_number'] ?? '') ?></span>
                             </div>
                         </div>
                     </div>
