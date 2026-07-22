@@ -7,6 +7,7 @@ require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/room_catalog.php';
 require_once __DIR__ . '/../includes/calendar_picker.php';
 
+$user = currentUser();
 $db = Database::connect();
 $roomModel = new Room($db);
 $reviewModel = new Review($db);
@@ -53,8 +54,7 @@ if ($checkOut === '') $checkOut = (new DateTimeImmutable('today'))->modify('+1 d
 
 $isAvailable = $roomModel->find((int)$room['room_id'])['status'] === 'Available';
 
-renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../assets/css/site/rooms.css']);
-renderSiteLayoutStart();
+renderSiteLayoutStart('Room #' . e($room['room_number']) . ' - ' . e($roomType), $user, '', ['../assets/css/site/rooms.css']);
 ?>
 
 <div class="container py-4">
