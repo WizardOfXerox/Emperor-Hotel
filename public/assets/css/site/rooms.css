@@ -129,7 +129,7 @@ body.rooms-showcase-page .rooms-flash {
 
 body.rooms-showcase-page .rooms-hero {
     width: 100%;
-    min-height: 80vh;
+    min-height: 100vh;
     display: flex;
     position: relative;
     overflow: hidden;

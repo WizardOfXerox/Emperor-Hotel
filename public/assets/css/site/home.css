@@ -120,7 +120,7 @@ body.home-showcase-page .home-nav__cta:hover {
 
 body.home-showcase-page .home-hero {
     width: 100%;
-    min-height: 88vh;
+    min-height: 100vh;
     display: flex;
     position: relative;
     overflow: hidden;
