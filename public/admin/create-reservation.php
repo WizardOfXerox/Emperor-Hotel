@@ -117,89 +117,80 @@ $rooms = $availabilityDatesValid
 renderAdminLayoutStart('Create Reservation', 'create-reservation', $currentAdmin, ['../assets/css/admin/reservations.css?v=20260530-create-only']);
 ?>
 <section class="row g-4 justify-content-center">
-    <div class="col-xxl-9 col-xl-10">
-        <div class="panel-card p-4">
-            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mb-4">
-                <div>
-                    <p class="eyebrow mb-1">Manual Booking Entry</p>
-                    <h3 class="mb-2">Create New Reservation</h3>
-                    <p class="muted-copy mb-0">Use this page to manually record guest reservations. Active bookings are managed in the Reservations tab.</p>
-                </div>
-                <a class="btn btn-outline-warning btn-sm" href="reservations.php"><i class="bi bi-calendar-check me-1"></i>Manage Reservations</a>
+    <div class="col-xxl-10 col-xl-11">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+            <div>
+                <p class="eyebrow mb-1">Manual Reservation Desk</p>
+                <h1 class="h3 mb-1">Create New Reservation</h1>
+                <p class="muted-copy mb-0">Record a new guest reservation manually. Dates automatically filter room availability in real-time.</p>
             </div>
+            <a class="btn btn-outline-warning btn-sm fw-semibold" href="reservations.php"><i class="bi bi-calendar-check me-1"></i>Manage Reservations</a>
+        </div>
 
-            <form method="get" class="availability-filter-card mb-4">
-                <?php if ($prefillGuest): ?>
-                    <input type="hidden" name="guest_id" value="<?php echo e($prefillGuest['guest_id']); ?>">
-                <?php endif; ?>
-                <div>
-                    <p class="eyebrow mb-1">Date-aware Availability</p>
-                    <p class="muted-copy small mb-0">Choose stay dates first so the room cards show rooms available for that exact date range.</p>
-                </div>
-                <div class="row g-2">
-                    <div class="col-md-5">
-                        <input class="form-control" name="check_in" type="date" value="<?php echo e($availabilityCheckIn); ?>" aria-label="Availability check-in">
-                    </div>
-                    <div class="col-md-5">
-                        <input class="form-control" name="check_out" type="date" value="<?php echo e($availabilityCheckOut); ?>" aria-label="Availability check-out">
-                    </div>
-                    <div class="col-md-2 d-grid">
-                        <button class="btn btn-outline-light" type="submit">Check</button>
-                    </div>
-                </div>
-                <?php if ($availabilityCheckIn !== '' || $availabilityCheckOut !== ''): ?>
-                    <div class="form-text">
-                        <?php echo $availabilityDatesValid ? 'Room availability is filtered by the selected dates.' : 'Enter a valid check-in and check-out date to filter room availability.'; ?>
-                    </div>
-                <?php endif; ?>
-            </form>
+        <form method="post" class="d-grid gap-4" data-dynamic-room-availability data-availability-url="room-availability.php">
+            <input type="hidden" name="action" value="create">
+            <input type="hidden" name="guest_id" value="<?php echo e($prefillGuest['guest_id'] ?? ''); ?>">
 
-            <form method="post" class="d-grid gap-3" data-dynamic-room-availability data-availability-url="room-availability.php">
-                <input type="hidden" name="action" value="create">
-                <input type="hidden" name="guest_id" value="<?php echo e($prefillGuest['guest_id'] ?? ''); ?>">
-
+            <!-- Section 1: Guest Details -->
+            <div class="panel-card p-4">
+                <p class="eyebrow mb-1 text-warning"><i class="bi bi-person-circle me-1"></i>Step 1: Guest Contact Information</p>
+                <h4 class="h5 mb-3">Guest Details</h4>
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label" for="full_name">Full Name</label>
-                        <input class="form-control" id="full_name" name="full_name" type="text" value="<?php echo e(trim((string) (($prefillGuest['first_name'] ?? '') . ' ' . ($prefillGuest['last_name'] ?? '')))); ?>" required>
+                        <input class="form-control" id="full_name" name="full_name" type="text" value="<?php echo e(trim((string) (($prefillGuest['first_name'] ?? '') . ' ' . ($prefillGuest['last_name'] ?? '')))); ?>" placeholder="e.g. John Doe" required>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label" for="phone">Phone</label>
-                        <input class="form-control" id="phone" name="phone" type="text" value="<?php echo e($prefillGuest['phone'] ?? ''); ?>">
+                        <label class="form-label" for="phone">Phone Number</label>
+                        <input class="form-control" id="phone" name="phone" type="tel" value="<?php echo e($prefillGuest['phone'] ?? ''); ?>" placeholder="+63 912 345 6789">
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label" for="email">Email</label>
-                        <input class="form-control" id="email" name="email" type="email" value="<?php echo e($prefillGuest['email'] ?? ''); ?>">
+                        <label class="form-label" for="email">Email Address</label>
+                        <input class="form-control" id="email" name="email" type="email" value="<?php echo e($prefillGuest['email'] ?? ''); ?>" placeholder="guest@example.com">
                     </div>
                 </div>
+            </div>
 
+            <!-- Section 2: Stay Schedule -->
+            <div class="panel-card p-4">
+                <p class="eyebrow mb-1 text-warning"><i class="bi bi-calendar-range me-1"></i>Step 2: Stay Dates</p>
+                <h4 class="h5 mb-3">Check-In & Check-Out</h4>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label" for="check_in">Check In</label>
+                        <label class="form-label" for="check_in">Check In Date</label>
                         <input class="form-control" id="check_in" name="check_in" type="date" value="<?php echo e($availabilityCheckIn); ?>" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" for="check_out">Check Out</label>
+                        <label class="form-label" for="check_out">Check Out Date</label>
                         <input class="form-control" id="check_out" name="check_out" type="date" value="<?php echo e($availabilityCheckOut); ?>" required>
                     </div>
                 </div>
-
-                <div>
-                    <label class="form-label">Room</label>
-                    <?php renderRoomChoiceCards($rooms, null, false, $db); ?>
-                    <div class="form-text" data-room-availability-note>Use the filters for all, available, or unavailable rooms. Room cards update automatically when check-in and check-out dates change.</div>
+                <div class="form-text mt-2 text-warning" data-room-availability-note>
+                    <i class="bi bi-info-circle me-1"></i>Room cards below automatically update live availability when check-in and check-out dates change.
                 </div>
+            </div>
 
-                <div class="row g-3">
+            <!-- Section 3: Room Selection -->
+            <div class="panel-card p-4">
+                <p class="eyebrow mb-1 text-warning"><i class="bi bi-door-open me-1"></i>Step 3: Select Room</p>
+                <h4 class="h5 mb-3">Available Hotel Inventory</h4>
+                <?php renderRoomChoiceCards($rooms, null, false, $db); ?>
+            </div>
+
+            <!-- Section 4: Capacity, Status & Inclusions -->
+            <div class="panel-card p-4">
+                <p class="eyebrow mb-1 text-warning"><i class="bi bi-sliders me-1"></i>Step 4: Status & Inclusions</p>
+                <h4 class="h5 mb-3">Reservation Configuration</h4>
+                <div class="row g-3 mb-3">
                     <div class="col-md-7">
-                        <div class="guest-capacity-note">
-                            <span>Guest Capacity</span>
-                            <strong>Every room can hold up to 5 people</strong>
-                            <small>No adult or child split is required for the reservation form.</small>
+                        <div class="guest-capacity-note p-3 border border-secondary rounded-3 bg-dark">
+                            <span class="text-warning fw-bold d-block mb-1"><i class="bi bi-people me-1"></i>Guest Capacity Standard</span>
+                            <strong>Every room can comfortably hold up to 5 guests</strong>
+                            <small class="d-block text-muted">No adult or child split required.</small>
                         </div>
                     </div>
                     <div class="col-md-5">
-                        <label class="form-label" for="status">Initial Status</label>
+                        <label class="form-label" for="status">Initial Reservation Status</label>
                         <select class="form-select" id="status" name="status">
                             <?php foreach ($reservationStatuses as $status): ?>
                                 <option value="<?php echo e($status); ?>" <?php echo $status === 'Pending' ? 'selected' : ''; ?>><?php echo e($status); ?></option>
@@ -208,28 +199,36 @@ renderAdminLayoutStart('Create Reservation', 'create-reservation', $currentAdmin
                     </div>
                 </div>
 
-                <div>
-                    <label class="form-label">Room Inclusions</label>
+                <div class="mt-3">
+                    <label class="form-label">Room Inclusions Preview</label>
                     <?php renderRoomInclusionPreview(); ?>
                 </div>
+            </div>
 
+            <!-- Section 5: Cost & Payment Route -->
+            <div class="panel-card p-4">
+                <p class="eyebrow mb-1 text-warning"><i class="bi bi-credit-card me-1"></i>Step 5: Payment & Settlement</p>
+                <h4 class="h5 mb-3">Pricing & Payment Route</h4>
+                
                 <?php renderReservationCostTracker(); ?>
 
-                <div class="panel-card p-3">
-                    <p class="eyebrow mb-1">Payment Route</p>
-                    <h4 class="h6 mb-3">Customer Payment Mode</h4>
-                    <label class="form-label" for="payment_method">Payment Mode</label>
-                    <select class="form-select" id="payment_method" name="payment_method" data-reservation-payment-method>
-                        <?php foreach (Payment::methods() as $method): ?>
-                            <option value="<?php echo e($method); ?>"><?php echo e($method); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <div class="form-text" data-payment-route-message>Cash creates an automatic pending payment reference for the full reservation total. Card or online methods continue to the Payments page.</div>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-12">
+                        <label class="form-label" for="payment_method">Payment Mode</label>
+                        <select class="form-select" id="payment_method" name="payment_method" data-reservation-payment-method>
+                            <?php foreach (Payment::methods() as $method): ?>
+                                <option value="<?php echo e($method); ?>"><?php echo e($method); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-text mt-2 text-light-emphasis" data-payment-route-message>Cash creates an automatic pending payment reference for the full reservation total. Card or online methods continue to the Payments page.</div>
+                    </div>
                 </div>
+            </div>
 
-                <button class="btn btn-warning fw-semibold" type="submit">Create Reservation</button>
-            </form>
-        </div>
+            <button class="btn btn-warning btn-lg fw-bold w-100 py-3 shadow" type="submit">
+                <i class="bi bi-check-circle me-2"></i>Create Reservation Now
+            </button>
+        </form>
     </div>
 </section>
 <script>
