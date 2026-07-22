@@ -114,7 +114,7 @@ $outD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkOut) ?: (new DateTim
 $nights = max(1, (int) round(($outD->getTimestamp() - $inD->getTimestamp()) / 86400));
 $totalStayPrice = (float)$room['price_per_night'] * $nights;
 
-renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../assets/css/site/home.css', '../assets/css/site/rooms.css'], 'home-showcase-page rooms-showcase-page');
+renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../assets/css/site/home.css'], '');
 ?>
 
 <nav class="home-nav" aria-label="Primary navigation">
@@ -125,7 +125,8 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
 
         <div class="home-nav__links">
             <a class="home-nav__link" href="home.php">HOME</a>
-            <a class="home-nav__link home-nav__link--active" href="rooms.php">SUITES</a>
+            <a class="home-nav__link" href="rooms.php">ROOMS</a>
+            <a class="home-nav__link" href="suites.php">SUITES</a>
         </div>
 
         <div class="home-nav__auth">
@@ -185,7 +186,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
             
             <div class="text-light opacity-90 small fw-semibold font-serif">
                 <a href="home.php" class="text-decoration-none text-light opacity-75">Home</a> / 
-                <a href="rooms.php" class="text-decoration-none text-light opacity-75">Suites</a> / 
+                <a href="rooms.php" class="text-decoration-none text-light opacity-75">Rooms</a> / 
                 <span style="color: #FFDF73;"><?= e($roomType) ?></span> / 
                 <span class="text-white fw-bold">Room #<?= e($room['room_number']) ?></span>
             </div>
