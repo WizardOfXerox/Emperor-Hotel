@@ -173,7 +173,7 @@ class Guest
         return $this->create($data);
     }
 
-    public function ensureForUser(array $user): int
+    public function ensureForUser(array $user, string $phone = ''): int
     {
         $existingGuest = $this->findByUserId((int) $user['user_id']);
 
@@ -185,7 +185,7 @@ class Guest
             'user_id' => (int) $user['user_id'],
             'first_name' => $firstName,
             'last_name' => $lastName,
-            'phone' => '',
+            'phone' => $phone !== '' ? $phone : ($existingGuest['phone'] ?? ''),
             'email' => $user['email'],
         ];
 

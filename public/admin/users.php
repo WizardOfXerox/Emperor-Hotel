@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/layout.php';
+require_once __DIR__ . '/../../app/helpers/mailer.php';
 
 requireAuth('../auth/login.php');
 requireRole('admin', '../user/dashboard.php');
@@ -11,7 +12,9 @@ requireRole('admin', '../user/dashboard.php');
 $db = Database::connect();
 $currentAdmin = currentUser();
 $userModel = new User($db);
+$guestModel = new Guest($db);
 $editUser = null;
+$editGuest = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string) ($_POST['action'] ?? '');
@@ -19,42 +22,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if ($action === 'create') {
             $email = trim((string) ($_POST['email'] ?? ''));
+            $fullName = trim((string) ($_POST['full_name'] ?? ''));
+            $phone = trim((string) ($_POST['phone'] ?? ''));
+            $password = (string) ($_POST['password'] ?? '');
+            $role = (string) ($_POST['role'] ?? 'user');
 
             if ($userModel->findByEmail($email)) {
                 throw new RuntimeException('That email is already in use.');
             }
 
             $userModel->create([
-                'full_name' => (string) ($_POST['full_name'] ?? ''),
+                'full_name' => $fullName,
                 'email' => $email,
-                'password' => (string) ($_POST['password'] ?? ''),
-                'role' => (string) ($_POST['role'] ?? 'user'),
+                'password' => $password,
+                'role' => $role,
             ]);
 
-            setFlash('success', 'User account created.');
+            $createdUser = $userModel->findByEmail($email);
+            if ($createdUser) {
+                $guestModel->ensureForUser($createdUser, $phone);
+            }
+
+            // Dispatch SMTP Welcome Email Notice
+            sendSmtpEmail(
+                $email,
+                'Welcome to Emperor Hotel',
+                "<p>Hello <strong>" . e($fullName) . "</strong>,</p><p>Your account has been created by front desk administration with role: <strong>" . e(ucfirst($role)) . "</strong>.</p>",
+                'NEW_USER'
+            );
+
+            setFlash('success', 'User account created and welcome email dispatched via SMTP.');
             redirect('users.php');
         }
 
         if ($action === 'update') {
             $userId = (int) ($_POST['user_id'] ?? 0);
             $role = (string) ($_POST['role'] ?? 'user');
+            $fullName = trim((string) ($_POST['full_name'] ?? ''));
+            $email = trim((string) ($_POST['email'] ?? ''));
+            $phone = trim((string) ($_POST['phone'] ?? ''));
 
             if ($userId === (int) $currentAdmin['user_id'] && $role !== 'admin') {
                 throw new RuntimeException('You cannot remove your own admin access here.');
             }
 
-            $existingUser = $userModel->findByEmail((string) ($_POST['email'] ?? ''));
+            $existingUser = $userModel->findByEmail($email);
 
             if ($existingUser && (int) $existingUser['user_id'] !== $userId) {
                 throw new RuntimeException('That email is already in use by another account.');
             }
 
             $userModel->update($userId, [
-                'full_name' => (string) ($_POST['full_name'] ?? ''),
-                'email' => (string) ($_POST['email'] ?? ''),
+                'full_name' => $fullName,
+                'email' => $email,
                 'password' => (string) ($_POST['password'] ?? ''),
                 'role' => $role,
             ]);
+
+            $updatedUser = $userModel->find($userId);
+            if ($updatedUser) {
+                $guestModel->ensureForUser($updatedUser, $phone);
+            }
 
             if ($userId === (int) $currentAdmin['user_id']) {
                 $updatedSessionUser = $userModel->find($userId);
@@ -63,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            setFlash('success', 'User account updated.');
+            setFlash('success', 'User account and guest contact details updated.');
             redirect('users.php');
         }
 
@@ -86,6 +114,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 if (isset($_GET['edit'])) {
     $editUser = $userModel->find((int) $_GET['edit']);
+    if ($editUser) {
+        $editGuest = $guestModel->findByUserId((int) $editUser['user_id']);
+    }
 }
 
 $users = $userModel->all();
@@ -109,6 +140,10 @@ renderAdminLayoutStart('Users', 'users', $currentAdmin, ['../assets/css/admin/us
                 <div>
                     <label class="form-label" for="email">Email</label>
                     <input class="form-control" id="email" name="email" type="email" value="<?php echo e($editUser['email'] ?? ''); ?>" required>
+                </div>
+                <div>
+                    <label class="form-label" for="phone">Phone Number</label>
+                    <input class="form-control" id="phone" name="phone" type="tel" value="<?php echo e($editGuest['phone'] ?? ''); ?>" placeholder="+63 912 345 6789" required>
                 </div>
                 <div>
                     <label class="form-label" for="password">Password <?php if ($editUser): ?><span class="text-light-emphasis small">(leave blank to keep current)</span><?php endif; ?></label>
@@ -146,6 +181,7 @@ renderAdminLayoutStart('Users', 'users', $currentAdmin, ['../assets/css/admin/us
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Phone</th>
                             <th>Role</th>
                             <th>Created</th>
                             <th class="text-end">Actions</th>
@@ -154,10 +190,11 @@ renderAdminLayoutStart('Users', 'users', $currentAdmin, ['../assets/css/admin/us
                     <tbody>
                         <?php foreach ($users as $user): ?>
                             <tr>
-                                <td><?php echo e($user['full_name']); ?></td>
+                                <td class="fw-semibold"><?php echo e($user['full_name']); ?></td>
                                 <td><?php echo e($user['email']); ?></td>
+                                <td><?php echo e(!empty($user['phone']) ? $user['phone'] : 'N/A'); ?></td>
                                 <td><span class="badge-soft"><?php echo e(ucfirst($user['role'])); ?></span></td>
-                                <td><?php echo e(date('Y-m-d', strtotime($user['created_at']))); ?></td>
+                                <td class="small text-muted"><?php echo e(date('Y-m-d', strtotime($user['created_at']))); ?></td>
                                 <td class="text-end">
                                     <a class="btn btn-sm btn-outline-light" href="users.php?edit=<?php echo e($user['user_id']); ?>">Edit</a>
                                     <form method="post" class="d-inline">

@@ -16,8 +16,13 @@ class User
 
     public function all(): array
     {
-        // SQL: Reads the safe user fields shown in the admin Users table.
-        $statement = $this->db->query('SELECT user_id, full_name, email, role, created_at FROM users ORDER BY created_at DESC');
+        // SQL: Reads user fields with linked guest phone numbers.
+        $statement = $this->db->query(
+            "SELECT u.user_id, u.full_name, u.email, u.role, u.created_at, COALESCE(g.phone, '') AS phone
+             FROM users u
+             LEFT JOIN guests g ON g.user_id = u.user_id
+             ORDER BY u.created_at DESC"
+        );
 
         return $statement->fetchAll();
     }
