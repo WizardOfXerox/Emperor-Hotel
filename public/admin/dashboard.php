@@ -49,23 +49,65 @@ $dashboardChartData = [
 ];
 $dashboardChartJson = json_encode($dashboardChartData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 
+require_once __DIR__ . '/../includes/hotel_map.php';
+
+$reviewModel = new Review($db);
+$reviewDist = $reviewModel->overallRatingDistribution();
+$reviewPerType = $reviewModel->averageRatingPerRoomType();
+
+// Calculate Peak Month & Analytics
+$peakMonthLabel = 'None';
+$peakMonthBookings = 0;
+$totalRoomsSold = 0;
+$totalRevenueAllTime = 0.0;
+
+foreach ($monthlyPerformance as $m) {
+    $bCount = (int) $m['rooms_booked'];
+    $rInc = (float) $m['income'];
+    $totalRoomsSold += $bCount;
+    $totalRevenueAllTime += $rInc;
+    if ($bCount > $peakMonthBookings) {
+        $peakMonthBookings = $bCount;
+        $peakMonthLabel = $m['month_label'];
+    }
+}
+
+$totalRoomsCount = max(1, count($roomModel->all()));
+$adr = $totalRoomsSold > 0 ? ($totalRevenueAllTime / $totalRoomsSold) : 0.0;
+$revpar = $totalRevenueAllTime / $totalRoomsCount;
+
 renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/admin/dashboard.css?v=chart-size-1']);
 ?>
 <section class="stats-grid mb-4">
     <article class="stat-tile">
         <p class="eyebrow mb-2">Users</p>
         <div class="stat-value"><?php echo e($userModel->countUsers()); ?></div>
-        <p class="muted-copy mb-0">Registered accounts in the system</p>
+        <p class="muted-copy mb-0">Registered accounts in system</p>
     </article>
     <article class="stat-tile">
         <p class="eyebrow mb-2">Customers This Month</p>
         <div class="stat-value"><?php echo e($reservationSummary['customers_this_month']); ?></div>
-        <p class="muted-copy mb-0">Distinct guests with new reservations</p>
+        <p class="muted-copy mb-0">Distinct guests with reservations</p>
     </article>
     <article class="stat-tile">
         <p class="eyebrow mb-2">Revenue This Month</p>
         <div class="stat-value"><?php echo e(formatMoney($revenueThisMonth)); ?></div>
-        <p class="muted-copy mb-0">Confirmed payments posted this month</p>
+        <p class="muted-copy mb-0">Confirmed payments posted</p>
+    </article>
+    <article class="stat-tile bg-gold-subtle border-gold">
+        <p class="eyebrow mb-2 text-gold"><i class="bi bi-trophy-fill me-1"></i>Peak Booking Month</p>
+        <div class="stat-value text-gold"><?php echo e($peakMonthLabel); ?></div>
+        <p class="muted-copy mb-0">Highest volume: <?php echo e($peakMonthBookings); ?> bookings</p>
+    </article>
+    <article class="stat-tile">
+        <p class="eyebrow mb-2">ADR (Avg Daily Rate)</p>
+        <div class="stat-value"><?php echo e(formatMoney($adr)); ?></div>
+        <p class="muted-copy mb-0">Revenue per sold room night</p>
+    </article>
+    <article class="stat-tile">
+        <p class="eyebrow mb-2">RevPAR</p>
+        <div class="stat-value"><?php echo e(formatMoney($revpar)); ?></div>
+        <p class="muted-copy mb-0">Revenue per available room</p>
     </article>
     <article class="stat-tile">
         <p class="eyebrow mb-2">Available Rooms</p>
@@ -77,11 +119,11 @@ renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/
         <div class="stat-value"><?php echo e($reservationSummary['pending_reservations']); ?></div>
         <p class="muted-copy mb-0">Reservations waiting for action</p>
     </article>
-    <article class="stat-tile">
-        <p class="eyebrow mb-2">Upcoming Check-Outs</p>
-        <div class="stat-value"><?php echo e($reservationSummary['upcoming_checkouts']); ?></div>
-        <p class="muted-copy mb-0">Scheduled within the next three days</p>
-    </article>
+</section>
+
+<!-- Interactive Hotel Floor Map Section -->
+<section class="mb-4">
+    <?php renderHotelFloorMap($db, 'admin'); ?>
 </section>
 
 <section class="dashboard-alert-panel panel-card p-4 mb-4">

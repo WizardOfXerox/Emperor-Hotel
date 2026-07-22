@@ -108,8 +108,21 @@ function renderRoomShowcaseSection(): void
         }
         echo '</div></div></div>';
 
+        $availCount = (int) ($stats['available'] ?? 0);
+        $totalCount = (int) ($stats['total'] ?? 0);
+        
+        $statusBadgeHtml = '';
+        if ($availCount > 2) {
+            $statusBadgeHtml = '<span class="badge bg-success px-3 py-2 rounded-pill fs-6 fw-bold mb-2 me-2"><i class="bi bi-circle-fill me-1"></i>🟢 ' . $availCount . ' Available Now</span>';
+        } elseif ($availCount > 0) {
+            $statusBadgeHtml = '<span class="badge bg-warning text-dark px-3 py-2 rounded-pill fs-6 fw-bold mb-2 me-2"><i class="bi bi-exclamation-triangle-fill me-1"></i>🟡 Only ' . $availCount . ' Left!</span>';
+        } else {
+            $statusBadgeHtml = '<span class="badge bg-danger px-3 py-2 rounded-pill fs-6 fw-bold mb-2 me-2"><i class="bi bi-x-circle-fill me-1"></i>🔴 Fully Booked</span>';
+        }
+
         echo '<div class="container-content">';
         echo '<div class="content">';
+        echo '<div>' . $statusBadgeHtml . '<span class="badge bg-dark border border-gold text-gold px-3 py-2 rounded-pill fs-6 fw-bold">' . e($roomInfo['dimensions'] ?? '38 sqm') . '</span></div>';
         echo '<h2>' . e($presentation['category']) . '</h2>';
         echo '<h1>' . e($presentation['heading']) . '</h1>';
         echo '<p>' . e($presentation['tagline']) . '</p>';
@@ -127,8 +140,9 @@ function renderRoomShowcaseSection(): void
         }
         echo '</div>';
 
-        echo '<div class="room-actions">';
+        echo '<div class="room-actions d-flex flex-wrap gap-2 align-items-center">';
         echo '<a class="room-price room-price--booking" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
+        echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=1"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
         echo '</div>';
         echo '</div></section>';
     }

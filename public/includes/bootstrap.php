@@ -53,6 +53,7 @@ date_default_timezone_set($timezone);
 
 require_once APP_ROOT . '/app/config/database.php';
 require_once APP_ROOT . '/app/helpers/auth.php';
+require_once APP_ROOT . '/app/helpers/mailer.php';
 
 spl_autoload_register(static function (string $className): void {
     $modelPath = APP_ROOT . '/app/models/' . $className . '.php';

@@ -198,4 +198,56 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
         </div>
     </div>
 </section>
+
+<?php
+$reviewModel = new Review($db);
+$ratingsPerType = $reviewModel->averageRatingPerRoomType();
+$ratingDist = $reviewModel->overallRatingDistribution();
+?>
+<section class="panel-card p-4 mt-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <p class="eyebrow mb-1">Guest Satisfaction & Ratings</p>
+            <h3 class="mb-0">Guest Review Breakdown</h3>
+        </div>
+        <span class="badge bg-gold text-dark fw-bold px-3 py-2 rounded-pill">Recommendation Engine Data</span>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-6">
+            <h5 class="font-serif text-gold mb-3">Average Rating by Suite Type</h5>
+            <div class="table-responsive">
+                <table class="table table-dark-soft align-middle">
+                    <thead>
+                        <tr>
+                            <th>Room Type</th>
+                            <th>Average Rating</th>
+                            <th>Total Reviews</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($ratingsPerType as $type => $data): ?>
+                            <tr>
+                                <td><strong class="text-gold"><?= e($type) ?></strong></td>
+                                <td><span class="text-warning fw-bold">★ <?= number_format((float)$data['avg_rating'], 1) ?></span> / 5.0</td>
+                                <td><?= (int)$data['review_count'] ?> review(s)</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h5 class="font-serif text-gold mb-3">Overall Star Rating Distribution</h5>
+            <?php foreach ($ratingDist as $stars => $count): ?>
+                <div class="d-flex align-items-center mb-2">
+                    <span class="text-warning small text-nowrap me-2" style="width: 70px;"><?= $stars ?> Stars</span>
+                    <div class="progress flex-grow-1 bg-dark border border-secondary" style="height: 12px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: <?= array_sum($ratingDist) > 0 ? ($count / array_sum($ratingDist) * 100) : 0 ?>%"></div>
+                    </div>
+                    <span class="text-muted small ms-2" style="width: 40px; text-align: right;"><?= $count ?></span>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
 <?php renderAdminLayoutEnd(); ?>

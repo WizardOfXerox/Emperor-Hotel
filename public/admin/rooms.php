@@ -97,6 +97,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             setFlash('success', 'Room record deleted.');
             redirect('rooms.php' . $querySuffix);
         }
+
+        if ($action === 'update_status') {
+            $roomId = (int) ($_POST['room_id'] ?? 0);
+            $newStatus = (string) ($_POST['status'] ?? '');
+            $room = $roomModel->find($roomId);
+            if ($room) {
+                $roomModel->update($roomId, array_merge($room, ['status' => $newStatus]));
+                setFlash('success', "Room #{$room['room_number']} status set to {$newStatus}.");
+            }
+            redirect('rooms.php' . $querySuffix);
+        }
     } catch (Throwable $exception) {
         setFlash('error', $exception->getMessage());
         redirect('rooms.php' . $querySuffix);

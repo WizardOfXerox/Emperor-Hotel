@@ -10,7 +10,7 @@ class Room
         'Emperor Presidential',
     ];
 
-    private const ROOM_STATUSES = ['Available', 'Reserved', 'Occupied'];
+    private const ROOM_STATUSES = ['Available', 'Reserved', 'Occupied', 'Cleaning', 'Maintenance'];
 
     public function __construct(private PDO $db)
     {
@@ -127,10 +127,14 @@ class Room
             throw new RuntimeException('Room price must be greater than zero.');
         }
 
+        $bedType = trim((string) ($data['bed_type'] ?? 'King Bed'));
+        $maxCapacity = max(1, (int) ($data['max_capacity'] ?? 2));
+        $viewType = trim((string) ($data['view_type'] ?? 'City View'));
+
         // SQL: Inserts a new room record after validating type, status, floor, and price.
         $statement = $this->db->prepare(
-            'INSERT INTO rooms (room_number, room_type, floor, price_per_night, status)
-             VALUES (:room_number, :room_type, :floor, :price_per_night, :status)'
+            'INSERT INTO rooms (room_number, room_type, floor, price_per_night, status, bed_type, max_capacity, view_type)
+             VALUES (:room_number, :room_type, :floor, :price_per_night, :status, :bed_type, :max_capacity, :view_type)'
         );
 
         return $statement->execute([
@@ -139,6 +143,9 @@ class Room
             'floor' => (int) $data['floor'],
             'price_per_night' => $pricePerNight,
             'status' => $data['status'],
+            'bed_type' => $bedType,
+            'max_capacity' => $maxCapacity,
+            'view_type' => $viewType,
         ]);
     }
 
@@ -157,6 +164,10 @@ class Room
             throw new RuntimeException('Room price must be greater than zero.');
         }
 
+        $bedType = trim((string) ($data['bed_type'] ?? 'King Bed'));
+        $maxCapacity = max(1, (int) ($data['max_capacity'] ?? 2));
+        $viewType = trim((string) ($data['view_type'] ?? 'City View'));
+
         // SQL: Updates all editable room fields for one room record.
         $statement = $this->db->prepare(
             'UPDATE rooms
@@ -164,7 +175,10 @@ class Room
                  room_type = :room_type,
                  floor = :floor,
                  price_per_night = :price_per_night,
-                 status = :status
+                 status = :status,
+                 bed_type = :bed_type,
+                 max_capacity = :max_capacity,
+                 view_type = :view_type
              WHERE room_id = :room_id'
         );
 
@@ -174,6 +188,9 @@ class Room
             'floor' => (int) $data['floor'],
             'price_per_night' => $pricePerNight,
             'status' => $data['status'],
+            'bed_type' => $bedType,
+            'max_capacity' => $maxCapacity,
+            'view_type' => $viewType,
             'room_id' => $roomId,
         ]);
     }
@@ -437,8 +454,72 @@ class Room
             $params['floor'] = (int) $floor;
         }
 
+        $bedType = trim((string) ($filters['bed_type'] ?? ''));
+        if ($bedType !== '') {
+            $clauses[] = 'bed_type = :bed_type';
+            $params['bed_type'] = $bedType;
+        }
+
+        $minCapacity = (int) ($filters['min_capacity'] ?? 0);
+        if ($minCapacity > 0) {
+            $clauses[] = 'max_capacity >= :min_capacity';
+            $params['min_capacity'] = $minCapacity;
+        }
+
         $whereSql = $clauses ? 'WHERE ' . implode(' AND ', $clauses) : '';
 
         return [$whereSql, $params];
+    }
+
+    public function calculateRecommendationScores(): array
+    {
+        $sql = "
+            SELECT 
+                r.room_id,
+                r.room_number,
+                r.room_type,
+                r.floor,
+                r.price_per_night,
+                r.status,
+                r.bed_type,
+                r.max_capacity,
+                r.view_type,
+                COUNT(DISTINCT res.reservation_id) AS booking_count,
+                COALESCE(AVG(rev.rating), 5.0) AS avg_rating,
+                COUNT(DISTINCT rev.review_id) AS review_count
+            FROM rooms r
+            LEFT JOIN reservations res ON r.room_id = res.room_id AND res.status IN ('Confirmed', 'Checked-in', 'Checked-out')
+            LEFT JOIN room_reviews rev ON r.room_id = rev.room_id
+            GROUP BY r.room_id
+        ";
+
+        $rows = $this->db->query($sql)->fetchAll();
+        $maxBookings = 1;
+        foreach ($rows as $row) {
+            if ((int) $row['booking_count'] > $maxBookings) {
+                $maxBookings = (int) $row['booking_count'];
+            }
+        }
+
+        $scoredRooms = [];
+        foreach ($rows as $row) {
+            $bookingCount = (int) $row['booking_count'];
+            $avgRating = (float) $row['avg_rating'];
+            
+            // Formula: 40% popularity + 60% rating
+            $popularityScore = ($bookingCount / $maxBookings) * 40;
+            $ratingScore = ($avgRating / 5.0) * 60;
+            $totalScore = round($popularityScore + $ratingScore, 1);
+
+            $row['recommendation_score'] = $totalScore;
+            $row['booking_count'] = $bookingCount;
+            $row['avg_rating'] = round($avgRating, 1);
+            $row['review_count'] = (int) $row['review_count'];
+            $scoredRooms[$row['room_id']] = $row;
+        }
+
+        uasort($scoredRooms, fn($a, $b) => $b['recommendation_score'] <=> $a['recommendation_score']);
+
+        return $scoredRooms;
     }
 }

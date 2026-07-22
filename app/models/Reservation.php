@@ -354,6 +354,13 @@ class Reservation
             return false;
         }
 
+        // Exclude rooms currently in Maintenance
+        $roomStmt = $this->db->prepare("SELECT status FROM rooms WHERE room_id = :room_id LIMIT 1");
+        $roomStmt->execute(['room_id' => $roomId]);
+        if ($roomStmt->fetchColumn() === 'Maintenance') {
+            return false;
+        }
+
         // SQL: Counts active overlapping reservations. Zero means the room is free for the requested dates.
         $sql = "SELECT COUNT(*)
                 FROM reservations
@@ -642,7 +649,8 @@ class Reservation
         $roomStatement->execute(['room_id' => $roomId]);
         $currentStatus = $roomStatement->fetchColumn();
 
-        if ($currentStatus === false) {
+        // Preserve Maintenance status unless explicitly cleared by admin
+        if ($currentStatus === 'Maintenance') {
             return;
         }
 
@@ -662,10 +670,19 @@ class Reservation
         $activeStatement->execute(['room_id' => $roomId]);
         $activeStatus = $activeStatement->fetchColumn();
 
+        // Check latest reservation status to trigger Cleaning upon checkout
+        $latestStmt = $this->db->prepare(
+            "SELECT status FROM reservations WHERE room_id = :room_id ORDER BY check_out DESC, reservation_id DESC LIMIT 1"
+        );
+        $latestStmt->execute(['room_id' => $roomId]);
+        $latestStatus = $latestStmt->fetchColumn();
+
         if ($activeStatus === 'Checked-in') {
             $roomStatus = 'Occupied';
         } elseif ($activeStatus !== false) {
             $roomStatus = 'Reserved';
+        } elseif ($latestStatus === 'Checked-out' && ($currentStatus === 'Occupied' || $currentStatus === 'Cleaning')) {
+            $roomStatus = 'Cleaning';
         } else {
             $roomStatus = 'Available';
         }

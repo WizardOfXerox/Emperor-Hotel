@@ -36,6 +36,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string) ($_POST['action'] ?? '');
 
     try {
+        if ($action === 'submit_review') {
+            $reviewModel = new Review($db);
+            $reviewModel->create([
+                'reservation_id' => (int) ($_POST['reservation_id'] ?? 0),
+                'user_id' => (int) $user['user_id'],
+                'room_id' => (int) ($_POST['room_id'] ?? 0),
+                'rating' => (int) ($_POST['rating'] ?? 5),
+                'comment' => trim((string) ($_POST['comment'] ?? '')),
+            ]);
+            setFlash('success', 'Thank you for your rating and review!');
+            redirect('dashboard.php');
+        }
+
         if ($action === 'cancel') {
             $reservation = $reservationModel->find((int) ($_POST['reservation_id'] ?? 0));
 
@@ -271,15 +284,57 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                     <?php if ($activeBalanceDue > 0.01 && in_array($reservation['status'], ['Pending', 'Confirmed'], true)): ?>
                         <a class="btn btn-sm btn-warning" href="payment.php?reservation_id=<?php echo e($reservationId); ?>&payment_method=Online%20Payment">Pay</a>
                     <?php endif; ?>
+                    <?php if (in_array($reservation['status'], ['Checked-out', 'Confirmed'], true)): ?>
+                        <button class="btn btn-sm btn-outline-warning rounded-pill px-3 me-1" type="button" data-bs-toggle="modal" data-bs-target="#reviewModal<?= $reservationId ?>">
+                            <i class="bi bi-star-fill me-1"></i>Review Stay
+                        </button>
+                    <?php endif; ?>
                     <?php if (in_array($reservation['status'], ['Pending', 'Confirmed'], true)): ?>
                         <form method="post" class="d-inline">
                             <input type="hidden" name="action" value="cancel">
                             <input type="hidden" name="reservation_id" value="<?php echo e($reservationId); ?>">
                             <button class="btn btn-sm btn-outline-danger" type="submit">Cancel</button>
                         </form>
-                    <?php else: ?>
-                        <span class="text-light-emphasis small">No action</span>
                     <?php endif; ?>
+                </div>
+
+                <!-- Review Modal for this reservation -->
+                <div class="modal fade" id="reviewModal<?= $reservationId ?>" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content bg-dark text-light border-gold-glow rounded-4 p-3 shadow-lg">
+                            <div class="modal-header border-secondary">
+                                <h5 class="modal-title font-serif text-gold fw-bold"><i class="bi bi-star-fill me-2"></i>Rate Your Stay (Room #<?= e($reservation['room_number']) ?>)</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form method="POST" action="dashboard.php">
+                                <div class="modal-body">
+                                    <input type="hidden" name="action" value="submit_review">
+                                    <input type="hidden" name="reservation_id" value="<?= $reservationId ?>">
+                                    <input type="hidden" name="room_id" value="<?= (int)$reservation['room_id'] ?>">
+
+                                    <div class="mb-3 text-center">
+                                        <label class="form-label text-xs text-uppercase tracking-wider text-muted d-block mb-2">Overall Star Rating</label>
+                                        <select name="rating" class="form-select form-select-dark bg-dark text-warning border-gold fw-bold text-center fs-5 mx-auto" style="max-width: 200px;">
+                                            <option value="5">★★★★★ (5/5 Exceptional)</option>
+                                            <option value="4">★★★★☆ (4/5 Very Good)</option>
+                                            <option value="3">★★★☆☆ (3/5 Good)</option>
+                                            <option value="2">★★☆☆☆ (2/5 Fair)</option>
+                                            <option value="1">★☆☆☆☆ (1/5 Poor)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label text-xs text-uppercase tracking-wider text-muted">Your Feedback / Comments</label>
+                                        <textarea name="comment" rows="3" class="form-control form-control-dark border-secondary bg-dark text-light" placeholder="Describe your room comfort, cleanliness, and stay experience..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-secondary">
+                                    <button type="button" class="btn btn-outline-light rounded-pill px-3" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-gold rounded-pill px-4 fw-bold">Submit Review</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </article>
         <?php endforeach; ?>
