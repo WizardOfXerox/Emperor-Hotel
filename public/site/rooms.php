@@ -21,27 +21,27 @@ try {
     $roomDataUnavailable = true;
 }
 
-renderHeader('Suites & Rooms | Emperor Hotel', ['../assets/css/site/rooms.css'], 'rooms-showcase-page');
+renderHeader('Suites & Rooms | Emperor Hotel', ['../assets/css/site/home.css', '../assets/css/site/rooms.css'], 'home-showcase-page rooms-showcase-page');
 ?>
 
-<nav class="rooms-nav" aria-label="Primary navigation">
-    <div class="rooms-nav__container">
-        <a class="rooms-nav__logo" href="home.php" aria-label="Emperor Hotel home">
+<nav class="home-nav" aria-label="Primary navigation">
+    <div class="home-nav__container">
+        <a class="home-nav__logo" href="home.php" aria-label="Emperor Hotel home">
             <img src="../assets/images/branding/emperors-hotel-logo.svg" alt="Emperor Hotel logo">
         </a>
 
-        <div class="rooms-nav__links">
-            <a class="rooms-nav__link" href="home.php">HOME</a>
-            <a class="rooms-nav__link rooms-nav__link--active" href="rooms.php">SUITES</a>
+        <div class="home-nav__links">
+            <a class="home-nav__link" href="home.php">HOME</a>
+            <a class="home-nav__link home-nav__link--active" href="rooms.php">SUITES</a>
         </div>
 
-        <div class="rooms-nav__auth">
+        <div class="home-nav__auth">
             <?php if ($user): ?>
-                <a class="rooms-nav__cta rooms-nav__cta--primary" href="<?= e($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php') ?>">DASHBOARD</a>
-                <a class="rooms-nav__cta rooms-nav__cta--secondary" href="../auth/logout.php">LOG OUT</a>
+                <a class="home-nav__cta home-nav__cta--primary" href="<?= e($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php') ?>">DASHBOARD</a>
+                <a class="home-nav__cta home-nav__cta--secondary" href="../auth/logout.php">LOG OUT</a>
             <?php else: ?>
-                <a class="rooms-nav__cta rooms-nav__cta--primary" href="../auth/login.php">LOG IN</a>
-                <a class="rooms-nav__cta rooms-nav__cta--secondary" href="../auth/register.php">REGISTER</a>
+                <a class="home-nav__cta home-nav__cta--primary" href="../auth/login.php">LOG IN</a>
+                <a class="home-nav__cta home-nav__cta--secondary" href="../auth/register.php">REGISTER</a>
             <?php endif; ?>
         </div>
     </div>
