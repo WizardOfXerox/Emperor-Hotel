@@ -385,16 +385,19 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                                 <strong class="fs-5 text-warning font-serif">₱<?= number_format($calcTotal) ?></strong>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Included Perks -->
-                    <div>
-                        <h6 class="font-serif fw-bold text-warning mb-2 text-xs"><i class="bi bi-gift-fill me-1"></i>Suite Inclusions</h6>
-                        <ul class="list-unstyled text-xs text-light opacity-90 mb-0">
-                            <li class="mb-1"><i class="bi bi-check-circle-fill me-1 text-warning"></i>Complimentary breakfast set</li>
-                            <li class="mb-1"><i class="bi bi-check-circle-fill me-1 text-warning"></i>High-speed priority Wi-Fi</li>
-                            <li><i class="bi bi-check-circle-fill me-1 text-warning"></i>Nespresso Machine &amp; Premium Teas</li>
-                        </ul>
+                        <!-- Suite Inclusions -->
+                        <?php 
+                            $selPerks = $selCatalog['included_perks'] ?? ['Complimentary breakfast set', 'High-speed priority Wi-Fi', 'Nespresso Machine & Premium Teas'];
+                        ?>
+                        <div class="p-3 rounded-3 border mb-1" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(212, 175, 55, 0.2) !important;">
+                            <h6 class="font-serif fw-bold text-warning mb-2 text-xs text-uppercase tracking-wider"><i class="bi bi-gift-fill me-1"></i>Suite Inclusions</h6>
+                            <ul class="list-unstyled text-xs text-light opacity-90 mb-0">
+                                <?php foreach ($selPerks as $pk): ?>
+                                    <li class="mb-1 d-flex align-items-center"><i class="bi bi-check-circle-fill me-2 text-warning"></i><?= e($pk) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
