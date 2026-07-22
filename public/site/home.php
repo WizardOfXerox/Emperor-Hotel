@@ -63,13 +63,16 @@ renderHeader('Home | Emperor Hotel', ['../assets/css/site/home.css', '../assets/
         </div>
     </section>
 
-    <!-- Featured Interactive Big Calendar Section -->
-    <section class="container py-5" id="calendar-search">
-        <?php renderInlineCalendarWidget($checkIn, $checkOut); ?>
-    </section>
-
-    <section class="container py-4 mb-5">
-        <?php renderHotelFloorMap($db, 'public'); ?>
+    <!-- Side-by-Side Interactive Calendar & Live Floor Map Section -->
+    <section class="container-fluid px-lg-4 px-xl-5 py-5" id="calendar-search">
+        <div class="row g-4 align-items-stretch">
+            <div class="col-12 col-xl-5">
+                <?php renderInlineCalendarWidget($checkIn, $checkOut); ?>
+            </div>
+            <div class="col-12 col-xl-7">
+                <?php renderHotelFloorMap($db, 'public', null, $checkIn, $checkOut); ?>
+            </div>
+        </div>
     </section>
 
     <?php renderCalendarPickerModal($checkIn, $checkOut); ?>

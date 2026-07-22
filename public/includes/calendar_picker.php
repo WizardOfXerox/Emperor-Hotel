@@ -221,6 +221,9 @@ function selectCalendarCellDate(dateStr) {
 
     updateStayDurationBadge();
     renderVisualCalendarGrid();
+    if (typeof updateHotelMapAvailability === 'function') {
+        updateHotelMapAvailability(checkInInput.value, checkOutInput.value);
+    }
 }
 
 function shiftCalendarMonth(delta) {
@@ -354,7 +357,7 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
     $checkIn = $checkInVal ?: $today->format('Y-m-d');
     $checkOut = $checkOutVal ?: $today->modify('+1 day')->format('Y-m-d');
 ?>
-<div class="card bg-dark text-light rounded-4 p-4 shadow-lg my-4" id="inlineCalendarSection" style="max-width: 650px; width: 100%; margin: 0 auto; background: rgba(15, 23, 42, 0.92) !important; backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5) !important;">
+<div class="card bg-dark text-light rounded-4 p-4 shadow-lg h-100 my-0" id="inlineCalendarSection" style="max-width: 650px; width: 100%; margin: 0 auto; background: rgba(15, 23, 42, 0.92) !important; backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5) !important;">
     <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-secondary">
         <div>
             <h4 class="font-serif fw-bold m-0" style="color: #FFDF73 !important; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-calendar-range me-2"></i>Select Stay Dates</h4>
