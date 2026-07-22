@@ -281,6 +281,23 @@ function applySelectedDatesFromModal() {
         searchForm.submit();
     }
 }
+function handleInlineCalendarSearch() {
+    const checkIn = document.getElementById('modalCheckInInput')?.value;
+    const checkOut = document.getElementById('modalCheckOutInput')?.value;
+    if (!checkIn || !checkOut) return;
+
+    if (typeof updateHotelMapAvailability === 'function') {
+        updateHotelMapAvailability(checkIn, checkOut);
+    }
+
+    const newUrl = `${window.location.pathname}?check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`;
+    window.history.pushState({ checkIn, checkOut }, '', newUrl);
+
+    const mapEl = document.querySelector('.hotel-map-container');
+    if (mapEl) {
+        mapEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
 </script>
 
 <style>
@@ -368,7 +385,7 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
         </div>
     </div>
 
-    <form action="rooms.php" method="GET" id="inlineCalendarForm">
+    <form action="javascript:void(0);" method="GET" id="inlineCalendarForm" onsubmit="event.preventDefault(); handleInlineCalendarSearch();">
         <div class="row g-2 mb-4 align-items-end">
             <div class="col-12 col-md-5">
                 <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>

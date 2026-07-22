@@ -161,20 +161,29 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
 
 <script>
 function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status) {
-    if (typeof selectRoomFromCard === 'function') {
-        selectRoomFromCard(roomId, roomType, price);
-    }
-    
-    const roomCard = document.querySelector(`.room-card[data-room-id="${roomId}"]`);
-    if (roomCard) {
-        roomCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        roomCard.classList.add('highlight-pulse');
-        setTimeout(() => roomCard.classList.remove('highlight-pulse'), 1500);
-    }
-
     if (typeof openAdminRoomStatusModal === 'function') {
         openAdminRoomStatusModal(roomId, roomNumber, roomType, status);
+        return;
     }
+
+    if (typeof selectRoomFromCard === 'function') {
+        selectRoomFromCard(roomId, roomType, price);
+        const roomCard = document.querySelector(`.room-card[data-room-id="${roomId}"]`);
+        if (roomCard) {
+            roomCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            roomCard.classList.add('highlight-pulse');
+            setTimeout(() => roomCard.classList.remove('highlight-pulse'), 1500);
+            return;
+        }
+    }
+
+    const checkIn = document.getElementById('modalCheckInInput')?.value || '';
+    const checkOut = document.getElementById('modalCheckOutInput')?.value || '';
+    let url = `room-detail.php?id=${roomId}`;
+    if (checkIn && checkOut) {
+        url += `&check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`;
+    }
+    window.location.href = url;
 }
 
 async function updateHotelMapAvailability(checkIn, checkOut) {
