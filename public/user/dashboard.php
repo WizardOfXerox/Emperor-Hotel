@@ -202,7 +202,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
             <!-- Left Column: Guest Details & Payment Route -->
             <div class="col-12 col-lg-7 col-xl-7">
                 <div class="p-3 rounded-4 border mb-4" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
                         <h5 class="font-serif fw-bold text-warning m-0 text-sm"><i class="bi bi-person-bounding-box me-2"></i>Guest Account Details</h5>
                         <span class="badge rounded-pill text-xs fw-semibold" style="background: rgba(212, 175, 55, 0.2); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.3);">
                             <i class="bi bi-person-check-fill me-1"></i>Verified Guest
@@ -214,25 +214,59 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                         <input class="form-control form-control-sm bg-dark text-white border-secondary rounded-3 text-xs fw-bold" id="full_name" name="full_name" type="text" value="<?= e($userFullName) ?>" required>
                     </div>
 
-                    <!-- Stay Dates Card with Centered Calendar Popup Trigger -->
-                    <div class="p-3 rounded-3 border mb-3 position-relative" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="text-xs text-uppercase tracking-wider text-warning font-serif fw-bold"><i class="bi bi-calendar-event-fill me-1"></i>Selected Stay Dates</span>
-                            <button type="button" class="btn btn-xs btn-outline-warning rounded-pill px-3 py-1 font-serif fw-bold" data-bs-toggle="modal" data-bs-target="#calendarPickerModal">
-                                <i class="bi bi-pencil-square me-1"></i>Change Dates
-                            </button>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between cursor-pointer" data-bs-toggle="modal" data-bs-target="#calendarPickerModal">
+                    <!-- Embedded In-Place Interactive Calendar Picker -->
+                    <div class="p-3 rounded-3 border mb-3" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
                             <div>
+                                <span class="text-xs text-uppercase tracking-wider text-warning font-serif fw-bold d-block"><i class="bi bi-calendar-range-fill me-1"></i>Selected Stay Dates</span>
                                 <span class="fs-6 font-serif fw-bold text-white me-2">
                                     <?= date('M d, Y', strtotime($checkIn)) ?> &ndash; <?= date('M d, Y', strtotime($checkOut)) ?>
                                 </span>
-                                <span class="badge bg-gold text-dark text-xs fw-bold px-2 py-1 rounded-pill"><?= $calcNights ?> Night<?= $calcNights > 1 ? 's' : '' ?></span>
                             </div>
-                            <i class="bi bi-calendar3 text-warning fs-5"></i>
+                            <span class="badge rounded-pill text-xs fw-bold px-3 py-1" style="background: rgba(212, 175, 55, 0.25); color: #FFDF73; border: 1px solid #D4AF37; font-size: 0.75rem;">
+                                <?= $calcNights ?> Night<?= $calcNights > 1 ? 's' : '' ?>
+                            </span>
                         </div>
-                        <input type="hidden" id="check_in" name="check_in" value="<?= e($checkIn) ?>">
-                        <input type="hidden" id="check_out" name="check_out" value="<?= e($checkOut) ?>">
+
+                        <!-- Date Inputs Row -->
+                        <div class="row g-2 mb-3 align-items-end">
+                            <div class="col-12 col-sm-5">
+                                <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
+                                <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= (new DateTimeImmutable('today'))->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);" onchange="renderVisualCalendarGrid()">
+                            </div>
+                            <div class="col-12 col-sm-5">
+                                <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-right text-warning me-1"></i>Check-Out</label>
+                                <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkOut) ?>" min="<?= (new DateTimeImmutable('today'))->modify('+1 day')->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);" onchange="renderVisualCalendarGrid()">
+                            </div>
+                            <div class="col-12 col-sm-2 mt-2 mt-sm-0">
+                                <button type="button" onclick="applySelectedDatesFromModal()" class="btn btn-sm w-100 rounded-pill py-2 font-serif fw-bold text-dark shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none;">
+                                    <i class="bi bi-check-lg me-1"></i>Apply
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Visible 7-Column Interactive Calendar Grid -->
+                        <div id="calendarVisualGrid" class="p-3 rounded-4 border shadow-inner" style="width: 100%; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(-1)" style="width: 32px; height: 32px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-left"></i></button>
+                                <h6 class="m-0 font-serif fw-bold text-center" id="calendarMonthTitle" style="color: #FFDF73; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">July 2026</h6>
+                                <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(1)" style="width: 32px; height: 32px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-right"></i></button>
+                            </div>
+                            
+                            <!-- 7-Column Weekday Header -->
+                            <div class="calendar-grid-header mb-2 text-center font-serif fw-bold text-uppercase text-xs">
+                                <div style="color: #FBBF24;">Sun</div>
+                                <div style="color: #F8FAFC;">Mon</div>
+                                <div style="color: #F8FAFC;">Tue</div>
+                                <div style="color: #F8FAFC;">Wed</div>
+                                <div style="color: #F8FAFC;">Thu</div>
+                                <div style="color: #F8FAFC;">Fri</div>
+                                <div style="color: #FBBF24;">Sat</div>
+                            </div>
+                            
+                            <!-- Days Grid -->
+                            <div class="calendar-grid-days text-center" id="calendarDaysGrid"></div>
+                        </div>
                     </div>
 
                     <div class="row g-2">
