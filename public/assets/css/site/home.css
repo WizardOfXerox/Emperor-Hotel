@@ -206,23 +206,77 @@ body.home-showcase-page .home-hero__content a:hover {
     transform: translateY(-2px);
 }
 
-@media (max-width: 960px) {
-    body.home-showcase-page .home-nav__container {
-        padding: 12px 20px;
-        flex-direction: column;
-        align-items: flex-start;
+@media (max-width: 991.98px) {
+    .home-nav__container {
+        padding: 12px 20px !important;
+        flex-wrap: wrap !important;
+        justify-content: space-between !important;
+        min-height: auto !important;
     }
 
-    body.home-showcase-page .home-nav__links {
-        position: static;
-        width: 100%;
-        transform: none;
-        justify-content: flex-start;
+    .home-nav__links {
+        position: static !important;
+        transform: none !important;
+        width: auto !important;
+        margin: 0 auto !important;
+        gap: 8px !important;
     }
 
-    body.home-showcase-page .home-nav__auth {
-        position: absolute;
-        top: 16px;
-        right: 20px;
+    .home-nav__link {
+        padding: 0 14px !important;
+        font-size: 13px !important;
+        height: 36px !important;
+    }
+
+    .home-nav__auth {
+        gap: 10px !important;
+        min-height: auto !important;
+    }
+
+    .home-nav__cta {
+        height: 38px !important;
+        padding: 0 16px !important;
+        font-size: 12px !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .home-nav__container {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding: 16px 12px !important;
+    }
+
+    .home-nav__links {
+        width: 100% !important;
+        justify-content: center !important;
+        gap: 6px !important;
+    }
+
+    .home-nav__link {
+        padding: 0 10px !important;
+        font-size: 12px !important;
+    }
+
+    .home-nav__auth {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+/* Touch Target & Responsive Utilities */
+@media (max-width: 575.98px) {
+    .btn {
+        min-height: 38px;
+    }
+
+    .card {
+        border-radius: 1rem !important;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
