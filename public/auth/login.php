@@ -39,7 +39,6 @@ renderHeader('Log In', ['../assets/css/auth/login.css']);
 ?>
 <main class="auth-wrapper">
     <section class="auth-card">
-        <p class="eyebrow">Authentication</p>
         <h1 class="display-brand mb-3">Log in to Emperor Hotel</h1>
         <p class="muted-copy mb-4">Access your dashboard, reservations, and role-based tools.</p>
         <?php renderFlashBlock(); ?>
