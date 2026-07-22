@@ -242,12 +242,15 @@ body.rooms-showcase-page .rooms .container-carousel {
 .carousel-wrapper {
     position: relative;
     width: 100%;
-    max-width: 440px;
+    max-width: 420px;
+    aspect-ratio: 3 / 4;
 }
 
 .carousel-track {
     display: flex;
-    gap: 12px;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 3 / 4;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
@@ -272,10 +275,12 @@ body.rooms-showcase-page .rooms .container-carousel {
 
 .carousel-slide {
     flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
     scroll-snap-align: center;
     border-radius: 20px;
     overflow: hidden;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 3 / 4;
 }
 
 .carousel-slide img {
