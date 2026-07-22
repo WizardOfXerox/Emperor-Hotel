@@ -494,7 +494,20 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
             </div>
             
             <div class="position-relative overflow-hidden">
-                <div class="d-flex gap-3 custom-carousel-track py-2" id="exploreRoomsTrack" style="overflow-x: hidden; scroll-behavior: smooth;">
+                <style>
+                #exploreRoomsTrack::-webkit-scrollbar {
+                    display: none;
+                }
+                #exploreRoomsTrack {
+                    scrollbar-width: none;
+                    -ms-overflow-style: none;
+                    cursor: grab;
+                }
+                #exploreRoomsTrack:active {
+                    cursor: grabbing;
+                }
+                </style>
+                <div class="d-flex gap-3 custom-carousel-track py-2" id="exploreRoomsTrack" style="overflow-x: auto; scroll-behavior: smooth;">
                     <?php foreach ($allRooms as $otherRoom): 
                         $isSelf = (int)$otherRoom['room_id'] === (int)$room['room_id'];
                         $otherTypeCatalog = $catalog[$otherRoom['room_type']] ?? null;
@@ -552,6 +565,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         nextBtn.addEventListener('click', function() {
             track.scrollBy({ left: step, behavior: 'smooth' });
+        });
+
+        // Mouse Drag to Scroll
+        let isDown = false;
+        let startX, scrollLeft;
+        track.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - track.offsetLeft;
+            scrollLeft = track.scrollLeft;
+        });
+        track.addEventListener('mouseleave', () => { isDown = false; });
+        track.addEventListener('mouseup', () => { isDown = false; });
+        track.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - track.offsetLeft;
+            const walk = (x - startX) * 2;
+            track.scrollLeft = scrollLeft - walk;
         });
     }
 });
