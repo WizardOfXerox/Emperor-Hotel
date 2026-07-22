@@ -242,26 +242,49 @@ body.home-showcase-page .home-hero__content a:hover {
 
 @media (max-width: 767.98px) {
     .home-nav__container {
-        flex-direction: column !important;
+        flex-direction: row !important;
         align-items: center !important;
-        gap: 12px !important;
-        padding: 16px 12px !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
+        padding: 8px 12px !important;
+        min-height: 54px !important;
+        height: 54px !important;
+    }
+
+    .home-nav__logo img {
+        width: 44px !important;
+        height: 32px !important;
+        padding: 2px !important;
+        border-radius: 6px !important;
     }
 
     .home-nav__links {
-        width: 100% !important;
-        justify-content: center !important;
-        gap: 6px !important;
+        position: static !important;
+        transform: none !important;
+        width: auto !important;
+        margin: 0 !important;
+        gap: 2px !important;
+        min-height: auto !important;
     }
 
     .home-nav__link {
-        padding: 0 10px !important;
-        font-size: 12px !important;
+        padding: 0 8px !important;
+        font-size: 11px !important;
+        height: 28px !important;
+        letter-spacing: 0.5px !important;
+        border-radius: 14px !important;
     }
 
     .home-nav__auth {
-        width: 100% !important;
-        justify-content: center !important;
+        gap: 4px !important;
+        min-height: auto !important;
+    }
+
+    .home-nav__cta {
+        height: 28px !important;
+        padding: 0 10px !important;
+        font-size: 10px !important;
+        letter-spacing: 0.5px !important;
     }
 }
 
