@@ -559,7 +559,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const nextBtn = document.getElementById('nextExploreCarousel');
     
     if (track && prevBtn && nextBtn) {
-        const step = 280;
+        const step = 560; // Larger step distance (2 cards per click)
         prevBtn.addEventListener('click', function() {
             track.scrollBy({ left: -step, behavior: 'smooth' });
         });
@@ -567,15 +567,15 @@ document.addEventListener('DOMContentLoaded', function() {
             track.scrollBy({ left: step, behavior: 'smooth' });
         });
 
-        // 1. Mouse Wheel Scroll Handler (Converts vertical wheel scroll to horizontal carousel movement)
+        // 1. Fast & Responsive Mouse Wheel Scroll Handler
         track.addEventListener('wheel', (e) => {
             if (e.deltaY !== 0) {
                 e.preventDefault();
-                track.scrollLeft += e.deltaY * 1.2;
+                track.scrollLeft += e.deltaY * 2.8;
             }
         }, { passive: false });
 
-        // 2. Desktop Mouse Drag to Scroll
+        // 2. Responsive Desktop Mouse Drag
         let isDown = false;
         let startX, scrollLeft;
         track.addEventListener('mousedown', (e) => {
@@ -589,11 +589,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isDown) return;
             e.preventDefault();
             const x = e.pageX - track.offsetLeft;
-            const walk = (x - startX) * 1.8;
+            const walk = (x - startX) * 3.2;
             track.scrollLeft = scrollLeft - walk;
         });
 
-        // 3. Mobile Touch Drag & Swipe Support
+        // 3. Fast Mobile Touch Drag & Swipe Support
         let touchStartX = 0;
         let touchScrollLeft = 0;
         track.addEventListener('touchstart', (e) => {
@@ -605,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function() {
         track.addEventListener('touchmove', (e) => {
             if (!e.touches[0]) return;
             const x = e.touches[0].pageX - track.offsetLeft;
-            const walk = (x - touchStartX) * 1.5;
+            const walk = (x - touchStartX) * 2.8;
             track.scrollLeft = touchScrollLeft - walk;
         }, { passive: true });
     }
