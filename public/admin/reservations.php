@@ -63,13 +63,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$reservations = $reservationModel->all();
+$search = trim((string) ($_GET['search'] ?? ''));
+$statusFilter = trim((string) ($_GET['status'] ?? ''));
+
+$reservations = $reservationModel->searchAndFilter($search, $statusFilter);
 $paymentTotals = $paymentModel->totalsByReservation();
 
 renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['../assets/css/admin/reservations.css?v=20260530-manage-reservations']);
 ?>
 <section class="panel-card p-4">
-    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
         <div>
             <p class="eyebrow mb-1">Reservations</p>
             <h3 class="mb-0">Reservation Records</h3>
@@ -80,6 +83,31 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
             <a class="btn btn-warning btn-sm fw-semibold" href="create-reservation.php"><i class="bi bi-plus-circle me-1"></i>Create Reservation</a>
         </div>
     </div>
+
+    <form method="get" class="row g-2 mb-4 align-items-center">
+        <div class="col-md-6 col-lg-7">
+            <div class="input-group">
+                <span class="input-group-text bg-dark border-secondary text-warning"><i class="bi bi-search"></i></span>
+                <input type="text" name="search" class="form-control bg-dark text-light border-secondary" placeholder="Search by guest name, room #, email, or reservation ID..." value="<?php echo e($search); ?>">
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-3">
+            <select name="status" class="form-select bg-dark text-light border-secondary" onchange="this.form.submit()">
+                <option value="all" <?php echo $statusFilter === 'all' || $statusFilter === '' ? 'selected' : ''; ?>>All Statuses</option>
+                <option value="Pending" <?php echo $statusFilter === 'Pending' ? 'selected' : ''; ?>>Pending</option>
+                <option value="Confirmed" <?php echo $statusFilter === 'Confirmed' ? 'selected' : ''; ?>>Confirmed</option>
+                <option value="Checked-in" <?php echo $statusFilter === 'Checked-in' ? 'selected' : ''; ?>>Checked-in</option>
+                <option value="Checked-out" <?php echo $statusFilter === 'Checked-out' ? 'selected' : ''; ?>>Checked-out</option>
+                <option value="Cancelled" <?php echo $statusFilter === 'Cancelled' ? 'selected' : ''; ?>>Cancelled</option>
+            </select>
+        </div>
+        <div class="col-md-2 col-lg-2 d-flex gap-2">
+            <button type="submit" class="btn btn-warning w-100 fw-semibold">Filter</button>
+            <?php if ($search !== '' || ($statusFilter !== '' && $statusFilter !== 'all')): ?>
+                <a href="reservations.php" class="btn btn-outline-light" title="Reset Filters"><i class="bi bi-x-circle"></i></a>
+            <?php endif; ?>
+        </div>
+    </form>
 
     <div class="table-responsive">
         <table class="table table-dark-soft align-middle mb-0 booking-records-table">

@@ -24,16 +24,41 @@ class Reservation
 
     public function all(): array
     {
-        // SQL: Lists all reservations with guest, room, and optional user account details for admin records.
-        $statement = $this->db->query(
-            "SELECT r.*, g.first_name, g.last_name, g.email AS guest_email, g.phone,
-                    rm.room_number, rm.room_type, u.full_name AS user_name
-             FROM reservations r
-             INNER JOIN guests g ON g.guest_id = r.guest_id
-             INNER JOIN rooms rm ON rm.room_id = r.room_id
-             LEFT JOIN users u ON u.user_id = r.user_id
-             ORDER BY r.created_at DESC"
-        );
+        return $this->searchAndFilter();
+    }
+
+    public function searchAndFilter(?string $search = null, ?string $status = null): array
+    {
+        $sql = "SELECT r.*, g.first_name, g.last_name, g.email AS guest_email, g.phone,
+                       rm.room_number, rm.room_type, u.full_name AS user_name
+                FROM reservations r
+                INNER JOIN guests g ON g.guest_id = r.guest_id
+                INNER JOIN rooms rm ON rm.room_id = r.room_id
+                LEFT JOIN users u ON u.user_id = r.user_id
+                WHERE 1=1";
+        $params = [];
+
+        if ($search !== null && trim($search) !== '') {
+            $searchTerm = '%' . trim($search) . '%';
+            $sql .= " AND (g.first_name LIKE :search 
+                        OR g.last_name LIKE :search 
+                        OR CONCAT(g.first_name, ' ', g.last_name) LIKE :search
+                        OR g.email LIKE :search
+                        OR rm.room_number LIKE :search
+                        OR rm.room_type LIKE :search
+                        OR CAST(r.reservation_id AS CHAR) LIKE :search)";
+            $params['search'] = $searchTerm;
+        }
+
+        if ($status !== null && trim($status) !== '' && trim($status) !== 'all') {
+            $sql .= " AND r.status = :status";
+            $params['status'] = trim($status);
+        }
+
+        $sql .= " ORDER BY r.created_at DESC";
+
+        $statement = $this->db->prepare($sql);
+        $statement->execute($params);
 
         return $statement->fetchAll();
     }
