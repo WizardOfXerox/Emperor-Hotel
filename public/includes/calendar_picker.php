@@ -13,77 +13,66 @@ function renderCalendarPickerModal(string $checkInVal = '', string $checkOutVal 
 ?>
 <!-- Calendar Modal -->
 <div class="modal fade" id="calendarPickerModal" tabindex="-1" aria-labelledby="calendarPickerModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content rounded-4 shadow-lg border-gold-glow bg-dark text-light">
-      <div class="modal-header border-secondary px-4 py-3">
-        <h5 class="modal-title font-serif text-gold fw-bold" id="calendarPickerModalLabel">
-            <i class="bi bi-calendar-range me-2"></i>Select Stay Dates
-        </h5>
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
+    <div class="modal-content rounded-4 shadow-lg bg-dark text-light border" style="background: rgba(15, 23, 42, 0.96) !important; backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+      <div class="modal-header border-bottom border-secondary px-4 py-3">
+        <div class="d-flex align-items-center justify-content-between w-100 me-2">
+            <div>
+                <h4 class="font-serif fw-bold m-0" style="color: #FFDF73 !important; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-calendar-range me-2"></i>Select Stay Dates</h4>
+                <p class="text-light opacity-90 text-xs m-0 fw-semibold">Click check-in and check-out dates on the grid below.</p>
+            </div>
+            <div id="modalStayDurationBadge" class="badge bg-gold text-dark text-xs px-3 py-2 fw-bold rounded-pill shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important; color: #070A10 !important; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
+                Select dates below
+            </div>
+        </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+
       <div class="modal-body p-4">
-        
-        <!-- Mode Tabs -->
-        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
-            <div class="btn-group btn-group-sm" role="group">
-                <button type="button" class="btn btn-outline-warning active" id="btnExactDates">Calendar</button>
-                <button type="button" class="btn btn-outline-warning" id="btnFlexibleDates">I'm flexible</button>
+        <form action="javascript:void(0);" method="GET" id="modalCalendarForm" onsubmit="event.preventDefault(); applySelectedDatesFromModal();">
+            <div class="row g-2 mb-4 align-items-end">
+                <div class="col-12 col-sm-5">
+                    <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
+                    <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);">
+                </div>
+                <div class="col-12 col-sm-5">
+                    <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-right text-warning me-1"></i>Check-Out</label>
+                    <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);">
+                </div>
+                <div class="col-12 col-sm-2 mt-2 mt-sm-0">
+                    <button type="button" onclick="applySelectedDatesFromModal()" class="btn btn-sm w-100 rounded-pill py-2 font-serif fw-bold shadow text-dark" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
+                        <i class="bi bi-search me-1"></i>Apply
+                    </button>
+                </div>
             </div>
-            <div id="stayDurationBadge" class="badge bg-gold text-dark fs-6 px-3 py-2 fw-bold rounded-pill">
-                Jul 22 - Jul 25 (3-night stay)
-            </div>
-        </div>
+        </form>
 
-        <!-- Date Inputs Sync -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-6">
-                <label class="form-label text-xs text-uppercase tracking-wider text-muted">Check-In Date</label>
-                <input type="date" id="modalCheckInInput" class="form-control form-control-dark border-gold bg-dark text-light fw-bold" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label text-xs text-uppercase tracking-wider text-muted">Check-Out Date</label>
-                <input type="date" id="modalCheckOutInput" class="form-control form-control-dark border-gold bg-dark text-light fw-bold" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>">
-            </div>
-        </div>
-
-        <!-- Flexible Date Options Chips -->
-        <div class="mb-4">
-            <label class="form-label text-xs text-uppercase tracking-wider text-muted d-block mb-2">Flexible Date Options</label>
-            <div class="d-flex flex-wrap gap-2">
-                <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 active flex-chip" onclick="setFlexRange(0)">Exact dates</button>
-                <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 flex-chip" onclick="setFlexRange(1)">± 1 day</button>
-                <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 flex-chip" onclick="setFlexRange(2)">± 2 days</button>
-                <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 flex-chip" onclick="setFlexRange(3)">± 3 days</button>
-            </div>
-        </div>
-
-        <!-- Visual Month Calendar Grid -->
-        <div id="calendarVisualGrid" class="p-3 bg-black bg-opacity-40 rounded-3 border border-secondary">
-            <!-- Dynamic Month Header -->
+        <!-- Visual Interactive 7-Column Calendar Month Grid (Matching Image 1) -->
+        <div id="calendarVisualGrid" class="p-3 rounded-4 border shadow-inner" style="max-width: 520px; width: 100%; margin: 0 auto; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
             <div class="d-flex align-items-center justify-content-between mb-3">
-                <button type="button" class="btn btn-sm btn-outline-secondary text-light" onclick="shiftCalendarMonth(-1)"><i class="bi bi-chevron-left"></i></button>
-                <h6 class="m-0 font-serif text-gold fw-bold" id="calendarMonthTitle">July 2026</h6>
-                <button type="button" class="btn btn-sm btn-outline-secondary text-light" onclick="shiftCalendarMonth(1)"><i class="bi bi-chevron-right"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(-1)" style="width: 36px; height: 36px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-left"></i></button>
+                <h5 class="m-0 font-serif fw-bold fs-5 text-center" id="calendarMonthTitle" style="color: #FFDF73; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">July 2026</h5>
+                <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(1)" style="width: 36px; height: 36px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-right"></i></button>
             </div>
             
-            <!-- Weekday Labels -->
-            <div class="row row-cols-7 g-1 text-center text-xs text-muted mb-2 fw-bold">
-                <div class="col">Sun</div>
-                <div class="col">Mon</div>
-                <div class="col">Tue</div>
-                <div class="col">Wed</div>
-                <div class="col">Thu</div>
-                <div class="col">Fri</div>
-                <div class="col">Sat</div>
+            <!-- 7-Column Weekday Header -->
+            <div class="calendar-grid-header mb-2 text-center font-serif fw-bold text-uppercase text-xs">
+                <div style="color: #FBBF24;">Sun</div>
+                <div style="color: #F8FAFC;">Mon</div>
+                <div style="color: #F8FAFC;">Tue</div>
+                <div style="color: #F8FAFC;">Wed</div>
+                <div style="color: #F8FAFC;">Thu</div>
+                <div style="color: #F8FAFC;">Fri</div>
+                <div style="color: #FBBF24;">Sat</div>
             </div>
+            
             <!-- Days Grid -->
-            <div class="row row-cols-7 g-1 text-center" id="calendarDaysGrid"></div>
+            <div class="calendar-grid-days text-center" id="calendarDaysGrid"></div>
         </div>
-
       </div>
-      <div class="modal-footer border-secondary px-4 py-3">
-        <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-gold rounded-pill px-5 fw-bold" onclick="applySelectedDatesFromModal()">Done</button>
+      <div class="modal-footer border-top border-secondary px-4 py-2">
+        <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm font-serif fw-bold rounded-pill px-4 text-dark" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none;" onclick="applySelectedDatesFromModal()">Done</button>
       </div>
     </div>
   </div>
