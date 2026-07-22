@@ -59,36 +59,7 @@ renderHeader('Home | Emperor Hotel', ['../assets/css/site/home.css', '../assets/
             <h1>EMPEROR'S HOTEL</h1>
             <p>SMART LUXURY & UNMATCHED ELEGANCE</p>
             
-            <!-- Quick Date Search Bar -->
-            <div class="hero-search-bar shadow-lg mt-4 text-start" style="max-width: 840px; width: 100%; margin: 0 auto; background: rgba(7, 10, 16, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 50px; padding: 16px 28px;">
-                <form action="rooms.php" method="GET" id="availabilitySearchForm" class="row g-3 align-items-center m-0">
-                    <div class="col-12 col-md-5 p-0 pe-md-2">
-                        <label class="text-xs text-uppercase tracking-wider text-muted mb-1 d-block fw-bold"><i class="bi bi-calendar-event text-gold me-1"></i>Stay Dates</label>
-                        <button type="button" class="btn btn-outline-warning btn-sm w-100 rounded-pill py-2 px-3 text-truncate fw-bold text-start" data-bs-toggle="modal" data-bs-target="#calendarPickerModal">
-                            <i class="bi bi-calendar-range me-1"></i><?= date('M d', strtotime($checkIn)) ?> – <?= date('M d', strtotime($checkOut)) ?> (1 Night)
-                        </button>
-                        <input type="hidden" name="check_in" value="<?= e($checkIn) ?>">
-                        <input type="hidden" name="check_out" value="<?= e($checkOut) ?>">
-                    </div>
-                    <div class="col-12 col-md-4 p-0 px-md-2 mt-2 mt-md-0">
-                        <label class="text-xs text-uppercase tracking-wider text-muted mb-1 d-block fw-bold"><i class="bi bi-door-open text-gold me-1"></i>Bed Preference</label>
-                        <select name="bed_type" class="form-select form-select-sm bg-dark text-light border-secondary rounded-pill py-2 px-3">
-                            <option value="">All Bed Sizes</option>
-                            <option value="Queen Bed">Queen Bed</option>
-                            <option value="King Bed">King Bed</option>
-                            <option value="Super King Master Suite">Super King Suite</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-3 p-0 ps-md-2 mt-3 mt-md-0">
-                        <label class="d-none d-md-block text-xs mb-1">&nbsp;</label>
-                        <button type="submit" class="btn btn-gold btn-sm w-100 rounded-pill fw-bold py-2 shadow">
-                            <i class="bi bi-search me-1"></i>Search
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <a href="#calendar-search" class="btn btn-gold rounded-pill px-4 py-2 fw-bold font-serif shadow mt-3"><i class="bi bi-calendar-range me-2"></i>SELECT STAY DATES</a>
+            <a href="#calendar-search" class="btn btn-gold rounded-pill px-5 py-3 fw-bold font-serif shadow fs-5 mt-4" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);"><i class="bi bi-calendar-range me-2"></i>EXPLORE CALENDAR & STAY DATES</a>
         </div>
     </section>
 
