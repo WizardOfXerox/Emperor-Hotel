@@ -88,13 +88,16 @@ renderHeader('Home | Emperor Hotel', ['../assets/css/site/home.css', '../assets/
                 </form>
             </div>
 
-            <a href="#suites-rooms" class="mt-3 d-inline-block">EXPLORE SUITES</a>
+            <a href="#calendar-search" class="btn btn-gold rounded-pill px-4 py-2 fw-bold font-serif shadow mt-3"><i class="bi bi-calendar-range me-2"></i>SELECT STAY DATES</a>
         </div>
     </section>
 
-    <?php renderRoomShowcaseSection(); ?>
+    <!-- Featured Interactive Big Calendar Section -->
+    <section class="container py-5" id="calendar-search">
+        <?php renderInlineCalendarWidget($checkIn, $checkOut); ?>
+    </section>
 
-    <section class="container py-5">
+    <section class="container py-4 mb-5">
         <?php renderHotelFloorMap($db, 'public'); ?>
     </section>
 

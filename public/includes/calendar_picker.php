@@ -248,3 +248,63 @@ function applySelectedDatesFromModal() {
 </script>
 <?php
 }
+
+function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal = ''): void
+{
+    $today = new DateTimeImmutable('today');
+    $checkIn = $checkInVal ?: $today->format('Y-m-d');
+    $checkOut = $checkOutVal ?: $today->modify('+1 day')->format('Y-m-d');
+?>
+<div class="card bg-dark text-light border-gold-glow rounded-4 p-4 shadow-lg my-4" id="inlineCalendarSection">
+    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-secondary">
+        <div>
+            <h3 class="font-serif text-gold fw-bold m-0"><i class="bi bi-calendar-range me-2"></i>Select Your Stay Dates</h3>
+            <p class="text-muted small m-0">Click your check-in and check-out dates to view available rooms instantly.</p>
+        </div>
+        <div id="inlineStayDurationBadge" class="badge bg-gold text-dark fs-6 px-4 py-2 fw-bold rounded-pill shadow">
+            Select dates below
+        </div>
+    </div>
+
+    <form action="rooms.php" method="GET" id="inlineCalendarForm">
+        <div class="row g-3 mb-4">
+            <div class="col-md-5">
+                <label class="form-label text-xs text-uppercase tracking-wider text-muted fw-bold">Check-In Date</label>
+                <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-dark border-gold bg-dark text-light fw-bold" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>" onchange="updateStayDurationBadge(); renderCalendarDays();">
+            </div>
+            <div class="col-md-5">
+                <label class="form-label text-xs text-uppercase tracking-wider text-muted fw-bold">Check-Out Date</label>
+                <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-dark border-gold bg-dark text-light fw-bold" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>" onchange="updateStayDurationBadge(); renderCalendarDays();">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-gold w-100 rounded-pill py-2 font-serif fw-bold shadow">
+                    <i class="bi bi-search me-1"></i>Search Rooms
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Visual Calendar Month Grid -->
+    <div id="calendarVisualGrid" class="p-4 bg-black bg-opacity-40 rounded-4 border border-secondary shadow-inner">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <button type="button" class="btn btn-sm btn-outline-gold rounded-circle" onclick="shiftCalendarMonth(-1)" style="width: 36px; height: 36px;"><i class="bi bi-chevron-left"></i></button>
+            <h4 class="m-0 font-serif text-gold fw-bold fs-4" id="calendarMonthTitle">July 2026</h4>
+            <button type="button" class="btn btn-sm btn-outline-gold rounded-circle" onclick="shiftCalendarMonth(1)" style="width: 36px; height: 36px;"><i class="bi bi-chevron-right"></i></button>
+        </div>
+        
+        <div class="row row-cols-7 g-2 text-center text-xs text-muted mb-3 fw-bold text-uppercase tracking-wider">
+            <div class="col text-warning">Sun</div>
+            <div class="col">Mon</div>
+            <div class="col">Tue</div>
+            <div class="col">Wed</div>
+            <div class="col">Thu</div>
+            <div class="col">Fri</div>
+            <div class="col text-warning">Sat</div>
+        </div>
+        
+        <div class="row row-cols-7 g-2 text-center" id="calendarDaysGrid"></div>
+    </div>
+</div>
+<?php
+}
+
