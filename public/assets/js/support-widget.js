@@ -267,44 +267,56 @@
         .support-send {
             border: 0;
             border-radius: 14px;
-            background: #fdd700;
-            color: #020617;
+            background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%);
+            color: #070A10;
             font-weight: 700;
             padding: 0.78rem 1.1rem;
             min-width: 76px;
-            box-shadow: 0 10px 18px rgba(253, 215, 0, 0.14);
+            box-shadow: 0 10px 18px rgba(212, 175, 55, 0.2);
+            cursor: pointer;
         }
         .support-send:disabled,
         .support-pill:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
-        @media (min-width: 992px) {
-            .support-panel.is-sidebar {
-                width: 420px;
-            }
-        }
-        @media (max-width: 575px) {
+
+        /* Mobile & Small Device Optimization (< 768px) */
+        @media (max-width: 767.98px) {
             [data-support-widget] {
-                right: 10px;
-                left: 10px;
-                bottom: 10px;
+                right: 12px;
+                bottom: 12px;
             }
-            .support-panel {
-                width: auto;
-                height: min(80vh, 620px);
+            [data-support-widget].is-open .support-launcher {
+                display: none !important;
             }
-            .support-message {
-                max-width: 100%;
+            .support-panel.is-open {
+                position: fixed !important;
+                inset: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+                max-height: 100dvh !important;
+                border-radius: 0 !important;
+                border: none !important;
+                z-index: 2147483005 !important;
             }
-            .support-panel.is-sidebar {
-                width: auto;
+            .support-expand {
+                display: none !important;
+            }
+            .support-header {
+                padding: 12px 16px !important;
+            }
+            .support-input {
+                font-size: 16px !important;
             }
             .support-actions {
-                align-items: stretch;
+                flex-direction: row !important;
+                align-items: center !important;
             }
             .support-send {
-                width: 100%;
+                width: auto !important;
+                padding: 0.6rem 1.2rem !important;
             }
         }
     `;
@@ -537,6 +549,7 @@
 
     function openPanel() {
         state.open = true;
+        root.classList.add('is-open');
         panel.classList.add('is-open');
         panel.classList.toggle('is-sidebar', state.sidebar);
         expandButton.setAttribute('aria-pressed', state.sidebar ? 'true' : 'false');
@@ -547,6 +560,7 @@
 
     function closePanel() {
         state.open = false;
+        root.classList.remove('is-open');
         panel.classList.remove('is-open');
     }
 

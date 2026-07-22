@@ -1,1 +1,72 @@
-/* Intentionally left as a separate hook for future support-widget styling overrides. */
+/* Chat Support Widget Responsive CSS Styles */
+[data-support-widget] {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 2147483000;
+    font-family: inherit;
+}
+.support-launcher {
+    width: 56px;
+    height: 56px;
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    border-radius: 999px;
+    background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%);
+    color: #070A10;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.support-launcher:hover {
+    transform: scale(1.08);
+    box-shadow: 0 14px 35px rgba(212, 175, 55, 0.4);
+}
+.support-panel {
+    position: absolute;
+    right: 0;
+    bottom: 76px;
+    width: min(92vw, 412px);
+    height: min(80vh, 700px);
+    border-radius: 18px;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    background: linear-gradient(180deg, rgba(3, 7, 18, 0.98), rgba(2, 6, 23, 1));
+    box-shadow: 0 26px 56px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    color: #f8fafc;
+}
+.support-panel.is-open { display: flex; }
+
+/* Mobile Optimization (< 768px) */
+@media (max-width: 767.98px) {
+    [data-support-widget] {
+        right: 12px;
+        bottom: 12px;
+    }
+    [data-support-widget].is-open .support-launcher {
+        display: none !important;
+    }
+    .support-panel.is-open {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        z-index: 2147483005 !important;
+    }
+    .support-expand {
+        display: none !important;
+    }
+    .support-header {
+        padding: 12px 16px !important;
+    }
+    .support-input {
+        font-size: 16px !important;
+    }
+}
