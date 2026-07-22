@@ -47,6 +47,13 @@ $nextIdx = ($currentIdx + 1) % max(1, $totalRoomCount);
 $prevRoom = $allRooms[$prevIdx] ?? null;
 $nextRoom = $allRooms[$nextIdx] ?? null;
 
+$floorsGrouped = [];
+foreach ($allRooms as $r) {
+    $fl = (int) ($r['floor'] ?? (substr((string)$r['room_number'], 0, 1) ?: 1));
+    $floorsGrouped[$fl][] = $r;
+}
+ksort($floorsGrouped);
+
 $catalog = roomCatalog();
 $roomType = $room['room_type'];
 $typeCatalog = $catalog[$roomType] ?? [
@@ -112,6 +119,41 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                 <a href="rooms.php#suite-catalog" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold shadow text-uppercase tracking-wider" style="background: rgba(30, 41, 59, 0.9); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.45);">
                     <i class="bi bi-arrow-left me-1"></i>Back to Catalog
                 </a>
+
+                <!-- Floors > Rooms Dropdown Menu -->
+                <div class="dropdown">
+                    <button class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(30, 41, 59, 0.9); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.45);">
+                        <i class="bi bi-layers-fill me-1"></i>Floors &gt; Room #<?= e($room['room_number']) ?>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow-lg rounded-4 p-2" style="background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(212, 175, 55, 0.4); max-height: 380px; overflow-y: auto; min-width: 260px;">
+                        <?php foreach ($floorsGrouped as $flNum => $fRooms): ?>
+                            <li><h6 class="dropdown-header text-uppercase tracking-wider font-serif fw-bold" style="color: #FBBF24;"><i class="bi bi-building me-1"></i>Floor <?= $flNum ?> (<?= count($fRooms) ?> Rooms)</h6></li>
+                            <?php foreach ($fRooms as $fRoom): 
+                                $isCurrent = (int)$fRoom['room_id'] === (int)$room['room_id'];
+                                $fBadgeStyle = match ($fRoom['status']) {
+                                    'Available' => 'background: rgba(16, 185, 129, 0.35); color: #A7F3D0;',
+                                    'Reserved' => 'background: rgba(59, 130, 246, 0.35); color: #BFDBFE;',
+                                    'Occupied' => 'background: rgba(245, 158, 11, 0.35); color: #FDE68A;',
+                                    'Cleaning' => 'background: rgba(168, 85, 247, 0.35); color: #DDD6FE;',
+                                    default => 'background: rgba(148, 163, 184, 0.3); color: #F1F5F9;',
+                                };
+                            ?>
+                                <li>
+                                    <a class="dropdown-item rounded-3 py-2 px-3 d-flex align-items-center justify-content-between text-xs mb-1 <?= $isCurrent ? 'active fw-bold' : '' ?>" 
+                                       href="room-detail.php?id=<?= (int)$fRoom['room_id'] ?><?= $dateParams ?>"
+                                       style="<?= $isCurrent ? 'background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;' : 'color: #F8FAFC;' ?>">
+                                        <span><i class="bi bi-door-closed me-2"></i>Room #<?= e($fRoom['room_number']) ?> &mdash; <?= e($fRoom['room_type']) ?></span>
+                                        <span class="badge text-xs px-2 py-1 ms-2 rounded-pill fw-bold" style="<?= $fBadgeStyle ?>"><?= $fRoom['status'] ?></span>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                            <?php if ($flNum < max(array_keys($floorsGrouped))): ?>
+                                <li><hr class="dropdown-divider border-secondary opacity-50 my-1"></li>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+
                 <?php if ($prevRoom): ?>
                     <a href="room-detail.php?id=<?= (int)$prevRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold text-light shadow-sm" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3);" title="Go to Room #<?= e($prevRoom['room_number']) ?>">
                         <i class="bi bi-chevron-left me-1" style="color: #FFDF73;"></i>Prev: Room #<?= e($prevRoom['room_number']) ?>
