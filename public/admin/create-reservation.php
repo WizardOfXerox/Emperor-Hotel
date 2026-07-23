@@ -119,11 +119,7 @@ renderAdminLayoutStart('Create Reservation', 'create-reservation', $currentAdmin
 ?>
 <section class="row g-4 justify-content-center">
     <div class="col-xxl-10 col-xl-11">
-        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
-            <div>
-                <p class="eyebrow mb-1">Reservation Desk</p>
-                <h1 class="h3 mb-0">Create Reservation</h1>
-            </div>
+        <div class="d-flex justify-content-end mb-3">
             <a class="btn btn-outline-warning btn-sm fw-semibold" href="reservations.php"><i class="bi bi-calendar-check me-1"></i>Manage Reservations</a>
         </div>
 
