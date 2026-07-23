@@ -2297,4 +2297,93 @@ body.light-mode .room-number-badge {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
 }
 
+/* ===== ROOM CATALOG DYNAMIC LAYOUT SWITCHER BAR ===== */
+.layout-switcher-bar {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    color: #f8fafc !important;
+}
+
+body.light-mode .layout-switcher-bar {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.25) !important;
+    color: #0f172a !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+}
+
+.layout-btn-group {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border-color: rgba(212, 175, 55, 0.3) !important;
+}
+
+body.light-mode .layout-btn-group {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+}
+
+.layout-toggle-btn {
+    color: #94a3b8 !important;
+    font-weight: 600 !important;
+    border: none !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.layout-toggle-btn:hover {
+    color: #FFDF73 !important;
+    background: rgba(212, 175, 55, 0.15) !important;
+}
+
+.layout-toggle-btn.active {
+    background: linear-gradient(135deg, #d4af37 0%, #ffdf73 50%, #aa7c11 100%) !important;
+    color: #070a10 !important;
+    font-weight: 800 !important;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4) !important;
+}
+
+body.light-mode .layout-toggle-btn {
+    color: #64748b !important;
+}
+
+body.light-mode .layout-toggle-btn:hover {
+    color: #b45309 !important;
+    background: #fffbeb !important;
+}
+
+body.light-mode .layout-toggle-btn.active {
+    background: #b45309 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(180, 83, 9, 0.3) !important;
+}
+
+/* ===== CUSTOM 5-COLUMN RESPONSIVE GRID LAYOUT ===== */
+@media (min-width: 1400px) {
+    .col-xxl-five {
+        flex: 0 0 auto !important;
+        width: 20% !important;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1399.98px) {
+    .col-xxl-five {
+        flex: 0 0 auto !important;
+        width: 25% !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .col-xxl-five {
+        flex: 0 0 auto !important;
+        width: 33.333333% !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .col-xxl-five {
+        flex: 0 0 auto !important;
+        width: 100% !important;
+    }
+}
+
 

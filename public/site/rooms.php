@@ -138,6 +138,41 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
 
         <!-- LEFT: ROOM CARDS GRID -->
         <div class="col-12 col-lg-8 col-xl-9">
+            
+            <!-- Dynamic Grid Layout Switcher Bar -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 p-3 rounded-4 border shadow-sm layout-switcher-bar gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-xs font-serif fw-bold text-uppercase tracking-wider opacity-75">
+                        <i class="bi bi-grid-fill text-warning me-1"></i>DISPLAY LAYOUT:
+                    </span>
+                    <span id="activeLayoutLabel" class="badge rounded-pill text-xs fw-bold font-serif" style="background: rgba(212, 175, 55, 0.2); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.4);">
+                        Auto Responsive
+                    </span>
+                </div>
+
+                <!-- Layout Switcher Button Group -->
+                <div class="btn-group btn-group-sm rounded-pill p-1 border shadow-sm layout-btn-group flex-wrap" role="group" aria-label="Room Grid Layout Options">
+                    <button type="button" class="btn btn-sm rounded-pill layout-toggle-btn active" data-cols="auto" onclick="setRoomGridLayout('auto')" title="Auto Responsive (Based on Screen Size)">
+                        <i class="bi bi-aspect-ratio me-1"></i>Auto
+                    </button>
+                    <button type="button" class="btn btn-sm rounded-pill layout-toggle-btn" data-cols="5" onclick="setRoomGridLayout(5)" title="5 Columns (Ultra Wide)">
+                        <i class="bi bi-grid-3x3 me-1"></i>5 Cols
+                    </button>
+                    <button type="button" class="btn btn-sm rounded-pill layout-toggle-btn" data-cols="4" onclick="setRoomGridLayout(4)" title="4 Columns (Compact Grid)">
+                        <i class="bi bi-grid-3x2-gap-fill me-1"></i>4 Cols
+                    </button>
+                    <button type="button" class="btn btn-sm rounded-pill layout-toggle-btn" data-cols="3" onclick="setRoomGridLayout(3)" title="3 Columns (Standard Grid)">
+                        <i class="bi bi-grid-3x3-gap-fill me-1"></i>3 Cols
+                    </button>
+                    <button type="button" class="btn btn-sm rounded-pill layout-toggle-btn" data-cols="2" onclick="setRoomGridLayout(2)" title="2 Columns (Comfort View)">
+                        <i class="bi bi-grid-fill me-1"></i>2 Cols
+                    </button>
+                    <button type="button" class="btn btn-sm rounded-pill layout-toggle-btn" data-cols="1" onclick="setRoomGridLayout(1)" title="1 Column (List View)">
+                        <i class="bi bi-view-list me-1"></i>1 Col List
+                    </button>
+                </div>
+            </div>
+
             <div class="row g-4" id="kioskRoomGrid">
                 <?php foreach ($rooms as $rm): 
                     $rmType = $rm['room_type'];
@@ -559,6 +594,87 @@ function shiftRoomsCalendarMonth(delta) {
     }
     renderRoomsCalendarGrid();
 }
+
+function getAutoResponsiveCols() {
+    const width = window.innerWidth;
+    if (width >= 1600) return 5;
+    if (width >= 1200) return 4;
+    if (width >= 992) return 3;
+    if (width >= 768) return 2;
+    return 1;
+}
+
+function setRoomGridLayout(mode) {
+    const items = document.querySelectorAll('.kiosk-room-item');
+    const label = document.getElementById('activeLayoutLabel');
+    const btns = document.querySelectorAll('.layout-toggle-btn');
+    const leftCol = document.getElementById('kioskMainContainer');
+
+    btns.forEach(b => {
+        const val = b.getAttribute('data-cols');
+        if (String(val) === String(mode)) {
+            b.classList.add('active');
+        } else {
+            b.classList.remove('active');
+        }
+    });
+
+    let effectiveCols = mode;
+    let isAuto = (mode === 'auto');
+
+    if (isAuto) {
+        effectiveCols = getAutoResponsiveCols();
+    } else {
+        effectiveCols = parseInt(mode, 10);
+    }
+
+    items.forEach(item => {
+        item.className = item.className.replace(/col-\S+/g, '').trim();
+        item.classList.add('kiosk-room-item');
+
+        if (effectiveCols === 5) {
+            item.classList.add('col-12', 'col-sm-6', 'col-md-4', 'col-lg-3', 'col-xxl-five');
+        } else if (effectiveCols === 4) {
+            item.classList.add('col-12', 'col-sm-6', 'col-md-4', 'col-lg-3', 'col-xl-3');
+        } else if (effectiveCols === 3) {
+            item.classList.add('col-12', 'col-md-6', 'col-lg-4', 'col-xl-4');
+        } else if (effectiveCols === 2) {
+            item.classList.add('col-12', 'col-md-6');
+        } else {
+            item.classList.add('col-12');
+        }
+    });
+
+    if (label) {
+        if (isAuto) {
+            label.textContent = `Auto (${effectiveCols} Cols for ${window.innerWidth}px)`;
+        } else if (effectiveCols === 5) {
+            label.textContent = '5 Columns (Ultra Wide)';
+        } else if (effectiveCols === 4) {
+            label.textContent = '4 Columns (Compact Grid)';
+        } else if (effectiveCols === 3) {
+            label.textContent = '3 Columns (Standard Grid)';
+        } else if (effectiveCols === 2) {
+            label.textContent = '2 Columns (Comfort View)';
+        } else {
+            label.textContent = '1 Column (List View)';
+        }
+    }
+
+    localStorage.setItem('emperor_rooms_layout_mode', mode);
+}
+
+window.addEventListener('resize', () => {
+    const savedMode = localStorage.getItem('emperor_rooms_layout_mode') || 'auto';
+    if (savedMode === 'auto') {
+        setRoomGridLayout('auto');
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedMode = localStorage.getItem('emperor_rooms_layout_mode') || 'auto';
+    setRoomGridLayout(savedMode === 'auto' ? 'auto' : (isNaN(savedMode) ? 'auto' : parseInt(savedMode, 10)));
+});
 </script>
 
 <?php renderSupportWidget('customer'); ?>
