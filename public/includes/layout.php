@@ -334,7 +334,7 @@ function renderPaginationControl(int $totalItems, int $currentPage, int $perPage
 
     echo '<div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-4 pt-3 border-top border-secondary border-opacity-25 pagination-container">';
     echo '  <div class="small text-muted mb-0">';
-    echo '      Showing <span class="fw-bold text-light">' . number_format($startItem) . '</span> to <span class="fw-bold text-light">' . number_format($endItem) . '</span> of <span class="fw-bold text-warning">' . number_format($totalItems) . '</span> entries';
+    echo '      Showing <span class="fw-bold pagination-item-count text-body">' . number_format($startItem) . '</span> to <span class="fw-bold pagination-item-count text-body">' . number_format($endItem) . '</span> of <span class="fw-bold text-warning">' . number_format($totalItems) . '</span> entries';
     echo '  </div>';
 
     if ($totalPages > 1) {

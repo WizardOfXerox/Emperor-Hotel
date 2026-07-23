@@ -2880,6 +2880,45 @@ body.light-mode select:disabled {
     -webkit-text-fill-color: #64748B !important;
 }
 
+/* Light Mode Pagination & Item Summary Contrast Fixes */
+body.light-mode .pagination-container {
+    border-color: #E2E8F0 !important;
+}
+
+body.light-mode .pagination-container .text-muted {
+    color: #64748B !important;
+}
+
+body.light-mode .pagination-container .text-light,
+body.light-mode .pagination-container .text-body,
+body.light-mode .pagination-item-count {
+    color: #0F172A !important;
+}
+
+body.light-mode .pagination .page-link {
+    background-color: #FFFFFF !important;
+    color: #1E293B !important;
+    border-color: #CBD5E1 !important;
+}
+
+body.light-mode .pagination .page-link:hover {
+    background-color: #F1F5F9 !important;
+    color: #0F172A !important;
+    border-color: #94A3B8 !important;
+}
+
+body.light-mode .pagination .page-item.active .page-link {
+    background-color: #EAB308 !important;
+    color: #0F172A !important;
+    border-color: #EAB308 !important;
+}
+
+body.light-mode .pagination .page-item.disabled .page-link {
+    background-color: #F8FAFC !important;
+    color: #94A3B8 !important;
+    border-color: #E2E8F0 !important;
+}
+
 
 
 
