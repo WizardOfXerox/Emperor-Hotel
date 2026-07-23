@@ -138,9 +138,29 @@ function renderRoomShowcaseSection(): void
         }
         echo '</div>';
 
+        $defaultFirstRoomIdMap = [
+            'Imperial Deluxe' => 1,
+            'Royal Executive' => 13,
+            'Emperor Presidential' => 25,
+        ];
+        $inspectRoomId = $defaultFirstRoomIdMap[$roomType] ?? 1;
+
+        if ($db) {
+            try {
+                $stmt = $db->prepare("SELECT room_id FROM rooms WHERE room_type = :type ORDER BY room_number ASC LIMIT 1");
+                $stmt->execute(['type' => $roomType]);
+                $foundRoomId = (int) $stmt->fetchColumn();
+                if ($foundRoomId > 0) {
+                    $inspectRoomId = $foundRoomId;
+                }
+            } catch (Throwable $e) {
+                // Fallback to default first room ID map
+            }
+        }
+
         echo '<div class="room-actions d-flex flex-wrap gap-2 align-items-center">';
         echo '<a class="room-price room-price--booking" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
-        echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=1"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
+        echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=' . $inspectRoomId . '"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
         echo '</div>';
         echo '</div></section>';
     }
