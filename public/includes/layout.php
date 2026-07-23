@@ -24,7 +24,9 @@ function renderHeader(string $title, array $extraStylesheets = [], string $bodyC
     <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="../assets/images/branding/emperors-hotel-logo.svg">
-    <link rel="shortcut icon" type="image/svg+xml" href="../assets/images/branding/emperors-hotel-logo.svg">
+    <link rel="alternate icon" type="image/png" href="../assets/images/branding/emperors-hotel-logo.svg">
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="apple-touch-icon" href="../assets/images/branding/emperors-hotel-logo.svg">
     <link href="../assets/css/app.css" rel="stylesheet">
     {$extraStylesheetLinks}
 </head>
