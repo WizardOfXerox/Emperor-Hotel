@@ -49,6 +49,7 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
             <a class="home-nav__link" href="home.php">HOME</a>
             <a class="home-nav__link home-nav__link--active" href="rooms.php">ROOMS</a>
             <a class="home-nav__link" href="suites.php">SUITES</a>
+            <a class="home-nav__link" href="contact.php">CONTACT</a>
         </div>
 
         <div class="home-nav__auth">
