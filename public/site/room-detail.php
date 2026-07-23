@@ -274,13 +274,13 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                         </div>
 
                         <!-- Selected Stay Dates Card with Centered Modal Calendar Trigger -->
-                        <div class="p-3 rounded-4 mb-4 border transition-all" style="background: rgba(7, 10, 16, 0.6); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+                        <div class="p-3 rounded-4 mb-4 border transition-all room-stay-dates-banner">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
-                                    <small class="text-light opacity-75 text-xs text-uppercase d-block fw-bold tracking-wider mb-1">
+                                    <small class="text-xs text-uppercase d-block fw-bold tracking-wider mb-1 opacity-75">
                                         <i class="bi bi-calendar-range text-warning me-1"></i>SELECTED STAY DATES
                                     </small>
-                                    <div class="fw-bold text-white font-serif fs-6" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#calendarPickerModal" title="Click to change stay dates">
+                                    <div class="fw-bold font-serif fs-6" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#calendarPickerModal" title="Click to change stay dates">
                                         <?= date('M d, Y', strtotime($checkIn)) ?> – <?= date('M d, Y', strtotime($checkOut)) ?>
                                     </div>
                                 </div>
@@ -333,7 +333,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
 
             <!-- Col 3: Always-Visible Right-Hand Floor & Room Directory Sidebar -->
             <div class="col-12 col-lg-3 col-xl-3">
-                <div class="card rounded-4 p-3 shadow-lg border h-100 d-flex flex-column" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+                <div class="card rounded-4 p-3 shadow-lg border h-100 d-flex flex-column room-detail-sidebar">
                     <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
                         <h6 class="font-serif fw-bold m-0" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);">
                             <i class="bi bi-compass-fill me-2"></i>Rooms Directory
@@ -351,12 +351,12 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                         ?>
                             <div class="accordion-item bg-transparent border-secondary mb-2 rounded-3 overflow-hidden" style="border: 1px solid rgba(212, 175, 55, 0.25) !important;">
                                 <h2 class="accordion-header" id="<?= $headId ?>">
-                                    <button class="accordion-button <?= $isFlActive ? '' : 'collapsed' ?> font-serif fw-bold text-xs text-light p-2" type="button" data-bs-toggle="collapse" data-bs-target="#<?= $accId ?>" aria-expanded="<?= $isFlActive ? 'true' : 'false' ?>" aria-controls="<?= $accId ?>" style="background: rgba(30, 41, 59, 0.85);">
+                                    <button class="accordion-button <?= $isFlActive ? '' : 'collapsed' ?> font-serif fw-bold text-xs p-2" type="button" data-bs-toggle="collapse" data-bs-target="#<?= $accId ?>" aria-expanded="<?= $isFlActive ? 'true' : 'false' ?>" aria-controls="<?= $accId ?>">
                                         <i class="bi bi-building text-warning me-2"></i>Floor <?= $flNum ?> (<?= count($fRooms) ?>)
                                     </button>
                                 </h2>
                                 <div id="<?= $accId ?>" class="accordion-collapse collapse <?= $isFlActive ? 'show' : '' ?>" aria-labelledby="<?= $headId ?>" data-bs-parent="#floorsSidebarAccordion">
-                                    <div class="accordion-body p-2 bg-dark">
+                                    <div class="accordion-body p-2 bg-transparent">
                                         <div class="list-group list-group-flush">
                                             <?php foreach ($fRooms as $fRoom): 
                                                 $isCurrent = (int)$fRoom['room_id'] === (int)$room['room_id'];
@@ -411,32 +411,32 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
             <div class="col-12 col-md-4">
                 <div class="card rounded-4 p-4 shadow-lg border h-100 room-detail-card">
                     <h5 class="font-serif fw-bold mb-4" style="color: #FFDF73;"><i class="bi bi-shield-check me-2"></i>5-Star Guarantees</h5>
-                    <ul class="list-unstyled text-light opacity-90 small mb-0">
+                    <ul class="list-unstyled opacity-90 small mb-0">
                         <li class="mb-3 d-flex align-items-start">
                             <i class="bi bi-award-fill fs-5 me-3 mt-1" style="color: #FFDF73;"></i>
                             <div>
-                                <strong class="d-block text-white">Best Rate Guarantee</strong>
+                                <strong class="d-block">Best Rate Guarantee</strong>
                                 Direct reservation assurance with zero booking surcharges.
                             </div>
                         </li>
                         <li class="mb-3 d-flex align-items-start">
                             <i class="bi bi-clock-history fs-5 me-3 mt-1" style="color: #FFDF73;"></i>
                             <div>
-                                <strong class="d-block text-white">24/7 Butler & Concierge</strong>
+                                <strong class="d-block">24/7 Butler & Concierge</strong>
                                 Dedicated front desk support & luggage assistance.
                             </div>
                         </li>
                         <li class="mb-3 d-flex align-items-start">
                             <i class="bi bi-wifi fs-5 me-3 mt-1" style="color: #FFDF73;"></i>
                             <div>
-                                <strong class="d-block text-white">Ultra Fiber Wi-Fi</strong>
+                                <strong class="d-block">Ultra Fiber Wi-Fi</strong>
                                 High-speed unmetered connection for all Devices.
                             </div>
                         </li>
                         <li class="d-flex align-items-start">
                             <i class="bi bi-arrow-repeat fs-5 me-3 mt-1" style="color: #FFDF73;"></i>
                             <div>
-                                <strong class="d-block text-white">Flexible Date Rescheduling</strong>
+                                <strong class="d-block">Flexible Date Rescheduling</strong>
                                 Easy stay date adjustment prior to check-in.
                             </div>
                         </li>
@@ -446,7 +446,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
         </div>
 
         <!-- Verified Guest Reviews Section -->
-        <div class="card rounded-4 p-4 shadow-lg border" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+        <div class="card rounded-4 p-4 shadow-lg border room-detail-card">
             <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-2 pb-3 border-bottom border-secondary">
                 <h4 class="font-serif fw-bold m-0" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-chat-square-heart me-2"></i>Verified Guest Reviews</h4>
                 <div class="badge fs-6 px-4 py-2 fw-bold rounded-pill shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;">
@@ -455,7 +455,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
             </div>
 
             <?php if (empty($reviews)): ?>
-                <div class="text-center py-5 text-light opacity-75">
+                <div class="text-center py-5 opacity-75">
                     <i class="bi bi-chat-quote fs-1 text-warning opacity-50 d-block mb-3"></i>
                     <p class="m-0 fs-6 fw-semibold">No reviews yet for Room #<?= e($room['room_number']) ?>. Be the first guest to experience this suite!</p>
                 </div>
@@ -463,7 +463,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                 <div class="row row-cols-1 row-cols-md-2 g-3">
                     <?php foreach ($reviews as $rev): ?>
                         <div class="col">
-                            <div class="p-3 rounded-4 border h-100" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+                            <div class="p-3 rounded-4 border h-100 room-detail-specs-box">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <span class="fw-bold font-serif" style="color: #FFDF73;"><?= e($rev['full_name']) ?></span>
                                     <div class="text-warning small">
@@ -472,8 +472,8 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                                         <?php endfor; ?>
                                     </div>
                                 </div>
-                                <p class="text-light opacity-90 small mb-2">"<?= e($rev['comment'] ?: 'Great stay!') ?>"</p>
-                                <small class="text-light opacity-50 text-xs d-block text-end"><?= date('M d, Y', strtotime($rev['created_at'])) ?></small>
+                                <p class="small mb-2">"<?= e($rev['comment'] ?: 'Great stay!') ?>"</p>
+                                <small class="opacity-50 text-xs d-block text-end"><?= date('M d, Y', strtotime($rev['created_at'])) ?></small>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -482,11 +482,11 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
         </div>
 
         <!-- Quick Room Switcher Image Carousel -->
-        <div class="card rounded-4 p-4 shadow-lg border mt-4" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+        <div class="card rounded-4 p-4 shadow-lg border mt-4 room-detail-card">
             <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
                 <div>
                     <h5 class="font-serif fw-bold m-0" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-grid-3x3-gap-fill me-2"></i>Explore Other Suites & Rooms</h5>
-                    <small class="text-light opacity-75 text-xs">Browse all luxury hotel suites across floors</small>
+                    <small class="opacity-75 text-xs">Browse all luxury hotel suites across floors</small>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-sm btn-outline-warning rounded-circle shadow-sm" id="prevExploreCarousel" style="width: 36px; height: 36px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-left"></i></button>

@@ -222,38 +222,30 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
                         <label class="form-label text-xs text-uppercase tracking-wider font-serif text-warning fw-bold mb-3">
                             <i class="bi bi-funnel-fill me-1"></i>Suite Category Filter
                         </label>
-
                         <div class="d-flex flex-column gap-2" id="kioskCategoryCheckboxes">
-                            <label class="form-check-label d-flex align-items-center justify-content-between p-2 rounded-3 border custom-filter-item" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(212, 175, 55, 0.2) !important; cursor: pointer;">
-                                <span class="text-xs font-serif fw-semibold text-light">
-                                    <input type="checkbox" class="form-check-input me-2 filter-checkbox" data-filter="all" checked> All Suites
-                                </span>
-                                <span class="badge bg-gold text-dark text-xs font-serif fw-bold"><?= count($rooms) ?></span>
-                            </label>
-
-                            <label class="form-check-label d-flex align-items-center justify-content-between p-2 rounded-3 border custom-filter-item" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(212, 175, 55, 0.2) !important; cursor: pointer;">
-                                <span class="text-xs font-serif fw-semibold text-light">
+                            <label class="form-check-label d-flex align-items-center justify-content-between p-2 rounded-3 border custom-filter-item">
+                                <span class="text-xs font-serif fw-semibold">
                                     <input type="checkbox" class="form-check-input me-2 filter-checkbox" data-filter="Imperial Deluxe"> Imperial Deluxe
                                 </span>
-                                <span class="badge bg-dark text-warning border border-warning text-xs font-serif fw-bold">₱8,500</span>
+                                <span class="badge filter-price-badge font-serif fw-bold">₱8,500</span>
                             </label>
 
-                            <label class="form-check-label d-flex align-items-center justify-content-between p-2 rounded-3 border custom-filter-item" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(212, 175, 55, 0.2) !important; cursor: pointer;">
-                                <span class="text-xs font-serif fw-semibold text-light">
+                            <label class="form-check-label d-flex align-items-center justify-content-between p-2 rounded-3 border custom-filter-item">
+                                <span class="text-xs font-serif fw-semibold">
                                     <input type="checkbox" class="form-check-input me-2 filter-checkbox" data-filter="Royal Executive"> Royal Executive
                                 </span>
-                                <span class="badge bg-dark text-warning border border-warning text-xs font-serif fw-bold">₱7,500</span>
+                                <span class="badge filter-price-badge font-serif fw-bold">₱7,500</span>
                             </label>
 
-                            <label class="form-check-label d-flex align-items-center justify-content-between p-2 rounded-3 border custom-filter-item" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(212, 175, 55, 0.2) !important; cursor: pointer;">
-                                <span class="text-xs font-serif fw-semibold text-light">
+                            <label class="form-check-label d-flex align-items-center justify-content-between p-2 rounded-3 border custom-filter-item">
+                                <span class="text-xs font-serif fw-semibold">
                                     <input type="checkbox" class="form-check-input me-2 filter-checkbox" data-filter="Emperor Presidential"> Emperor Presidential
                                 </span>
-                                <span class="badge bg-dark text-warning border border-warning text-xs font-serif fw-bold">₱12,500</span>
+                                <span class="badge filter-price-badge font-serif fw-bold">₱12,500</span>
                             </label>
 
-                            <label class="form-check-label d-flex align-items-center justify-content-between p-2 rounded-3 border custom-filter-item mt-2" style="background: rgba(22, 101, 52, 0.3); border: 1px solid rgba(34, 197, 94, 0.4) !important; cursor: pointer;">
-                                <span class="text-xs font-serif fw-semibold text-success">
+                            <label class="form-check-label d-flex align-items-center justify-content-between p-2 rounded-3 border custom-filter-item filter-avail-item mt-2">
+                                <span class="text-xs font-serif fw-bold">
                                     <input type="checkbox" class="form-check-input me-2 filter-checkbox" data-filter="available-only"> Available Only
                                 </span>
                                 <i class="bi bi-check-circle-fill text-success text-xs"></i>
@@ -349,8 +341,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .filter(cb => cb.checked)
             .map(cb => cb.getAttribute('data-filter'));
 
-        const isAllChecked = allCheckbox && allCheckbox.checked;
         const isAvailOnlyChecked = checkedFilters.includes('available-only');
+        const categoryFilters = checkedFilters.filter(f => f !== 'available-only');
 
         items.forEach(item => {
             const type = item.getAttribute('data-type');
@@ -358,18 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const roomNum = item.getAttribute('data-room-num');
             const textContent = item.textContent.toLowerCase();
 
-            let matchCategory = false;
-
-            if (isAllChecked) {
-                matchCategory = true;
-            } else {
-                const categoryFilters = checkedFilters.filter(f => f !== 'all' && f !== 'available-only');
-                if (categoryFilters.length === 0) {
-                    matchCategory = true;
-                } else {
-                    matchCategory = categoryFilters.includes(type);
-                }
-            }
+            let matchCategory = (categoryFilters.length === 0) || categoryFilters.includes(type);
 
             if (isAvailOnlyChecked && avail !== '1') {
                 matchCategory = false;
@@ -386,18 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     checkboxes.forEach(cb => {
-        cb.addEventListener('change', function() {
-            if (this.getAttribute('data-filter') === 'all' && this.checked) {
-                checkboxes.forEach(other => {
-                    if (other.getAttribute('data-filter') !== 'all' && other.getAttribute('data-filter') !== 'available-only') {
-                        other.checked = false;
-                    }
-                });
-            } else if (this.getAttribute('data-filter') !== 'all' && this.getAttribute('data-filter') !== 'available-only' && this.checked) {
-                if (allCheckbox) allCheckbox.checked = false;
-            }
-            filterGrid();
-        });
+        cb.addEventListener('change', filterGrid);
     });
 
     if (searchInput) {

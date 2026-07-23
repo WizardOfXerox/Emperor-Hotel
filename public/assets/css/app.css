@@ -1447,4 +1447,156 @@ body.light-mode .room-detail-card span {
     color: #0f172a !important;
 }
 
+/* ===== LIGHT MODE FOR SUITES SHOWCASE PAGE (suites.php) ===== */
+body.light-mode.rooms-showcase-page,
+body.light-mode #suites-rooms,
+body.light-mode .site-section {
+    background: #f4f1ea !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .rooms {
+    background: #ffffff !important;
+    border-radius: 24px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05) !important;
+    margin-bottom: 30px !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+}
+
+body.light-mode .rooms .content h1 {
+    background: linear-gradient(135deg, #0f172a 30%, #b45309 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+body.light-mode .rooms .content h2 {
+    color: #64748b !important;
+}
+
+body.light-mode .rooms .content p {
+    color: #334155 !important;
+}
+
+body.light-mode .rooms .content .room-inclusion-line {
+    color: #475569 !important;
+}
+
+body.light-mode .rooms .card {
+    background: #f8f6f0 !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+    color: #0f172a !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
+}
+
+body.light-mode .rooms .card p {
+    color: #b45309 !important;
+    font-weight: bold !important;
+}
+
+body.light-mode .rooms .card hr {
+    border-color: rgba(180, 140, 60, 0.2) !important;
+}
+
+body.light-mode .rooms .card li {
+    color: #1e293b !important;
+}
+
+body.light-mode .rooms .room-price {
+    background: linear-gradient(135deg, #d4af37 0%, #ffdf73 50%, #aa7c11 100%) !important;
+    color: #070a10 !important;
+}
+
+/* ===== LIGHT MODE ROOMS SIDEBAR FILTER & CALENDAR ===== */
+body.light-mode .sidebar-filter-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .sidebar-filter-card label,
+body.light-mode .sidebar-filter-card span,
+body.light-mode .sidebar-filter-card div,
+body.light-mode .sidebar-filter-card input {
+    color: #0f172a !important;
+}
+
+body.light-mode .custom-filter-item {
+    background: #f8f6f0 !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .custom-filter-item span {
+    color: #0f172a !important;
+}
+
+body.light-mode .filter-price-badge {
+    background: #fffbeb !important;
+    color: #b45309 !important;
+    border: 1px solid #fde68a !important;
+}
+
+body.light-mode .filter-avail-item {
+    background: #d1fae5 !important;
+    border: 1px solid #10b981 !important;
+    color: #065f46 !important;
+}
+
+body.light-mode #roomsCalendarGridContainer {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode #roomsCalendarMonthTitle {
+    color: #0f172a !important;
+}
+
+body.light-mode .rooms-cal-day-btn {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.light-mode .rooms-cal-day-btn:hover {
+    background: #f1f5f9 !important;
+    color: #000000 !important;
+}
+
+body.light-mode .rooms-cal-day-btn.is-selected {
+    background: #d4af37 !important;
+    color: #ffffff !important;
+    border-color: #b45309 !important;
+}
+
+/* ===== LIGHT MODE ROOM DETAIL PANELS ===== */
+body.light-mode .room-stay-dates-banner {
+    background: #fffbeb !important;
+    border: 1px solid #fde68a !important;
+    color: #0f172a !important;
+    box-shadow: 0 4px 15px rgba(180, 140, 60, 0.1) !important;
+}
+
+body.light-mode .room-stay-dates-banner div,
+body.light-mode .room-stay-dates-banner small,
+body.light-mode .room-stay-dates-banner span {
+    color: #0f172a !important;
+}
+
+body.light-mode .kiosk-room-item,
+body.light-mode .room-detail-card .kiosk-room-card {
+    background: #f8f6f0 !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .kiosk-room-item div,
+body.light-mode .kiosk-room-item span,
+body.light-mode .kiosk-room-item h6,
+body.light-mode .kiosk-room-item p {
+    color: #0f172a !important;
+}
+
 
