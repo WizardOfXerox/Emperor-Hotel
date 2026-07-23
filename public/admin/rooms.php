@@ -437,13 +437,18 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                             <input class="form-control bg-dark text-light border-secondary" id="create_room_number" name="room_number" type="text" placeholder="e.g. 401" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="create_room_type">Suite / Room Type</label>
-                            <input class="form-control bg-dark text-light border-secondary" id="create_room_type" name="room_type" list="room_type_list" placeholder="e.g. Penthouse Suite, Royal Executive..." value="<?php echo e($roomTypes[0] ?? 'Imperial Deluxe'); ?>" required>
-                            <datalist id="room_type_list">
+                            <label class="form-label" for="create_room_type_select">Suite / Room Type</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="create_room_type_select" onchange="toggleCustomSuiteInput(this, 'create_custom_suite_box', 'create_room_type_hidden')">
                                 <?php foreach ($roomTypes as $type): ?>
-                                    <option value="<?php echo e($type); ?>"></option>
+                                    <option value="<?php echo e($type); ?>"><?php echo e($type); ?></option>
                                 <?php endforeach; ?>
-                            </datalist>
+                                <option value="__NEW_CUSTOM_SUITE__">+ Add New Custom Suite Type...</option>
+                            </select>
+                            <input type="hidden" id="create_room_type_hidden" name="room_type" value="<?php echo e($roomTypes[0] ?? 'Imperial Deluxe'); ?>">
+                            
+                            <div id="create_custom_suite_box" class="mt-2 d-none">
+                                <input class="form-control bg-dark text-light border-secondary" type="text" id="create_custom_suite_input" placeholder="Type new custom suite name (e.g. Penthouse Suite)..." oninput="updateCustomSuiteValue(this, 'create_room_type_hidden')">
+                            </div>
                         </div>
                     </div>
                     <div class="row g-3">
@@ -531,8 +536,21 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                                 <input class="form-control bg-dark text-light border-secondary" id="edit_room_number_<?php echo $roomId; ?>" name="room_number" type="text" value="<?php echo e($room['room_number']); ?>" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="edit_room_type_<?php echo $roomId; ?>">Room Type</label>
-                                <input class="form-control bg-dark text-light border-secondary" id="edit_room_type_<?php echo $roomId; ?>" name="room_type" list="room_type_list" placeholder="Select or type room type..." value="<?php echo e($room['room_type']); ?>" required>
+                                <label class="form-label" for="edit_room_type_select_<?php echo $roomId; ?>">Suite / Room Type</label>
+                                <select class="form-select bg-dark text-light border-secondary" id="edit_room_type_select_<?php echo $roomId; ?>" onchange="toggleCustomSuiteInput(this, 'edit_custom_suite_box_<?php echo $roomId; ?>', 'edit_room_type_hidden_<?php echo $roomId; ?>')">
+                                    <?php foreach ($roomTypes as $type): ?>
+                                        <option value="<?php echo e($type); ?>" <?php echo $room['room_type'] === $type ? 'selected' : ''; ?>><?php echo e($type); ?></option>
+                                    <?php endforeach; ?>
+                                    <?php if (!in_array($room['room_type'], $roomTypes, true)): ?>
+                                        <option value="<?php echo e($room['room_type']); ?>" selected><?php echo e($room['room_type']); ?></option>
+                                    <?php endif; ?>
+                                    <option value="__NEW_CUSTOM_SUITE__">+ Add New Custom Suite Type...</option>
+                                </select>
+                                <input type="hidden" id="edit_room_type_hidden_<?php echo $roomId; ?>" name="room_type" value="<?php echo e($room['room_type']); ?>">
+                                
+                                <div id="edit_custom_suite_box_<?php echo $roomId; ?>" class="mt-2 d-none">
+                                    <input class="form-control bg-dark text-light border-secondary" type="text" placeholder="Type custom suite name..." oninput="updateCustomSuiteValue(this, 'edit_room_type_hidden_<?php echo $roomId; ?>')">
+                                </div>
                             </div>
                         </div>
                         <div class="row g-3">
@@ -620,6 +638,31 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
 document.querySelectorAll(".modal").forEach((modal) => {
     document.body.appendChild(modal);
 });
+
+function toggleCustomSuiteInput(selectEl, customBoxId, hiddenInputId) {
+    const customBox = document.getElementById(customBoxId);
+    const hiddenInput = document.getElementById(hiddenInputId);
+    if (!customBox || !hiddenInput) return;
+
+    if (selectEl.value === '__NEW_CUSTOM_SUITE__') {
+        customBox.classList.remove('d-none');
+        const customInput = customBox.querySelector('input');
+        if (customInput) {
+            customInput.focus();
+            hiddenInput.value = customInput.value.trim();
+        }
+    } else {
+        customBox.classList.add('d-none');
+        hiddenInput.value = selectEl.value;
+    }
+}
+
+function updateCustomSuiteValue(inputEl, hiddenInputId) {
+    const hiddenInput = document.getElementById(hiddenInputId);
+    if (hiddenInput) {
+        hiddenInput.value = inputEl.value.trim();
+    }
+}
 </script>
 
 <?php renderAdminLayoutEnd(); ?>
