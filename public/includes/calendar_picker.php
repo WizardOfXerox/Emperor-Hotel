@@ -37,23 +37,23 @@ function renderCalendarPickerModal(string $checkInVal = '', string $checkOutVal 
             </div>
         </form>
 
-        <!-- Visual Interactive 7-Column Calendar Month Grid (Matching Image 1) -->
-        <div id="calendarVisualGrid" class="p-3 rounded-4 border shadow-inner" style="max-width: 520px; width: 100%; margin: 0 auto; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+        <!-- Visual Interactive 7-Column Calendar Month Grid (Matching Reference Design) -->
+        <div id="calendarVisualGrid" class="calendar-visual-grid p-4 shadow-sm" style="max-width: 500px; width: 100%; margin: 0 auto; background: #ffffff !important; border: 1px solid #e2e8f0 !important; border-radius: 24px !important; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;">
             <div class="d-flex align-items-center justify-content-between mb-3">
-                <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(-1)" style="width: 36px; height: 36px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-left"></i></button>
-                <h5 class="m-0 font-serif fw-bold fs-5 text-center" id="calendarMonthTitle" style="color: #FFDF73; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">July 2026</h5>
-                <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(1)" style="width: 36px; height: 36px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-right"></i></button>
+                <button type="button" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" onclick="shiftCalendarMonth(-1)" style="width: 38px; height: 38px; border: 1px solid #cbd5e1; color: #f59e0b; background: #ffffff;"><i class="bi bi-chevron-left"></i></button>
+                <h5 class="m-0 font-serif fw-bold fs-5 text-center calendar-month-title" id="calendarMonthTitle" style="color: #0f172a !important; font-weight: 800;">July 2026</h5>
+                <button type="button" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" onclick="shiftCalendarMonth(1)" style="width: 38px; height: 38px; border: 1px solid #cbd5e1; color: #f59e0b; background: #ffffff;"><i class="bi bi-chevron-right"></i></button>
             </div>
             
             <!-- 7-Column Weekday Header -->
-            <div class="calendar-grid-header mb-2 text-center font-serif fw-bold text-uppercase text-xs">
-                <div style="color: #FBBF24;">Sun</div>
-                <div style="color: #F8FAFC;">Mon</div>
-                <div style="color: #F8FAFC;">Tue</div>
-                <div style="color: #F8FAFC;">Wed</div>
-                <div style="color: #F8FAFC;">Thu</div>
-                <div style="color: #F8FAFC;">Fri</div>
-                <div style="color: #FBBF24;">Sat</div>
+            <div class="calendar-grid-header mb-3 text-center fw-bold text-uppercase text-xs" style="color: #0f172a !important; font-weight: 800 !important;">
+                <div style="color: #0f172a !important;">SUN</div>
+                <div style="color: #0f172a !important;">MON</div>
+                <div style="color: #0f172a !important;">TUE</div>
+                <div style="color: #0f172a !important;">WED</div>
+                <div style="color: #0f172a !important;">THU</div>
+                <div style="color: #0f172a !important;">FRI</div>
+                <div style="color: #0f172a !important;">SAT</div>
             </div>
             
             <!-- Days Grid -->
@@ -134,7 +134,6 @@ function renderVisualCalendarGrid() {
     today.setHours(0,0,0,0);
 
     let html = '';
-    // Padding empty cells before the 1st of the month
     for (let i = 0; i < firstDay; i++) {
         html += `<div class="calendar-day-empty"></div>`;
     }
@@ -208,8 +207,8 @@ function selectCalendarCellDate(dateStr) {
 }
 
 function handleAutoCalendarDateUpdate() {
-    const checkIn = document.getElementById('modalCheckInInput')?.value;
-    const checkOut = document.getElementById('modalCheckOutInput')?.value;
+    const checkIn = (document.getElementById('modalCheckInInput') || document.querySelector('input[name="check_in"]'))?.value;
+    const checkOut = (document.getElementById('modalCheckOutInput') || document.querySelector('input[name="check_out"]'))?.value;
     if (!checkIn || !checkOut) return;
 
     updateStayDurationBadge();
@@ -227,6 +226,7 @@ function handleAutoCalendarDateUpdate() {
     } else {
         window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
     }
+    renderVisualCalendarGrid();
 }
 
 function shiftCalendarMonth(delta) {
@@ -242,8 +242,8 @@ function shiftCalendarMonth(delta) {
 }
 
 function updateStayDurationBadge() {
-    const checkInVal = document.getElementById('modalCheckInInput')?.value;
-    const checkOutVal = document.getElementById('modalCheckOutInput')?.value;
+    const checkInVal = (document.getElementById('modalCheckInInput') || document.querySelector('input[name="check_in"]'))?.value;
+    const checkOutVal = (document.getElementById('modalCheckOutInput') || document.querySelector('input[name="check_out"]'))?.value;
     const badge = document.getElementById('stayDurationBadge');
     const inlineBadge = document.getElementById('inlineStayDurationBadge');
 
@@ -265,36 +265,9 @@ function updateStayDurationBadge() {
     if (inlineBadge) inlineBadge.textContent = text;
 }
 
-function applySelectedDatesFromModal() {
-    const checkIn = document.getElementById('modalCheckInInput')?.value;
-    const checkOut = document.getElementById('modalCheckOutInput')?.value;
-    if (!checkIn || !checkOut) return;
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomId = urlParams.get('id');
-    if (roomId && window.location.pathname.includes('room-detail.php')) {
-        window.location.href = `room-detail.php?id=${encodeURIComponent(roomId)}&check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`;
-        return;
-    }
-
-    const mainCheckIn = document.querySelector('input[name="check_in"]');
-    const mainCheckOut = document.querySelector('input[name="check_out"]');
-
-    if (mainCheckIn) mainCheckIn.value = checkIn;
-    if (mainCheckOut) mainCheckOut.value = checkOut;
-
-    const modalEl = document.getElementById('calendarPickerModal');
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    if (modal) modal.hide();
-
-    const searchForm = document.getElementById('availabilitySearchForm') || document.getElementById('bookingForm');
-    if (searchForm) {
-        searchForm.submit();
-    }
-}
 function handleInlineCalendarSearch() {
-    const checkIn = document.getElementById('modalCheckInInput')?.value;
-    const checkOut = document.getElementById('modalCheckOutInput')?.value;
+    const checkIn = (document.getElementById('modalCheckInInput') || document.querySelector('input[name="check_in"]'))?.value;
+    const checkOut = (document.getElementById('modalCheckOutInput') || document.querySelector('input[name="check_out"]'))?.value;
     if (!checkIn || !checkOut) return;
 
     if (typeof updateHotelMapAvailability === 'function') {
@@ -316,9 +289,16 @@ function handleInlineCalendarSearch() {
 .calendar-grid-days {
     display: grid !important;
     grid-template-columns: repeat(7, 1fr) !important;
-    gap: 6px !important;
-    max-width: 520px !important;
+    gap: 8px !important;
+    max-width: 480px !important;
     margin: 0 auto !important;
+}
+
+.calendar-grid-header div {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    font-size: 0.85rem !important;
+    font-family: 'DM Sans', sans-serif !important;
 }
 
 .calendar-day-btn {
@@ -329,42 +309,43 @@ function handleInlineCalendarSearch() {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
+    border-radius: 12px;
     font-weight: 700;
-    font-size: 0.9rem;
-    color: #F8FAFC;
-    background: rgba(30, 41, 59, 0.7);
-    border: 1px solid rgba(212, 175, 55, 0.25);
+    font-size: 0.92rem;
+    color: #1e293b !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .calendar-day-btn:hover:not(.is-disabled) {
-    background: rgba(212, 175, 55, 0.3) !important;
-    border-color: #D4AF37 !important;
-    color: #FFDF73 !important;
-    transform: scale(1.06);
+    background: #fef08a !important;
+    border-color: #f59e0b !important;
+    color: #0f172a !important;
+    transform: scale(1.05);
 }
 
 .calendar-day-btn.is-selected {
-    background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important;
-    color: #070A10 !important;
-    border: none !important;
+    background: #fef08a !important;
+    color: #0f172a !important;
+    border: 2px solid #f59e0b !important;
     font-weight: 900 !important;
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.6) !important;
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.45) !important;
 }
 
 .calendar-day-btn.in-range {
-    background: rgba(212, 175, 55, 0.25) !important;
-    border: 1px solid rgba(212, 175, 55, 0.5) !important;
-    color: #FFDF73 !important;
+    background: #fffbeb !important;
+    border: 1px solid #fde68a !important;
+    color: #92400e !important;
 }
 
 .calendar-day-btn.is-disabled {
-    opacity: 0.3;
+    opacity: 0.35;
     cursor: not-allowed;
-    background: rgba(15, 23, 42, 0.4);
-    border-color: transparent;
+    background: #f1f5f9 !important;
+    border-color: transparent !important;
+    color: #94a3b8 !important;
 }
 
 .calendar-day-empty {
