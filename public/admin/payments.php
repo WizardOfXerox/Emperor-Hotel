@@ -78,8 +78,8 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
     <div class="col-xl-4">
         <div class="panel-card p-4 h-100">
             <p class="eyebrow mb-1">Payment Entry</p>
-            <h3 class="mb-2">Record Payment or Simulation</h3>
-            <p class="muted-copy">Choose a reservation first. The tracker shows the reservation total, confirmed payment, pending logs, and balance.</p>
+            <h3 class="mb-2">Record Guest Payment</h3>
+            <p class="muted-copy">Select a reservation to log a Cash, Credit Card, GCash, or Bank payment and update the reservation balance.</p>
 
             <?php if (!$reservations): ?>
                 <div class="alert alert-warning">Create a reservation before recording a payment.</div>
@@ -149,12 +149,12 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                 </div>
 
                 <div>
-                    <label class="form-label" for="amount">Amount</label>
+                    <label class="form-label" for="amount">Payment Amount (PHP)</label>
                     <input class="form-control" id="amount" name="amount" type="number" min="0.01" step="0.01" required data-payment-amount <?php echo !$reservations ? 'disabled' : ''; ?>>
                     <div class="form-text" data-payment-entry-note>Choose a reservation to fill the maximum payable amount.</div>
                 </div>
                 <div>
-                    <label class="form-label" for="payment_method">Method</label>
+                    <label class="form-label" for="payment_method">Payment Method</label>
                     <select class="form-select" id="payment_method" name="payment_method" <?php echo !$reservations ? 'disabled' : ''; ?>>
                         <?php foreach (Payment::methods() as $method): ?>
                             <option value="<?php echo e($method); ?>" <?php echo $selectedPaymentMethod === $method ? 'selected' : ''; ?>><?php echo e($method); ?></option>
@@ -162,7 +162,7 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                     </select>
                 </div>
                 <div>
-                    <label class="form-label" for="payment_status">Status / Review Decision</label>
+                    <label class="form-label" for="payment_status">Transaction Status</label>
                     <select class="form-select" id="payment_status" name="payment_status" <?php echo !$reservations ? 'disabled' : ''; ?>>
                         <option value="Confirmed" <?php echo $selectedPaymentStatus === 'Confirmed' ? 'selected' : ''; ?>>Confirmed (Payment Accepted)</option>
                         <option value="Pending" <?php echo $selectedPaymentStatus === 'Pending' ? 'selected' : ''; ?>>Pending (Needs Review)</option>
@@ -170,16 +170,11 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                     </select>
                     <div class="form-text">Use Confirmed for accepted payments. Use Pending for admin review. Use Refunded to record a guest refund.</div>
                 </div>
-                <div class="form-check">
-                    <input class="form-check-input" id="is_simulated" name="is_simulated" type="checkbox" value="1" <?php echo !$reservations ? 'disabled' : ''; ?>>
-                    <label class="form-check-label" for="is_simulated">Create simulated transaction</label>
-                    <div class="form-text">No real money is processed. Simulated transactions are saved as Pending for admin review.</div>
-                </div>
                 <div class="panel-card p-3">
-                    <p class="eyebrow mb-1">Auto Reference</p>
-                    <p class="muted-copy small mb-0">A reference like <strong>PAY-00001-YYYYMMDDHHMMSS</strong> or <strong>SIM-00001-YYYYMMDDHHMMSS</strong> will be generated when this transaction is saved.</p>
+                    <p class="eyebrow mb-1">Transaction Reference</p>
+                    <p class="muted-copy small mb-0">An official reference like <strong>PAY-00001-YYYYMMDDHHMMSS</strong> will be generated automatically upon saving.</p>
                 </div>
-                <button class="btn btn-warning fw-semibold" type="submit" <?php echo !$reservations ? 'disabled' : ''; ?>>Save Transaction</button>
+                <button class="btn btn-warning fw-semibold" type="submit" <?php echo !$reservations ? 'disabled' : ''; ?>><i class="bi bi-check-circle me-1"></i>Save Payment Transaction</button>
             </form>
         </div>
     </div>
@@ -286,11 +281,14 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                                                 </button>
                                             </form>
                                         <?php endif; ?>
+                                        <a class="btn btn-sm btn-warning text-nowrap px-2 py-1 text-xs fw-semibold" href="payments.php?reservation_id=<?php echo e($payment['reservation_id']); ?>" title="Populate this reservation in Payment Entry form">
+                                            <i class="bi bi-wallet2 me-1"></i>Manage Entry
+                                        </a>
                                         <a class="btn btn-sm btn-outline-warning text-nowrap px-2 py-1 text-xs" href="receipt.php?reservation_id=<?php echo e($payment['reservation_id']); ?>" title="View Printable Receipt">
                                             <i class="bi bi-receipt me-1"></i>Receipt
                                         </a>
-                                        <a class="btn btn-sm btn-outline-light text-nowrap px-2 py-1 text-xs" href="reservations.php?search=<?php echo e($payment['reservation_id']); ?>" title="Manage Reservation & Payments">
-                                            <i class="bi bi-sliders me-1"></i>Manage
+                                        <a class="btn btn-sm btn-outline-light text-nowrap px-2 py-1 text-xs" href="reservations.php?search=<?php echo e($payment['reservation_id']); ?>" title="View Full Reservation Record">
+                                            <i class="bi bi-journal-text me-1"></i>Reservation
                                         </a>
                                     </div>
                                 </td>
