@@ -39,7 +39,7 @@ renderHeader('Receipt #' . $reservationId, ['../assets/css/admin/receipt.css'], 
             <button class="btn theme-toggle-btn rounded-circle d-inline-flex align-items-center justify-content-center border-0 p-0" style="width: 38px; height: 38px; background: rgba(253, 215, 0, 0.15);" type="button" onclick="toggleEmperorTheme()" title="Toggle Theme" aria-label="Toggle Theme">
                 <i class="bi bi-sun-fill fs-5 text-warning"></i>
             </button>
-            <button class="btn btn-light fw-semibold" type="button" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print Receipt</button>
+            <button class="btn btn-outline-warning fw-semibold" type="button" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print Receipt</button>
         </div>
     </div>
 
