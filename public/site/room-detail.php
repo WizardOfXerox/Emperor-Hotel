@@ -95,14 +95,7 @@ ksort($floorsGrouped);
 
 $catalog = roomCatalog();
 $roomType = $room['room_type'];
-$typeCatalog = $catalog[$roomType] ?? [
-    'hero' => '../assets/images/rooms/hero.jpg',
-    'carousel' => [],
-    'tagline' => 'Where smart comfort meets timeless elegance.',
-    'details' => 'Experience refined luxury and unmatched comfort crafted for guests who appreciate warm luxury styling and efficient space.',
-    'included_perks' => ['Complimentary breakfast set', 'High-speed priority Wi-Fi'],
-    'features' => ['Plush luxury linen', 'Ergonomic work desk', 'Modern rainfall shower', 'Smart TV & climate control'],
-];
+$typeCatalog = getRoomCatalogData($room);
 
 $reviews = $reviewModel->reviewsForRoom((int) $room['room_id'], 10);
 $ratingData = $reviewModel->averageRatingForRoom((int) $room['room_id']);

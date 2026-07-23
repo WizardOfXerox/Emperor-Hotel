@@ -120,10 +120,10 @@ renderHeader('Log In - Emperor Hotel', ['../assets/css/site/home.css'], '');
                     <div class="mb-3 p-3 rounded-3 border bg-opacity-10 text-xs font-serif" style="background: rgba(212, 175, 55, 0.06); border-color: rgba(212, 175, 55, 0.25) !important;">
                         <span class="fw-bold me-1 text-warning"><i class="bi bi-lightning-charge-fill me-1"></i>Quick Demo Fill:</span>
                         <div class="d-flex flex-wrap gap-2 mt-2">
-                            <button type="button" class="badge rounded-pill quick-login-chip px-2.5 py-1.5 border-0" onclick="fillDemoAccount('customer@emperor.test', 'password123')">
+                            <button type="button" class="badge rounded-pill quick-login-chip px-2.5 py-1.5 border-0" onclick="fillDemoAccount('maria.santos@gmail.com', 'password123')">
                                 <i class="bi bi-person-fill me-1"></i>Customer Account
                             </button>
-                            <button type="button" class="badge rounded-pill quick-login-chip px-2.5 py-1.5 border-0" onclick="fillDemoAccount('admin@emperor.test', 'admin123')">
+                            <button type="button" class="badge rounded-pill quick-login-chip px-2.5 py-1.5 border-0" onclick="fillDemoAccount('jayjaypantaleon@gmail.com', 'admin123')">
                                 <i class="bi bi-shield-fill-check me-1"></i>Admin Account
                             </button>
                         </div>

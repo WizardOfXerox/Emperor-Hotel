@@ -89,6 +89,60 @@ function roomCatalog(): array
     ];
 }
 
+function individualRoomCatalog(): array
+{
+    // Per-room specific catalog overrides (keyed by room_number or room_id)
+    return [
+        '101' => [
+            'tagline' => 'Imperial Deluxe #101 — Corner Courtyard Suite',
+            'details' => 'Room #101 offers a quiet first-floor corner location with direct courtyard garden views, upgraded luxury linen, and an ergonomic workstation.',
+            'view_type' => 'Courtyard Garden View',
+        ],
+        '102' => [
+            'tagline' => 'Imperial Deluxe #102 — Most Booked Guest Choice',
+            'details' => 'Room #102 features panoramic floor-to-ceiling glass, extra-quiet acoustic insulation, and rapid room service access.',
+            'view_type' => 'City Skyline View',
+        ],
+        '201' => [
+            'tagline' => 'Royal Executive #201 — Terrace & Lounge Suite',
+            'details' => 'Room #201 features an expanded private terrace, dual rainfall showers, and executive lounge privileges.',
+            'view_type' => 'Private Garden Terrace View',
+        ],
+        '301' => [
+            'tagline' => 'Emperor Presidential #301 — Top-Floor Grand Penthouse',
+            'details' => 'Room #301 is our flagship 110 sqm top-floor penthouse with double-height ceilings, private dining room, and dedicated 24/7 butler service.',
+            'view_type' => 'Panoramic Ocean & City View',
+        ],
+    ];
+}
+
+function getRoomCatalogData(array|string|int $roomOrType): array
+{
+    $catalog = roomCatalog();
+    $perRoom = individualRoomCatalog();
+
+    if (is_array($roomOrType)) {
+        $roomNum = (string)($roomOrType['room_number'] ?? '');
+        $roomId = (string)($roomOrType['room_id'] ?? '');
+        $type = (string)($roomOrType['room_type'] ?? 'Imperial Deluxe');
+
+        $baseTypeCatalog = $catalog[$type] ?? $catalog['Imperial Deluxe'];
+        $override = $perRoom[$roomNum] ?? ($perRoom[$roomId] ?? []);
+
+        return array_merge($baseTypeCatalog, array_filter($override));
+    }
+
+    $strKey = (string)$roomOrType;
+    if (isset($catalog[$strKey])) {
+        return $catalog[$strKey];
+    }
+    if (isset($perRoom[$strKey])) {
+        return array_merge($catalog['Imperial Deluxe'], $perRoom[$strKey]);
+    }
+
+    return $catalog['Imperial Deluxe'];
+}
+
 function roomIncludedPerksForType(string $roomType): array
 {
     $catalog = roomCatalog();

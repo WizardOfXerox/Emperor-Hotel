@@ -225,7 +225,11 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
     <div class="col-xl-4">
         <div class="panel-card p-4 mb-4">
             <p class="eyebrow mb-1"><?php echo $editRoom ? 'Update room' : 'Create room'; ?></p>
-            <h3 class="mb-3"><?php echo $editRoom ? 'Edit Room' : 'New Room'; ?></h3>
+            <h3 class="mb-2"><?php echo $editRoom ? 'Edit Room' : 'New Room'; ?></h3>
+            <div class="p-2.5 rounded-3 mb-3 text-xs font-serif border" style="background: rgba(212, 175, 55, 0.08); border-color: rgba(212, 175, 55, 0.25) !important;">
+                <i class="bi bi-info-circle-fill text-warning me-1"></i>
+                <strong>Catalog Policy:</strong> Manage Room Number, Suite Type, Floor, Nightly Rate, and Status here. Room photos and media assets are resolved automatically from the system catalog.
+            </div>
             <form method="post" class="d-grid gap-3">
                 <input type="hidden" name="action" value="<?php echo $editRoom ? 'update' : 'create'; ?>">
                 <?php if ($editRoom): ?>
