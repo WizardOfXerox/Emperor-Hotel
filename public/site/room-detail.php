@@ -523,8 +523,8 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                         };
                     ?>
                         <a href="room-detail.php?id=<?= (int)$otherRoom['room_id'] ?><?= $dateParams ?>" 
-                           class="card text-decoration-none transition-all flex-shrink-0 rounded-4 overflow-hidden shadow-sm <?= $isSelf ? 'border-warning shadow-lg' : '' ?>" 
-                           style="width: 250px; background: <?= $isSelf ? 'rgba(212, 175, 55, 0.15)' : 'rgba(30, 41, 59, 0.75)' ?>; border: 1px solid <?= $isSelf ? '#D4AF37' : 'rgba(212, 175, 55, 0.3)' ?>;">
+                           class="card text-decoration-none transition-all flex-shrink-0 rounded-4 overflow-hidden shadow-sm mini-room-card <?= $isSelf ? 'is-self border-warning shadow-lg' : '' ?>" 
+                           style="width: 250px;">
                             
                             <!-- Room Image Header -->
                             <div class="position-relative overflow-hidden" style="height: 140px;">
@@ -539,9 +539,9 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
 
                             <!-- Room Details Footer -->
                             <div class="p-3">
-                                <h6 class="text-white font-serif fw-bold text-truncate mb-1" style="font-size: 0.9rem;"><?= e($otherRoom['room_type']) ?></h6>
+                                <h6 class="font-serif fw-bold text-truncate mb-1 mini-room-title" style="font-size: 0.9rem;"><?= e($otherRoom['room_type']) ?></h6>
                                 <div class="d-flex align-items-center justify-content-between mt-2">
-                                    <span class="text-xs fw-bold" style="color: #FBBF24;">₱<?= number_format((float)$otherRoom['price_per_night']) ?><span class="text-light opacity-75 font-sans fw-normal">/night</span></span>
+                                    <span class="text-xs fw-bold mini-room-price">₱<?= number_format((float)$otherRoom['price_per_night']) ?><span class="opacity-75 font-sans fw-normal mini-room-unit">/night</span></span>
                                     <span class="btn btn-xs btn-outline-warning rounded-pill px-2 py-1 text-xs fw-bold font-serif">View Suite</span>
                                 </div>
                             </div>

@@ -1704,4 +1704,52 @@ body.light-mode .room-price-tag {
     color: #d97706 !important;
 }
 
+/* ===== EXPLORE CAROUSEL MINI ROOM CARDS ===== */
+.mini-room-card {
+    background: rgba(30, 41, 59, 0.75);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: #ffffff;
+}
+
+.mini-room-card.is-self {
+    background: rgba(212, 175, 55, 0.15);
+    border-color: #D4AF37;
+}
+
+.mini-room-title {
+    color: #ffffff !important;
+}
+
+.mini-room-price {
+    color: #FBBF24 !important;
+}
+
+.mini-room-unit {
+    color: #cbd5e1 !important;
+}
+
+/* Light Mode Overrides for Explore Carousel Mini Room Cards */
+body.light-mode .mini-room-card {
+    background: #f8f6f0 !important;
+    border: 1px solid rgba(180, 140, 60, 0.25) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .mini-room-card.is-self {
+    background: #fffbeb !important;
+    border-color: #d97706 !important;
+}
+
+body.light-mode .mini-room-title {
+    color: #0f172a !important;
+}
+
+body.light-mode .mini-room-price {
+    color: #b45309 !important;
+}
+
+body.light-mode .mini-room-unit {
+    color: #64748b !important;
+}
+
 
