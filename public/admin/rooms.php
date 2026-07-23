@@ -131,6 +131,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('rooms.php' . $querySuffix);
         }
 
+        if ($action === 'reset_standard') {
+            $targetVal = $_POST['target_value'] ?? 'all';
+            $updatedCount = $roomModel->resetToStandardPrices($targetVal);
+            setFlash('success', "Baseline standard pricing restored for {$updatedCount} room record(s).");
+            redirect('rooms.php' . $querySuffix);
+        }
+
         if ($action === 'smart_bulk_price' || $action === 'update_type_price') {
             $updatedCount = $roomModel->smartBulkUpdatePrice([
                 'target_type' => $_POST['target_type'] ?? ($_POST['room_type'] ? 'suite' : 'all'),
@@ -296,6 +303,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                     <button type="button" class="btn btn-xs btn-outline-warning text-xs px-2 py-1 fw-semibold" onclick="applyPresetSurge(15, 'percentage')">🚀 Peak (+15%)</button>
                     <button type="button" class="btn btn-xs btn-outline-warning text-xs px-2 py-1 fw-semibold" onclick="applyPresetSurge(10, 'percentage')">⚡ Weekend (+10%)</button>
                     <button type="button" class="btn btn-xs btn-outline-light text-xs px-2 py-1" onclick="applyPresetSurge(-10, 'percentage')">🎁 Promo (-10%)</button>
+                    <button type="button" class="btn btn-xs btn-outline-success text-xs px-2 py-1 fw-semibold" onclick="applyResetStandard()"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset Standard</button>
                 </div>
             </div>
 
@@ -779,11 +787,22 @@ function calculateSmartPreview() {
 }
 
 function applyPresetSurge(val, mode) {
+    const actionInput = document.querySelector('#smartBulkPriceForm input[name="action"]');
+    if (actionInput) actionInput.value = 'smart_bulk_price';
     const modeSelect = document.getElementById('bulkAdjustmentMode');
     const valInput = document.getElementById('bulkAdjustmentValue');
     if (modeSelect) modeSelect.value = mode;
     if (valInput) valInput.value = val;
     calculateSmartPreview();
+}
+
+function applyResetStandard() {
+    if (confirm('Reset selected room prices back to their original baseline rates?')) {
+        const form = document.getElementById('smartBulkPriceForm');
+        const actionInput = form.querySelector('input[name="action"]');
+        if (actionInput) actionInput.value = 'reset_standard';
+        form.submit();
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {

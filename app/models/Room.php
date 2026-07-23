@@ -155,8 +155,8 @@ class Room
 
         // SQL: Inserts a new room record after validating type, status, floor, and price.
         $statement = $this->db->prepare(
-            'INSERT INTO rooms (room_number, room_type, floor, price_per_night, status, bed_type, max_capacity, view_type, image_url)
-             VALUES (:room_number, :room_type, :floor, :price_per_night, :status, :bed_type, :max_capacity, :view_type, :image_url)'
+            'INSERT INTO rooms (room_number, room_type, floor, price_per_night, base_price_per_night, status, bed_type, max_capacity, view_type, image_url)
+             VALUES (:room_number, :room_type, :floor, :price_per_night, :base_price_per_night, :status, :bed_type, :max_capacity, :view_type, :image_url)'
         );
 
         return $statement->execute([
@@ -164,6 +164,7 @@ class Room
             'room_type' => $data['room_type'],
             'floor' => (int) $data['floor'],
             'price_per_night' => $pricePerNight,
+            'base_price_per_night' => $pricePerNight,
             'status' => $data['status'],
             'bed_type' => $bedType,
             'max_capacity' => $maxCapacity,
@@ -288,6 +289,19 @@ class Room
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
 
+        return $stmt->rowCount();
+    }
+
+    public function resetToStandardPrices(?string $roomType = null): int
+    {
+        $sql = "UPDATE rooms SET price_per_night = COALESCE(base_price_per_night, price_per_night)";
+        $params = [];
+        if ($roomType !== null && $roomType !== 'all' && $roomType !== '') {
+            $sql .= " WHERE room_type = :room_type";
+            $params['room_type'] = $roomType;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->rowCount();
     }
 
