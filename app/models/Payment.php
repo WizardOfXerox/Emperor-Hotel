@@ -175,11 +175,6 @@ class Payment
     {
         $totals = $this->totalsForReservation($reservationId);
 
-        if ((float) $totals['confirmed_amount'] + 0.01 < (float) $totals['reservation_total']) {
-            return false;
-        }
-
-        // SQL: Reads the reservation connected to this payment before deciding whether to auto-confirm it.
         $statement = $this->db->prepare(
             "SELECT reservation_id, room_id, status
              FROM reservations
@@ -189,24 +184,47 @@ class Payment
         $statement->execute(['reservation_id' => $reservationId]);
         $reservation = $statement->fetch();
 
-        if (!$reservation || $reservation['status'] !== 'Pending') {
+        if (!$reservation) {
             return false;
         }
 
-        // SQL: Marks the reservation Confirmed once confirmed payments cover the full reservation total.
+        // Check if any payment for this reservation is Refunded
+        $refundCheck = $this->db->prepare("SELECT COUNT(*) FROM payments WHERE reservation_id = :res_id AND payment_status = 'Refunded'");
+        $refundCheck->execute(['res_id' => $reservationId]);
+        $hasRefund = ((int) $refundCheck->fetchColumn()) > 0;
+
+        if ($hasRefund) {
+            $updateReservation = $this->db->prepare(
+                "UPDATE reservations SET status = 'Cancelled' WHERE reservation_id = :reservation_id"
+            );
+            $updated = $updateReservation->execute(['reservation_id' => $reservationId]);
+
+            if ($updated) {
+                $updateRoom = $this->db->prepare(
+                    "UPDATE rooms SET status = 'Available' WHERE room_id = :room_id"
+                );
+                $updateRoom->execute(['room_id' => (int) $reservation['room_id']]);
+            }
+
+            return $updated;
+        }
+
+        if ((float) $totals['confirmed_amount'] <= 0) {
+            return false;
+        }
+
+        if ($reservation['status'] !== 'Pending') {
+            return false;
+        }
+
         $updateReservation = $this->db->prepare(
-            "UPDATE reservations
-             SET status = 'Confirmed'
-             WHERE reservation_id = :reservation_id"
+            "UPDATE reservations SET status = 'Confirmed' WHERE reservation_id = :reservation_id"
         );
         $updated = $updateReservation->execute(['reservation_id' => $reservationId]);
 
         if ($updated) {
-            // SQL: Keeps the room status in sync by marking the fully paid reservation's room as Reserved.
             $updateRoom = $this->db->prepare(
-                "UPDATE rooms
-                 SET status = 'Reserved'
-                 WHERE room_id = :room_id"
+                "UPDATE rooms SET status = 'Reserved' WHERE room_id = :room_id"
             );
             $updateRoom->execute(['room_id' => (int) $reservation['room_id']]);
         }

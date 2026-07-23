@@ -379,8 +379,9 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
         const balance = Number(option.dataset.balance || 0);
         const activeBalance = Number(option.dataset.activeBalance || 0);
         const pending = Number(option.dataset.pending || 0);
+        const status = option.dataset.status || "";
 
-        text("[data-payment-status]", option.dataset.status || "Reservation");
+        text("[data-payment-status]", status || "Reservation");
         text("[data-payment-guest]", option.dataset.guest || "Guest");
         text("[data-payment-room]", option.dataset.room || "Room");
         text("[data-payment-stay]", option.dataset.stay || "Stay dates");
@@ -391,8 +392,15 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
         text("[data-payment-active-balance]", money(activeBalance));
         text("[data-payment-reference]", option.dataset.reference || "PAY-00000-YYYYMMDDHHMMSS");
 
-        if (confirmBtn) confirmBtn.disabled = false;
-        if (refundBtn) refundBtn.disabled = false;
+        const isConfirmedOrPaid = (status === "Confirmed" || status === "Checked-in" || status === "Checked-out");
+        const isCancelled = (status === "Cancelled");
+
+        if (confirmBtn) {
+            confirmBtn.disabled = isConfirmedOrPaid || isCancelled || (balance <= 0 && pending <= 0);
+        }
+        if (refundBtn) {
+            refundBtn.disabled = isCancelled;
+        }
     };
 
     if (reservationSelect) {
