@@ -47,11 +47,11 @@ Thumbs.db
 
 # Codex / browser verification artifacts
 /.playwright-mcp/
-/screenshots/
+!.screenshots/
+!/screenshots/*.png
 /.tmp-*
 /reference-*.png
 /implementation-*.png
 /dashboard-*.png
 docs/*.png
 screenshot_*.png
-*.png
