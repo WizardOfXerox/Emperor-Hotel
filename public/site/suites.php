@@ -66,16 +66,6 @@ renderHeader('Suites Showcase | Emperor Hotel', ['../assets/css/site/home.css', 
     <div id="suite-catalog">
         <?php renderRoomShowcaseSection(); ?>
     </div>
-
-    <section class="container py-5 text-center">
-        <h3 class="font-serif text-gold mb-3">Looking for specific room specifications or guest reviews?</h3>
-        <p class="text-muted mb-4">Click any suite below to view detailed high-res photos, bed dimensions, and verified guest ratings.</p>
-        <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a href="room-detail.php?id=1" class="btn btn-gold rounded-pill px-4 py-2 fw-bold">Inspect Imperial Deluxe (#101)</a>
-            <a href="room-detail.php?id=13" class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold">Inspect Royal Executive (#201)</a>
-            <a href="room-detail.php?id=25" class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold">Inspect Emperor Presidential (#301)</a>
-        </div>
-    </section>
 </main>
 
 <?php renderSupportWidget('customer'); ?>
