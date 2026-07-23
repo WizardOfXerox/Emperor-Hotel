@@ -319,7 +319,7 @@ async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, 
         const isAdmin = window.location.pathname.includes('/admin/');
 
         let html = `
-            <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-3" style="background: rgba(180, 140, 60, 0.1); border: 1px solid rgba(180, 140, 60, 0.2);">
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-3 inspector-info-box">
                 <div>
                     <span class="text-muted small d-block">Room Category & Floor</span>
                     <strong class="fs-6">${room.room_type} (Floor ${room.floor})</strong>
@@ -333,13 +333,13 @@ async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, 
 
         if (data.has_reservation && reservation) {
             html += `
-                <div class="panel-card p-3 mb-3 border border-warning" style="background: #fffbeb; border-color: #fde68a !important;">
+                <div class="panel-card p-3 mb-3 border rounded-3 inspector-booking-card">
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <h6 class="m-0 font-serif fw-bold text-dark"><i class="bi bi-person-badge me-2 text-warning"></i>Active Guest Booking</h6>
+                        <h6 class="m-0 font-serif fw-bold"><i class="bi bi-person-badge me-2 text-warning"></i>Active Guest Booking</h6>
                         <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold">${reservation.status}</span>
                     </div>
                     <hr class="my-2 opacity-25">
-                    <div class="row g-2 text-sm text-dark">
+                    <div class="row g-2 text-sm inspector-booking-text">
                         <div class="col-6"><strong>Guest:</strong> ${reservation.guest_name}</div>
                         <div class="col-6"><strong>Phone:</strong> ${reservation.guest_phone}</div>
                         <div class="col-12"><strong>Email:</strong> ${reservation.guest_email}</div>
@@ -351,7 +351,7 @@ async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, 
                     ${isAdmin ? `
                     <div class="d-flex gap-2 mt-3">
                         <a href="reservations.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-warning btn-sm fw-bold flex-grow-1"><i class="bi bi-sliders me-1"></i>Manage Reservation</a>
-                        <a href="payments.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-outline-dark btn-sm fw-semibold"><i class="bi bi-credit-card me-1"></i>Payments</a>
+                        <a href="payments.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-outline-warning btn-sm fw-semibold"><i class="bi bi-credit-card me-1"></i>Payments</a>
                     </div>
                     ` : ''}
                 </div>
@@ -361,7 +361,7 @@ async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, 
                 <div class="alert alert-success border-success text-center p-3 mb-3 rounded-3">
                     <i class="bi bi-check-circle-fill fs-4 text-success d-block mb-1"></i>
                     <strong>Room #${room.room_number} is Currently Available</strong>
-                    <p class="small text-muted m-0 mt-1">No active reservations exist for this room.</p>
+                    <p class="small m-0 mt-1 opacity-75">No active reservations exist for this room.</p>
                 </div>
                 ${isAdmin ? `
                 <a href="create-reservation.php?room_id=${room.room_id}" class="btn btn-warning fw-bold w-100 py-2 mb-3 shadow-sm"><i class="bi bi-plus-circle me-1"></i>Create Reservation for Room #${room.room_number}</a>
@@ -376,9 +376,9 @@ async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, 
                 <form method="post" action="rooms.php" class="border-top pt-3 mt-2">
                     <input type="hidden" name="action" value="update_status">
                     <input type="hidden" name="room_id" value="${room.room_id}">
-                    <label class="form-label fw-bold small text-muted">Change Room Operational Status</label>
+                    <label class="form-label fw-bold small opacity-75">Change Room Operational Status</label>
                     <div class="input-group">
-                        <select name="status" class="form-select form-select-sm">
+                        <select name="status" class="form-select form-select-sm inspector-status-select">
                             <option value="Available" ${room.status === 'Available' ? 'selected' : ''}>Available</option>
                             <option value="Reserved" ${room.status === 'Reserved' ? 'selected' : ''}>Reserved</option>
                             <option value="Occupied" ${room.status === 'Occupied' ? 'selected' : ''}>Occupied</option>
