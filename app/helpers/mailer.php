@@ -118,3 +118,72 @@ function sendSmtpEmail(string $toEmail, string $subject, string $bodyHtml, ?stri
         return true;
     }
 }
+
+/**
+ * Send luxury Registration OTP Verification Email
+ */
+function sendRegistrationOtpEmail(string $toEmail, string $guestName, string $otpCode): bool
+{
+    $subject = "👑 [The Emperor Hotel] Your Registration Verification Code: {$otpCode}";
+    $html = "
+    <div style='background: #020617; color: #f8fafc; font-family: sans-serif; padding: 40px 20px; text-align: center;'>
+        <div style='max-width: 550px; margin: 0 auto; background: #0b1120; border: 1px solid #d4af37; border-radius: 16px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);'>
+            <div style='margin-bottom: 25px;'>
+                <h1 style='color: #ffdf73; font-family: serif; margin: 0; font-size: 24px; letter-spacing: 2px; text-transform: uppercase;'>THE EMPEROR HOTEL</h1>
+                <p style='color: #94a3b8; font-size: 12px; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;'>Account Registration Verification</p>
+            </div>
+            <div style='border-top: 1px solid rgba(212,175,55,0.3); border-bottom: 1px solid rgba(212,175,55,0.3); padding: 25px 0; margin-bottom: 25px;'>
+                <p style='color: #cbd5e1; font-size: 15px; margin-bottom: 20px;'>Hello <strong>" . htmlspecialchars($guestName) . "</strong>,<br>Thank you for creating an account with The Emperor Hotel. Please enter the verification code below to verify your email address:</p>
+                <div style='background: rgba(212,175,55,0.1); border: 2px dashed #d4af37; border-radius: 12px; padding: 18px; display: inline-block; margin: 10px 0;'>
+                    <span style='font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #ffdf73; font-family: monospace;'>" . htmlspecialchars($otpCode) . "</span>
+                </div>
+                <p style='color: #94a3b8; font-size: 13px; margin-top: 15px;'>This verification code will expire in <strong>10 minutes</strong>.</p>
+            </div>
+            <p style='color: #64748b; font-size: 12px; margin: 0;'>If you did not request this registration, please ignore this email.</p>
+        </div>
+    </div>
+    ";
+
+    return sendSmtpEmail($toEmail, $subject, $html, $otpCode);
+}
+
+/**
+ * Send luxury Reservation Verification OTP Email
+ */
+function sendReservationOtpEmail(string $toEmail, string $guestName, string $otpCode, array $resData): bool
+{
+    $subject = "🏨 [The Emperor Hotel] Reservation Verification Code: {$otpCode}";
+    $suiteType = htmlspecialchars((string)($resData['room_type'] ?? 'Luxury Suite'));
+    $checkIn = htmlspecialchars((string)($resData['check_in'] ?? ''));
+    $checkOut = htmlspecialchars((string)($resData['check_out'] ?? ''));
+    $totalAmount = htmlspecialchars((string)($resData['total_amount'] ?? ''));
+
+    $html = "
+    <div style='background: #020617; color: #f8fafc; font-family: sans-serif; padding: 40px 20px; text-align: center;'>
+        <div style='max-width: 580px; margin: 0 auto; background: #0b1120; border: 1px solid #d4af37; border-radius: 16px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);'>
+            <div style='margin-bottom: 25px;'>
+                <h1 style='color: #ffdf73; font-family: serif; margin: 0; font-size: 24px; letter-spacing: 2px; text-transform: uppercase;'>THE EMPEROR HOTEL</h1>
+                <p style='color: #94a3b8; font-size: 12px; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;'>Reservation Verification Code</p>
+            </div>
+            <div style='border-top: 1px solid rgba(212,175,55,0.3); border-bottom: 1px solid rgba(212,175,55,0.3); padding: 25px 0; margin-bottom: 25px; text-align: left;'>
+                <p style='color: #cbd5e1; font-size: 15px; margin-bottom: 20px;'>Dear <strong>" . htmlspecialchars($guestName) . "</strong>,<br>Your luxury reservation details have been received. Please use the verification code below to confirm your stay:</p>
+                
+                <div style='background: rgba(15,23,42,0.8); border: 1px solid rgba(212,175,55,0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px; font-size: 14px; color: #e2e8f0;'>
+                    <div style='margin-bottom: 6px;'><strong>Suite Reserved:</strong> {$suiteType}</div>
+                    <div style='margin-bottom: 6px;'><strong>Check-In / Check-Out:</strong> {$checkIn} to {$checkOut}</div>
+                    <div><strong>Total Rate:</strong> <span style='color: #ffdf73; font-weight: bold;'>PHP {$totalAmount}</span></div>
+                </div>
+
+                <div style='text-align: center; margin: 20px 0;'>
+                    <div style='background: rgba(212,175,55,0.1); border: 2px dashed #d4af37; border-radius: 12px; padding: 18px; display: inline-block;'>
+                        <span style='font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #ffdf73; font-family: monospace;'>" . htmlspecialchars($otpCode) . "</span>
+                    </div>
+                </div>
+            </div>
+            <p style='color: #64748b; font-size: 12px; margin: 0;'>Thank you for choosing The Emperor Hotel.</p>
+        </div>
+    </div>
+    ";
+
+    return sendSmtpEmail($toEmail, $subject, $html, $otpCode);
+}

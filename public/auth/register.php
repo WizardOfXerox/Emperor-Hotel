@@ -36,11 +36,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('register.php');
     }
 
+    $otpCode = sprintf('%06d', random_int(100000, 999999));
+    $otpExpiresAt = date('Y-m-d H:i:s', time() + 600);
+
     $userId = $userModel->create([
         'full_name' => $fullName,
         'email' => $email,
         'password' => $password,
         'role' => $role,
+        'email_verified' => 0,
+        'otp_code' => $otpCode,
+        'otp_expires_at' => $otpExpiresAt,
     ]);
 
     if ($userId > 0) {
@@ -53,10 +59,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'phone' => $phone,
             'email' => $email,
         ]);
-    }
 
-    setFlash('success', 'Registration successful. You can now log in.');
-    redirect('login.php');
+        sendRegistrationOtpEmail($email, $fullName, $otpCode);
+        $_SESSION['pending_otp_user_id'] = $userId;
+
+        setFlash('info', "📩 Verification email sent to {$email}. Please enter your 6-digit verification code below.");
+        redirect('verify-otp.php');
+    }
 }
 
 renderHeader('Create Account - Emperor Hotel', ['../assets/css/site/home.css'], '');

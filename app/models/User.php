@@ -47,7 +47,7 @@ class User
         return $user ?: null;
     }
 
-    public function create(array $data): bool
+    public function create(array $data): int
     {
         if (trim((string) $data['full_name']) === '' || trim((string) $data['email']) === '' || trim((string) $data['password']) === '') {
             throw new RuntimeException('Full name, email, and password are required.');
@@ -58,11 +58,15 @@ class User
         $this->validatePassword((string) $data['password']);
         $this->assertEmailIsAvailable((string) $data['email']);
 
-        $role = in_array($data['role'], ['admin', 'user'], true) ? $data['role'] : 'user';
+        $role = in_array($data['role'] ?? 'user', ['admin', 'user'], true) ? $data['role'] : 'user';
+        $emailVerified = isset($data['email_verified']) ? (int)$data['email_verified'] : 1;
+        $otpCode = isset($data['otp_code']) ? trim((string)$data['otp_code']) : null;
+        $otpExpiresAt = isset($data['otp_expires_at']) ? trim((string)$data['otp_expires_at']) : null;
 
-        // SQL: Inserts a new account with a hashed password and validated role.
+        // SQL: Inserts a new account with a hashed password, validated role, and optional OTP attributes.
         $statement = $this->db->prepare(
-            'INSERT INTO users (full_name, email, password_hash, role) VALUES (:full_name, :email, :password_hash, :role)'
+            'INSERT INTO users (full_name, email, password_hash, role, email_verified, otp_code, otp_expires_at) 
+             VALUES (:full_name, :email, :password_hash, :role, :email_verified, :otp_code, :otp_expires_at)'
         );
 
         $statement->execute([
@@ -70,6 +74,9 @@ class User
             'email' => trim($data['email']),
             'password_hash' => password_hash($data['password'], PASSWORD_DEFAULT),
             'role' => $role,
+            'email_verified' => $emailVerified,
+            'otp_code' => $otpCode !== '' ? $otpCode : null,
+            'otp_expires_at' => $otpExpiresAt !== '' ? $otpExpiresAt : null,
         ]);
 
         return (int) $this->db->lastInsertId();

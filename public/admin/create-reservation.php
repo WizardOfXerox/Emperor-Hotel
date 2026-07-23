@@ -81,6 +81,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $reservationId = $reservationModel->createAndGetId($payload);
 
+        $guestEmail = (string) ($_POST['email'] ?? '');
+        if (!empty($guestEmail)) {
+            $resOtpCode = sprintf('%06d', random_int(100000, 999999));
+            sendReservationOtpEmail(
+                $guestEmail,
+                $fullName,
+                $resOtpCode,
+                [
+                    'room_type' => $room['room_type'],
+                    'check_in' => $checkIn,
+                    'check_out' => $checkOut,
+                    'total_amount' => number_format((float)$payload['total_amount'], 2),
+                ]
+            );
+        }
+
         if ($paymentMethod === 'Cash') {
             $paymentId = $paymentModel->createAndGetId([
                 'reservation_id' => $reservationId,

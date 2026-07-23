@@ -123,6 +123,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'status' => 'Pending',
             ]);
 
+            $resOtpCode = sprintf('%06d', random_int(100000, 999999));
+            sendReservationOtpEmail(
+                (string)$user['email'],
+                (string)$user['full_name'],
+                $resOtpCode,
+                [
+                    'room_type' => $room['room_type'],
+                    'check_in' => $checkIn,
+                    'check_out' => $checkOut,
+                    'total_amount' => number_format($totalAmount, 2),
+                ]
+            );
+
             if ($paymentMethod === 'Cash') {
                 $paymentId = $paymentModel->createAndGetId([
                     'reservation_id' => $reservationId,
@@ -134,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $payment = $paymentModel->find($paymentId);
                 $reference = (string) ($payment['transaction_reference'] ?? ('Reservation #' . $reservationId));
 
-                setFlash('success', 'Reservation submitted successfully! Your official voucher is ready below.');
+                setFlash('success', 'Reservation submitted successfully! 📩 Verification code sent to ' . e((string)$user['email']) . '. Your official voucher is ready below.');
                 redirect('receipt.php?reservation_id=' . $reservationId);
             }
 
