@@ -24,7 +24,7 @@ try {
         throw new RuntimeException('Room not found.');
     }
 
-    // Fetch active/upcoming reservation for this room
+    // Fetch active/upcoming or current checked-in reservation for this room
     $stmt = $db->prepare("
         SELECT res.*, 
                g.first_name, g.last_name, g.phone, g.email,
@@ -34,7 +34,11 @@ try {
         LEFT JOIN payments p ON res.reservation_id = p.reservation_id
         WHERE res.room_id = :room_id
           AND res.status NOT IN ('Cancelled', 'Checked-out')
-        ORDER BY res.check_in ASC
+        ORDER BY CASE res.status 
+            WHEN 'Checked-in' THEN 1 
+            WHEN 'Confirmed' THEN 2 
+            WHEN 'Pending' THEN 3 
+            ELSE 4 END, res.check_in ASC
         LIMIT 1
     ");
     $stmt->execute(['room_id' => $roomId]);

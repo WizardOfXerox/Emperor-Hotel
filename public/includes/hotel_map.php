@@ -272,6 +272,9 @@ async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, 
         return;
     }
 
+    const modalEl = document.getElementById('roomInspectorModal');
+    if (!modalEl) return;
+
     const modalTitle = document.getElementById('inspectorRoomTitle');
     const modalSub = document.getElementById('inspectorRoomSub');
     const modalBody = document.getElementById('roomInspectorModalBody');
@@ -288,7 +291,7 @@ async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, 
         `;
     }
 
-    const modal = new bootstrap.Modal(modalEl);
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     modal.show();
 
     try {
