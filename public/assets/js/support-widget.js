@@ -157,6 +157,10 @@
             display: flex;
             flex-direction: column;
             gap: 0.35rem;
+            white-space: normal;
+        }
+        .support-message-content * {
+            box-sizing: border-box;
         }
         .support-message--user {
             justify-self: end;
