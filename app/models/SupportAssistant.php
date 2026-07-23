@@ -134,9 +134,9 @@ class SupportAssistant
         $availableRooms = $this->roomModel->availableRooms();
 
         if (!$availableRooms) {
-            $html = "<div style='background: rgba(15,23,42,0.9); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 16px; text-align: center;'>
-                        <strong style='color:#ffdf73;'>All Rooms Fully Booked</strong>
-                        <p style='font-size:12px; color:#94a3b8; margin: 6px 0 0 0;'>There are currently no vacant rooms available for the selected dates. Please try different stay dates.</p>
+            $html = "<div style='background: rgba(15,23,42,0.9); border: 1px solid rgba(212,175,55,0.4); border-radius: 8px; padding: 10px; text-align: center;'>
+                        <strong style='color:#ffdf73; font-size:12px;'>All Rooms Fully Booked</strong>
+                        <p style='font-size:11px; color:#94a3b8; margin: 3px 0 0 0;'>No vacant rooms available right now.</p>
                      </div>";
             return [
                 'text' => $html,
@@ -145,8 +145,8 @@ class SupportAssistant
             ];
         }
 
-        $html = "<div style='margin-bottom:10px; font-weight:bold; color:#ffdf73;'>🏨 Available Luxury Rooms (" . count($availableRooms) . " Ready):</div>";
-        $html .= "<div style='display:flex; flex-direction:column; gap:10px;'>";
+        $html = "<div style='margin-bottom:6px; font-weight:bold; color:#ffdf73; font-size:13px;'>🏨 Available Rooms (" . count($availableRooms) . " Ready):</div>";
+        $html .= "<div style='display:flex; flex-direction:column; gap:6px;'>";
 
         foreach (array_slice($availableRooms, 0, 5) as $room) {
             $priceFormatted = formatMoney((float) $room['price_per_night']);
@@ -156,19 +156,21 @@ class SupportAssistant
             $floor = (int) $room['floor'];
 
             $html .= "
-            <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 12px 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);'>
+            <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 8px; padding: 7px 10px;'>
                 <div style='display:flex; justify-content:space-between; align-items:center;'>
-                    <span style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:14px;'>Room #{$roomNum} &bull; {$suiteType}</span>
-                    <span style='background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid rgba(34,197,94,0.4); padding:2px 8px; border-radius:99px; font-size:11px; font-weight:bold;'>Available</span>
+                    <span style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:13px;'>Room #{$roomNum} &bull; {$suiteType}</span>
+                    <span style='background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid rgba(34,197,94,0.4); padding:1px 6px; border-radius:99px; font-size:10px; font-weight:bold;'>Available</span>
                 </div>
-                <div style='font-size:12px; color:#94a3b8; margin: 6px 0;'>Floor {$floor} &bull; <strong style='color:#ffdf73;'>{$priceFormatted}</strong> / night</div>
-                <a href='../user/dashboard.php?room_id={$roomId}' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color:#020617; font-weight:bold; padding:7px 12px; border-radius:8px; text-decoration:none; margin-top:8px; font-size:12px;'>Reserve Room #{$roomNum} Now &rarr;</a>
+                <div style='display:flex; justify-content:space-between; align-items:center; margin-top:4px;'>
+                    <span style='font-size:11px; color:#cbd5e1;'>Floor {$floor} &bull; <strong style='color:#ffdf73;'>{$priceFormatted}</strong>/night</span>
+                    <a href='../user/dashboard.php?room_id={$roomId}' style='background:linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color:#020617; font-weight:bold; padding:3px 10px; border-radius:6px; text-decoration:none; font-size:11px;'>Reserve &rarr;</a>
+                </div>
             </div>";
         }
         $html .= "</div>";
 
         if (count($availableRooms) > 5) {
-            $html .= "<p style='font-size:11px; color:#94a3b8; margin-top:8px; text-align:center;'>+ " . (count($availableRooms) - 5) . " more rooms available in catalog.</p>";
+            $html .= "<p style='font-size:10px; color:#94a3b8; margin-top:4px; margin-bottom:0; text-align:center;'>+ " . (count($availableRooms) - 5) . " more rooms available in catalog.</p>";
         }
 
         return [
@@ -182,27 +184,27 @@ class SupportAssistant
     {
         $typeSummary = $this->roomModel->typeSummary();
         $roomCatalog = roomCatalog();
-        
-        $html = "<div style='margin-bottom:10px; font-weight:bold; color:#ffdf73;'>👑 Emperor Hotel Suite Categories:</div>";
-        $html .= "<div style='display:flex; flex-direction:column; gap:10px;'>";
+
+        $html = "<div style='margin-bottom:6px; font-weight:bold; color:#ffdf73; font-size:13px;'>👑 Suite Categories:</div>";
+        $html .= "<div style='display:flex; flex-direction:column; gap:6px;'>";
 
         foreach ($roomCatalog as $roomType => $roomInfo) {
             $summary = $typeSummary[$roomType] ?? null;
             $availableCount = $summary ? (int) $summary['available'] : 0;
             $totalCount = $summary ? (int) $summary['total'] : 0;
-            $priceText = $summary ? formatMoney((float) $summary['lowest_price']) . ' / night' : 'Price not set';
-            $perks = htmlspecialchars(implode(' &bull; ', array_slice($roomInfo['included_perks'], 0, 3)));
+            $priceText = $summary ? formatMoney((float) $summary['lowest_price']) . '/night' : 'N/A';
             $suiteName = htmlspecialchars($roomType);
 
             $html .= "
-            <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 12px 14px;'>
+            <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 8px; padding: 7px 10px;'>
                 <div style='display:flex; justify-content:space-between; align-items:center;'>
-                    <span style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:14px;'>{$suiteName}</span>
-                    <span style='color:#94a3b8; font-size:12px;'>{$availableCount} of {$totalCount} available</span>
+                    <span style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:13px;'>{$suiteName}</span>
+                    <span style='color:#94a3b8; font-size:11px;'>{$availableCount}/{$totalCount} available</span>
                 </div>
-                <div style='font-size:12px; color:#e2e8f0; margin: 4px 0;'><strong style='color:#ffdf73;'>From {$priceText}</strong></div>
-                <div style='font-size:11px; color:#94a3b8;'>Perks: {$perks}</div>
-                <a href='../site/suites.php' style='display:block; text-align:center; background:rgba(212,175,55,0.15); color:#ffdf73; border:1px solid rgba(212,175,55,0.4); font-weight:bold; padding:6px 12px; border-radius:8px; text-decoration:none; margin-top:8px; font-size:12px;'>Inspect {$suiteName} Gallery &rarr;</a>
+                <div style='display:flex; justify-content:space-between; align-items:center; margin-top:4px;'>
+                    <span style='font-size:11px; color:#e2e8f0;'>From <strong style='color:#ffdf73;'>{$priceText}</strong></span>
+                    <a href='../site/suites.php' style='background:rgba(212,175,55,0.15); color:#ffdf73; border:1px solid rgba(212,175,55,0.4); font-weight:bold; padding:3px 10px; border-radius:6px; text-decoration:none; font-size:11px;'>Inspect &rarr;</a>
+                </div>
             </div>";
         }
         $html .= "</div>";
@@ -1004,32 +1006,30 @@ class SupportAssistant
         $alos = number_format((float) ($analytics['alos_nights'] ?? 0), 1);
         $leadTime = number_format((float) ($analytics['avg_lead_time_days'] ?? 0), 1);
         $cancellationRate = number_format((float) ($analytics['cancellation_loss_rate'] ?? 0), 1);
-        $cancellationLossFormatted = formatMoney((float) ($analytics['cancellation_revenue_loss'] ?? 0));
         $loyaltyRatio = number_format((float) ($analytics['repeat_guest_loyalty_ratio'] ?? 0), 1);
 
         $html = "
-        <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 14px;'>
-            <div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:15px; margin-bottom:8px;'>📊 Executive Hospitality Performance</div>
-            <div style='display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:12px;'>
-                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:8px; border-radius:8px;'>
-                    <span style='color:#94a3b8; display:block;'>Average Stay (ALOS)</span>
-                    <strong style='color:#ffdf73; font-size:14px;'>{$alos} Nights</strong>
+        <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 8px; padding: 8px 10px;'>
+            <div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:13px; margin-bottom:6px;'>📊 Executive Metrics</div>
+            <div style='display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:11px;'>
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px; border-radius:6px;'>
+                    <span style='color:#94a3b8; display:block;'>Avg Stay (ALOS)</span>
+                    <strong style='color:#ffdf73; font-size:13px;'>{$alos} Nights</strong>
                 </div>
-                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:8px; border-radius:8px;'>
-                    <span style='color:#94a3b8; display:block;'>Booking Lead Time</span>
-                    <strong style='color:#ffdf73; font-size:14px;'>{$leadTime} Days</strong>
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px; border-radius:6px;'>
+                    <span style='color:#94a3b8; display:block;'>Lead Time</span>
+                    <strong style='color:#ffdf73; font-size:13px;'>{$leadTime} Days</strong>
                 </div>
-                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:8px; border-radius:8px;'>
-                    <span style='color:#94a3b8; display:block;'>Cancellation Rate</span>
-                    <strong style='color:#f87171; font-size:14px;'>{$cancellationRate}%</strong>
-                    <span style='color:#f87171; font-size:10px; display:block;'>({$cancellationLossFormatted} lost)</span>
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px; border-radius:6px;'>
+                    <span style='color:#94a3b8; display:block;'>Cancellation</span>
+                    <strong style='color:#f87171; font-size:13px;'>{$cancellationRate}%</strong>
                 </div>
-                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:8px; border-radius:8px;'>
-                    <span style='color:#94a3b8; display:block;'>Repeat Guest Loyalty</span>
-                    <strong style='color:#4ade80; font-size:14px;'>{$loyaltyRatio}%</strong>
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px; border-radius:6px;'>
+                    <span style='color:#94a3b8; display:block;'>Repeat Guest</span>
+                    <strong style='color:#4ade80; font-size:13px;'>{$loyaltyRatio}%</strong>
                 </div>
             </div>
-            <a href='../admin/reports.php' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:7px 12px; border-radius:8px; text-decoration:none; margin-top:10px; font-size:12px;'>Open Full Executive Reports &rarr;</a>
+            <a href='../admin/reports.php' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:5px 10px; border-radius:6px; text-decoration:none; margin-top:8px; font-size:11px;'>Full Reports &rarr;</a>
         </div>";
 
         return [
@@ -1046,9 +1046,9 @@ class SupportAssistant
         $dirtyRooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if (!$dirtyRooms) {
-            $html = "<div style='background: rgba(15,23,42,0.9); border: 1px solid rgba(34,197,94,0.4); border-radius: 12px; padding: 14px; text-align: center;'>
-                        <strong style='color:#4ade80;'>All Rooms Clean & Ready!</strong>
-                        <p style='font-size:12px; color:#94a3b8; margin: 4px 0 0 0;'>Zero rooms currently require housekeeping or maintenance.</p>
+            $html = "<div style='background: rgba(15,23,42,0.9); border: 1px solid rgba(34,197,94,0.4); border-radius: 8px; padding: 10px; text-align: center;'>
+                        <strong style='color:#4ade80; font-size:12px;'>All Rooms Clean & Ready!</strong>
+                        <p style='font-size:11px; color:#94a3b8; margin: 3px 0 0 0;'>Zero rooms currently require housekeeping or maintenance.</p>
                      </div>";
             return [
                 'text' => $html,
@@ -1057,8 +1057,8 @@ class SupportAssistant
             ];
         }
 
-        $html = "<div style='margin-bottom:8px; font-weight:bold; color:#ffdf73;'>🧹 Housekeeping & Maintenance Watchlist (" . count($dirtyRooms) . " Rooms):</div>";
-        $html .= "<div style='display:flex; flex-direction:column; gap:8px;'>";
+        $html = "<div style='margin-bottom:6px; font-weight:bold; color:#ffdf73; font-size:13px;'>🧹 Housekeeping Watchlist (" . count($dirtyRooms) . " Rooms):</div>";
+        $html .= "<div style='display:flex; flex-direction:column; gap:6px;'>";
 
         foreach ($dirtyRooms as $room) {
             $roomNum = htmlspecialchars((string) $room['room_number']);
@@ -1068,16 +1068,16 @@ class SupportAssistant
             $badgeColor = $status === 'Cleaning' ? 'background:rgba(234,179,8,0.2); color:#eab308; border:1px solid rgba(234,179,8,0.4);' : 'background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.4);';
 
             $html .= "
-            <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.3); border-radius: 10px; padding: 10px 12px; display:flex; justify-content:space-between; align-items:center;'>
+            <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.3); border-radius: 8px; padding: 6px 10px; display:flex; justify-content:space-between; align-items:center;'>
                 <div>
-                    <strong style='color:#ffdf73; font-size:13px;'>Room #{$roomNum}</strong>
-                    <span style='font-size:11px; color:#94a3b8; display:block;'>Floor {$floor} &bull; {$suiteType}</span>
+                    <strong style='color:#ffdf73; font-size:12px;'>Room #{$roomNum}</strong>
+                    <span style='font-size:10px; color:#94a3b8;'> &bull; Fl {$floor} &bull; {$suiteType}</span>
                 </div>
-                <span style='{$badgeColor} padding:2px 8px; border-radius:99px; font-size:11px; font-weight:bold;'>{$status}</span>
+                <span style='{$badgeColor} padding:1px 6px; border-radius:99px; font-size:10px; font-weight:bold;'>{$status}</span>
             </div>";
         }
         $html .= "</div>";
-        $html .= "<a href='../admin/rooms.php' style='display:block; text-align:center; background:rgba(212,175,55,0.15); color:#ffdf73; border:1px solid rgba(212,175,55,0.4); font-weight:bold; padding:6px 12px; border-radius:8px; text-decoration:none; margin-top:8px; font-size:12px;'>Manage Housekeeping Status &rarr;</a>";
+        $html .= "<a href='../admin/rooms.php' style='display:block; text-align:center; background:rgba(212,175,55,0.15); color:#ffdf73; border:1px solid rgba(212,175,55,0.4); font-weight:bold; padding:4px 10px; border-radius:6px; text-decoration:none; margin-top:6px; font-size:11px;'>Manage Status &rarr;</a>";
 
         return [
             'text' => $html,
@@ -1089,15 +1089,15 @@ class SupportAssistant
     private function customerConciergeServicesReply(): array
     {
         $html = "
-        <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 14px;'>
-            <div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:15px; margin-bottom:8px;'>🛎️ Emperor Luxury Concierge Services</div>
-            <div style='font-size:12px; color:#cbd5e1; display:flex; flex-direction:column; gap:6px;'>
-                <div>🏊 <strong>Rooftop Infinity Pool</strong>: Open daily 6:00 AM – 10:00 PM (Complimentary)</div>
-                <div>💆 <strong>Emperor Royal Spa</strong>: Aromatherapy & Swedish massage (8:00 AM – 11:00 PM)</div>
-                <div>🍳 <strong>Skyline Breakfast Buffet</strong>: Served 6:30 AM – 10:30 AM at Grand Dining Room</div>
-                <div>🚗 <strong>Airport Express Transfer</strong>: 24/7 Concierge Chauffeur booking available</div>
+        <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 8px; padding: 10px;'>
+            <div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:13px; margin-bottom:6px;'>🛎️ Concierge Services</div>
+            <div style='font-size:11px; color:#cbd5e1; display:flex; flex-direction:column; gap:4px;'>
+                <div>🏊 <strong>Rooftop Infinity Pool</strong>: 6:00 AM – 10:00 PM</div>
+                <div>💆 <strong>Emperor Royal Spa</strong>: 8:00 AM – 11:00 PM</div>
+                <div>🍳 <strong>Skyline Breakfast Buffet</strong>: 6:30 AM – 10:30 AM</div>
+                <div>🚗 <strong>Airport Chauffeur Transfer</strong>: 24/7 Service</div>
             </div>
-            <a href='../site/contact.php' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:7px 12px; border-radius:8px; text-decoration:none; margin-top:10px; font-size:12px;'>Send Inquiry to Concierge Desk &rarr;</a>
+            <a href='../site/contact.php' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:5px 10px; border-radius:6px; text-decoration:none; margin-top:8px; font-size:11px;'>Contact Concierge &rarr;</a>
         </div>";
 
         return [
@@ -1112,10 +1112,10 @@ class SupportAssistant
         $user = currentUser();
 
         if (!$user) {
-            $html = "<div style='background: rgba(15,23,42,0.9); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 14px; text-align: center;'>
-                        <strong style='color:#ffdf73;'>Please Log In</strong>
-                        <p style='font-size:12px; color:#94a3b8; margin: 4px 0 10px 0;'>Log in to your account to view your active bookings and printable receipts.</p>
-                        <a href='../auth/login.php' style='display:inline-block; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:6px 16px; border-radius:8px; text-decoration:none; font-size:12px;'>Log In Now &rarr;</a>
+            $html = "<div style='background: rgba(15,23,42,0.9); border: 1px solid rgba(212,175,55,0.4); border-radius: 8px; padding: 10px; text-align: center;'>
+                        <strong style='color:#ffdf73; font-size:12px;'>Please Log In</strong>
+                        <p style='font-size:11px; color:#94a3b8; margin: 3px 0 8px 0;'>Log in to view active bookings and receipts.</p>
+                        <a href='../auth/login.php' style='display:inline-block; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:4px 12px; border-radius:6px; text-decoration:none; font-size:11px;'>Log In Now &rarr;</a>
                      </div>";
             return [
                 'text' => $html,
@@ -1135,10 +1135,10 @@ class SupportAssistant
         $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if (!$reservations) {
-            $html = "<div style='background: rgba(15,23,42,0.9); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 14px; text-align: center;'>
-                        <strong style='color:#ffdf73;'>No Active Reservations Found</strong>
-                        <p style='font-size:12px; color:#94a3b8; margin: 4px 0 10px 0;'>You haven't placed any bookings yet. Pick a room to start!</p>
-                        <a href='../user/dashboard.php' style='display:inline-block; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:6px 16px; border-radius:8px; text-decoration:none; font-size:12px;'>Book a Suite Now &rarr;</a>
+            $html = "<div style='background: rgba(15,23,42,0.9); border: 1px solid rgba(212,175,55,0.4); border-radius: 8px; padding: 10px; text-align: center;'>
+                        <strong style='color:#ffdf73; font-size:12px;'>No Active Reservations Found</strong>
+                        <p style='font-size:11px; color:#94a3b8; margin: 3px 0 8px 0;'>Pick a room to start your booking!</p>
+                        <a href='../user/dashboard.php' style='display:inline-block; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:4px 12px; border-radius:6px; text-decoration:none; font-size:11px;'>Book a Suite &rarr;</a>
                      </div>";
             return [
                 'text' => $html,
@@ -1147,8 +1147,8 @@ class SupportAssistant
             ];
         }
 
-        $html = "<div style='margin-bottom:8px; font-weight:bold; color:#ffdf73;'>📋 Your Recent Reservations:</div>";
-        $html .= "<div style='display:flex; flex-direction:column; gap:10px;'>";
+        $html = "<div style='margin-bottom:6px; font-weight:bold; color:#ffdf73; font-size:13px;'>📋 Your Reservations:</div>";
+        $html .= "<div style='display:flex; flex-direction:column; gap:6px;'>";
 
         foreach ($reservations as $res) {
             $resId = (int) $res['reservation_id'];
@@ -1156,8 +1156,6 @@ class SupportAssistant
             $suiteType = htmlspecialchars((string) $res['room_type']);
             $status = htmlspecialchars((string) $res['status']);
             $totalFormatted = formatMoney((float) $res['total_amount']);
-            $checkIn = htmlspecialchars((string) $res['check_in']);
-            $checkOut = htmlspecialchars((string) $res['check_out']);
 
             $badgeColor = match ($status) {
                 'Confirmed', 'Checked-in' => 'background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid rgba(34,197,94,0.4);',
@@ -1166,14 +1164,15 @@ class SupportAssistant
             };
 
             $html .= "
-            <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.4); border-radius: 12px; padding: 12px 14px;'>
+            <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 8px; padding: 8px 10px;'>
                 <div style='display:flex; justify-content:space-between; align-items:center;'>
-                    <span style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:13px;'>Booking #{$resId} &bull; Room #{$roomNum}</span>
-                    <span style='{$badgeColor} padding:2px 8px; border-radius:99px; font-size:11px; font-weight:bold;'>{$status}</span>
+                    <span style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:12px;'>#{$resId} &bull; Room #{$roomNum}</span>
+                    <span style='{$badgeColor} padding:1px 6px; border-radius:99px; font-size:10px; font-weight:bold;'>{$status}</span>
                 </div>
-                <div style='font-size:12px; color:#cbd5e1; margin: 4px 0;'>{$suiteType} &bull; {$checkIn} to {$checkOut}</div>
-                <div style='font-size:12px; color:#ffdf73; font-weight:bold;'>Total: {$totalFormatted}</div>
-                <a href='../user/receipt.php?reservation_id={$resId}' target='_blank' style='display:block; text-align:center; background:rgba(212,175,55,0.15); color:#ffdf73; border:1px solid rgba(212,175,55,0.4); font-weight:bold; padding:5px 10px; border-radius:6px; text-decoration:none; margin-top:8px; font-size:11px;'>📄 View Printable Receipt &rarr;</a>
+                <div style='display:flex; justify-content:space-between; align-items:center; margin-top:4px;'>
+                    <span style='font-size:11px; color:#cbd5e1;'>{$suiteType} &bull; <strong style='color:#ffdf73;'>{$totalFormatted}</strong></span>
+                    <a href='../user/receipt.php?reservation_id={$resId}' target='_blank' style='background:rgba(212,175,55,0.15); color:#ffdf73; border:1px solid rgba(212,175,55,0.4); font-weight:bold; padding:2px 8px; border-radius:6px; text-decoration:none; font-size:10px;'>📄 Receipt &rarr;</a>
+                </div>
             </div>";
         }
         $html .= "</div>";

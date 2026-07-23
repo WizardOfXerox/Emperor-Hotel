@@ -142,11 +142,11 @@
         }
         .support-message {
             max-width: 100%;
-            padding: 0.9rem 1rem;
-            border-radius: 16px;
+            padding: 0.6rem 0.8rem;
+            border-radius: 12px;
             white-space: pre-wrap;
-            line-height: 1.45;
-            font-size: 0.96rem;
+            line-height: 1.3;
+            font-size: 0.92rem;
         }
         .support-message--bot {
             background: rgba(17, 24, 39, 0.98);
@@ -154,8 +154,9 @@
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
         }
         .support-message--bot .support-message-content {
-            display: grid;
-            gap: 0.65rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
         }
         .support-message--user {
             justify-self: end;
@@ -171,6 +172,7 @@
         }
         .support-message p {
             margin: 0;
+            line-height: 1.3;
         }
         .support-chips-wrap {
             display: flex;
