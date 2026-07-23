@@ -290,10 +290,12 @@ $ratingScores = json_encode(array_map(fn($item) => (float)$item['avg_rating'], a
 ?>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    Chart.defaults.color = '#94a3b8';
+    const isLightMode = document.documentElement.classList.contains('light-mode');
+    Chart.defaults.color = isLightMode ? '#334155' : '#94a3b8';
+    Chart.defaults.borderColor = isLightMode ? 'rgba(15, 23, 42, 0.08)' : 'rgba(248, 250, 252, 0.08)';
     Chart.defaults.font.family = "'Outfit', 'Segoe UI', system-ui, sans-serif";
 
-    // 1. Trend Line Chart
+    // 1. Demand Trend Line Chart
     const trendCtx = document.getElementById('trendLineChart')?.getContext('2d');
     if (trendCtx) {
         new Chart(trendCtx, {
@@ -304,12 +306,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     {
                         label: 'Active Reservations',
                         data: <?= $trendActive ?>,
-                        borderColor: '#fdd700',
-                        backgroundColor: 'rgba(253, 215, 0, 0.15)',
+                        borderColor: isLightMode ? '#b45309' : '#fdd700',
+                        backgroundColor: isLightMode ? 'rgba(217, 119, 6, 0.15)' : 'rgba(253, 215, 0, 0.15)',
                         borderWidth: 3,
                         fill: true,
                         tension: 0.35,
-                        pointBackgroundColor: '#fdd700',
+                        pointBackgroundColor: isLightMode ? '#b45309' : '#fdd700',
                     },
                     {
                         label: 'Cancelled',

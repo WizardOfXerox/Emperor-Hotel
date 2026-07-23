@@ -412,14 +412,13 @@ const moneyFormatter = (value) => {
     });
 };
 
-const hasValues = (values) => values.some((value) => Number(value) > 0);
+const hasValues = (values) => values.some((value) => Number(value) > 0);const isLightMode = document.documentElement.classList.contains('light-mode');
+Chart.defaults.color = isLightMode ? '#334155' : '#94a3b8';
+Chart.defaults.borderColor = isLightMode ? 'rgba(15, 23, 42, 0.08)' : 'rgba(248, 250, 252, 0.08)';
 
 const renderDoughnutChart = (canvasId, chartData, label) => {
     const canvas = document.getElementById(canvasId);
-
-    if (!canvas || !chartData) {
-        return;
-    }
+    if (!canvas) return;
 
     new Chart(canvas, {
         type: 'doughnut',
@@ -429,7 +428,7 @@ const renderDoughnutChart = (canvasId, chartData, label) => {
                 label,
                 data: hasValues(chartData.values) ? chartData.values : chartData.values.map(() => 0),
                 backgroundColor: chartColors,
-                borderColor: 'rgba(2, 6, 23, 0.92)',
+                borderColor: isLightMode ? '#ffffff' : 'rgba(2, 6, 23, 0.92)',
                 borderWidth: 2,
             }],
         },
@@ -443,6 +442,7 @@ const renderDoughnutChart = (canvasId, chartData, label) => {
                     labels: {
                         boxWidth: 12,
                         padding: 14,
+                        color: isLightMode ? '#334155' : '#94a3b8',
                     },
                 },
             },
@@ -461,8 +461,8 @@ if (monthlyCanvas) {
                     type: 'bar',
                     label: 'Rooms Booked',
                     data: dashboardChartData.monthly.roomsBooked,
-                    backgroundColor: 'rgba(253, 215, 0, 0.72)',
-                    borderColor: '#fdd700',
+                    backgroundColor: isLightMode ? 'rgba(217, 119, 6, 0.85)' : 'rgba(253, 215, 0, 0.72)',
+                    borderColor: isLightMode ? '#b45309' : '#fdd700',
                     borderWidth: 1,
                     borderRadius: 8,
                     yAxisID: 'rooms',
@@ -471,8 +471,8 @@ if (monthlyCanvas) {
                     type: 'line',
                     label: 'Confirmed Revenue',
                     data: dashboardChartData.monthly.income,
-                    borderColor: '#38bdf8',
-                    backgroundColor: 'rgba(56, 189, 248, 0.16)',
+                    borderColor: isLightMode ? '#0284c7' : '#38bdf8',
+                    backgroundColor: isLightMode ? 'rgba(2, 132, 199, 0.15)' : 'rgba(56, 189, 248, 0.16)',
                     tension: 0.36,
                     fill: true,
                     yAxisID: 'revenue',
