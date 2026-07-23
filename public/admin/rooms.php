@@ -305,9 +305,8 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                     <div>
                         <label class="form-label text-xs fw-semibold text-light-emphasis mb-1">Target Scope</label>
                         <select class="form-select bg-dark text-light border-secondary mb-2" id="bulkTargetType" name="target_type" onchange="updateBulkTargetOptions()">
-                            <option value="all">Entire Hotel (All Rooms)</option>
-                            <option value="suite">By Suite Type</option>
-                            <option value="floor">By Floor</option>
+                            <option value="all">Entire Hotel (All Suites)</option>
+                            <option value="suite">Specific Suite / Floor</option>
                         </select>
                         <select class="form-select bg-dark text-light border-secondary d-none" id="bulkTargetValue" name="target_value" onchange="calculateSmartPreview()">
                         </select>
@@ -695,19 +694,22 @@ function updateBulkTargetOptions() {
 
     if (type === 'all') {
         targetValueSelect.classList.add('d-none');
-    } else if (type === 'suite') {
+    } else {
         targetValueSelect.classList.remove('d-none');
-        targetValueSelect.innerHTML = '<option value="all">All Suite Types</option>';
-        const types = [...new Set(roomDataStats.map(r => r.room_type))];
-        types.forEach(t => {
-            targetValueSelect.innerHTML += `<option value="${t}">${t}</option>`;
+        targetValueSelect.innerHTML = '<option value="all">All Suites & Floors</option>';
+        
+        const suiteFloorMap = {};
+        roomDataStats.forEach(r => {
+            if (!suiteFloorMap[r.room_type]) {
+                suiteFloorMap[r.room_type] = new Set();
+            }
+            suiteFloorMap[r.room_type].add(r.floor);
         });
-    } else if (type === 'floor') {
-        targetValueSelect.classList.remove('d-none');
-        targetValueSelect.innerHTML = '<option value="all">All Floors</option>';
-        const floors = [...new Set(roomDataStats.map(r => r.floor))].sort((a, b) => a - b);
-        floors.forEach(f => {
-            targetValueSelect.innerHTML += `<option value="${f}">Floor ${f}</option>`;
+
+        Object.keys(suiteFloorMap).forEach(st => {
+            const floorsArr = Array.from(suiteFloorMap[st]).sort((a, b) => a - b);
+            const floorLabel = floorsArr.length === 1 ? `Floor ${floorsArr[0]}` : `Floors ${floorsArr.join(', ')}`;
+            targetValueSelect.innerHTML += `<option value="${st}">${st} (${floorLabel})</option>`;
         });
     }
     calculateSmartPreview();
