@@ -83,8 +83,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-renderHeader('Reset Password - Emperor Hotel & Suites', ['../assets/css/auth/login.css']);
+renderHeader('Reset Password - Emperor Hotel & Suites', ['../assets/css/site/home.css']);
 ?>
+
+<!-- Header Navigation Bar -->
+<nav class="home-nav" aria-label="Primary navigation">
+    <div class="home-nav__container">
+        <a class="home-nav__logo" href="../site/home.php" aria-label="Emperor Hotel home">
+            <img src="../assets/images/branding/emperors-hotel-logo.svg" alt="Emperor Hotel logo">
+        </a>
+
+        <div class="home-nav__links">
+            <a class="home-nav__link" href="../site/home.php">HOME</a>
+            <a class="home-nav__link" href="../site/rooms.php">ROOMS</a>
+            <a class="home-nav__link" href="../site/suites.php">SUITES</a>
+        </div>
+
+        <div class="home-nav__auth">
+            <button type="button" class="btn btn-sm btn-outline-warning theme-toggle-btn rounded-circle me-2 d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px; padding: 0;" onclick="toggleEmperorTheme()" title="Switch to Light Mode" aria-label="Switch to Light Mode"><i class="bi bi-sun-fill fs-5"></i></button>
+            <a class="home-nav__cta home-nav__cta--primary" href="login.php">LOG IN</a>
+            <a class="home-nav__cta home-nav__cta--secondary" href="register.php">REGISTER</a>
+        </div>
+    </div>
+</nav>
+
 <main class="auth-wrapper min-vh-100 d-flex align-items-center justify-content-center py-5">
     <div class="container">
         <div class="card auth-split-card border-0 rounded-4 overflow-hidden shadow-lg mx-auto" style="max-width: 960px;">
