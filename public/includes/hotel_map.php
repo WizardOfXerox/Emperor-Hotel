@@ -349,9 +349,10 @@ async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, 
                         <div class="col-6"><strong>Payment:</strong> ${reservation.payment_method} (${reservation.payment_status})</div>
                     </div>
                     ${isAdmin ? `
-                    <div class="d-flex gap-2 mt-3">
+                    <div class="d-flex flex-wrap gap-2 mt-3">
                         <a href="reservations.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-warning btn-sm fw-bold flex-grow-1"><i class="bi bi-sliders me-1"></i>Manage Reservation</a>
                         <a href="payments.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-outline-warning btn-sm fw-semibold"><i class="bi bi-credit-card me-1"></i>Payments</a>
+                        <a href="rooms.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-outline-warning btn-sm fw-bold"><i class="bi bi-pencil-square me-1"></i>Edit Room</a>
                     </div>
                     ` : ''}
                 </div>
@@ -364,7 +365,10 @@ async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, 
                     <p class="small m-0 mt-1 opacity-75">No active reservations exist for this room.</p>
                 </div>
                 ${isAdmin ? `
-                <a href="create-reservation.php?room_id=${room.room_id}" class="btn btn-warning fw-bold w-100 py-2 mb-3 shadow-sm"><i class="bi bi-plus-circle me-1"></i>Create Reservation for Room #${room.room_number}</a>
+                <div class="d-flex gap-2 mb-3">
+                    <a href="create-reservation.php?room_id=${room.room_id}" class="btn btn-warning fw-bold flex-grow-1 py-2 shadow-sm"><i class="bi bi-plus-circle me-1"></i>Create Reservation for Room #${room.room_number}</a>
+                    <a href="rooms.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-outline-warning fw-bold py-2 shadow-sm"><i class="bi bi-pencil-square me-1"></i>Edit Room</a>
+                </div>
                 ` : `
                 <a href="user-booking.php?room_id=${room.room_id}" class="btn btn-warning fw-bold w-100 py-2 mb-3 shadow-sm"><i class="bi bi-calendar-plus me-1"></i>Book Room #${room.room_number}</a>
                 `}
@@ -386,6 +390,7 @@ async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, 
                             <option value="Maintenance" ${room.status === 'Maintenance' ? 'selected' : ''}>Maintenance</option>
                         </select>
                         <button type="submit" class="btn btn-outline-warning btn-sm fw-semibold">Save Status</button>
+                        <a href="rooms.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-warning btn-sm fw-bold"><i class="bi bi-pencil-square me-1"></i>Edit Room</a>
                     </div>
                 </form>
             `;

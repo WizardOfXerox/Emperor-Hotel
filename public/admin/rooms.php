@@ -331,7 +331,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
             <p class="eyebrow mb-1">XML + DOM</p>
             <h3 class="mb-3">Import or Export Rooms</h3>
             <div class="d-grid gap-3">
-                <a class="btn btn-outline-light" href="rooms.php?export=xml">Export Rooms to XML</a>
+                <a class="btn btn-outline-warning fw-bold py-2 shadow-sm" href="rooms.php?export=xml"><i class="bi bi-file-earmark-code-fill me-2"></i>Export Rooms to XML</a>
                 <form method="post" enctype="multipart/form-data" class="d-grid gap-3">
                     <input type="hidden" name="action" value="import_xml">
                     <div>
@@ -489,7 +489,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                             <input class="form-control bg-dark text-light border-secondary" id="create_view_type" name="view_type" type="text" value="City Skyline View">
                         </div>
                     </div>
-                    <div class="p-3 rounded-3 border border-secondary" style="background: rgba(15, 23, 42, 0.6);">
+                    <div class="p-3 rounded-3 room-media-box">
                         <label class="form-label font-serif fw-bold text-warning mb-1"><i class="bi bi-image me-1"></i>Room Custom Image(s)</label>
                         <p class="text-xs text-light-emphasis mb-2">Upload custom room photos. Uploading 1 image sets a static photo (disables carousel controls); uploading 2+ images creates an image gallery.</p>
                         <input class="form-control bg-dark text-light border-secondary mb-2" name="room_images[]" type="file" accept="image/*" multiple>
@@ -584,7 +584,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                         </div>
 
                         <!-- ROOM IMAGES & MEDIA SECTION -->
-                        <div class="p-3 rounded-3 border border-secondary" style="background: rgba(15, 23, 42, 0.6);">
+                        <div class="p-3 rounded-3 room-media-box">
                             <label class="form-label font-serif fw-bold text-warning mb-1"><i class="bi bi-images me-1"></i>Room Image Gallery & Media</label>
                             <p class="text-xs text-light-emphasis mb-3">Upload custom photos for Room #<?php echo e($room['room_number']); ?>. If only 1 image exists, carousel controls are automatically hidden on public views.</p>
                             

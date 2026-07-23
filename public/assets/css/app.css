@@ -2723,5 +2723,126 @@ body.light-mode #adminNotifDropdownMobile > button {
     border-color: rgba(180, 83, 9, 0.35) !important;
 }
 
+/* ===== LUXURY GOLD PAGINATION STYLING ===== */
+.pagination {
+    gap: 6px;
+}
+
+.pagination .page-item .page-link {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    color: #FFDF73;
+    border-radius: 8px !important;
+    font-weight: 600;
+    padding: 8px 14px;
+    transition: all 0.2s ease-in-out;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important;
+    border-color: #D4AF37 !important;
+    color: #070A10 !important;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
+}
+
+.pagination .page-item:not(.active):not(.disabled) .page-link:hover {
+    background: rgba(212, 175, 55, 0.25) !important;
+    color: #ffffff !important;
+    border-color: rgba(212, 175, 55, 0.6) !important;
+}
+
+.pagination .page-item.disabled .page-link {
+    background: rgba(15, 23, 42, 0.4) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Light Mode Pagination Overrides */
+body.light-mode .pagination .page-item .page-link {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(180, 83, 9, 0.3) !important;
+    color: #B45309 !important;
+}
+
+body.light-mode .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #D4AF37 0%, #F59E0B 100%) !important;
+    border-color: #B45309 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(180, 83, 9, 0.25) !important;
+}
+
+body.light-mode .pagination .page-item:not(.active):not(.disabled) .page-link:hover {
+    background: #FEF3C7 !important;
+    color: #78350F !important;
+}
+
+body.light-mode .pagination .page-item.disabled .page-link {
+    background: #F1F5F9 !important;
+    border-color: #E2E8F0 !important;
+    color: #94A3B8 !important;
+}
+
+/* ===== COST TRACKER & MEDIA BOX LIGHT MODE FIXES ===== */
+body.light-mode .cost-tracker__grid > div {
+    background: #F8FAFC !important;
+    border: 1px solid #CBD5E1 !important;
+}
+
+body.light-mode .cost-tracker__grid > div span {
+    color: #475569 !important;
+}
+
+body.light-mode .cost-tracker__grid > div strong {
+    color: #0F172A !important;
+}
+
+body.light-mode .cost-tracker__grid > div.cost-tracker__total {
+    background: #FFFBEB !important;
+    border: 1px solid #FDE68A !important;
+}
+
+body.light-mode .cost-tracker__grid > div.cost-tracker__total span {
+    color: #92400E !important;
+}
+
+body.light-mode .cost-tracker__grid > div.cost-tracker__total strong {
+    color: #B45309 !important;
+}
+
+.room-media-box {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    color: #f8fafc;
+}
+
+body.light-mode .room-media-box {
+    background: #F1F5F9 !important;
+    border: 1px solid #CBD5E1 !important;
+    color: #0F172A !important;
+}
+
+body.light-mode .room-media-box p,
+body.light-mode .room-media-box small,
+body.light-mode .room-media-box label {
+    color: #334155 !important;
+}
+
+body.light-mode .room-media-box .form-control {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    border-color: #CBD5E1 !important;
+}
+
+body.light-mode .modal-footer .btn-outline-light {
+    color: #334155 !important;
+    border-color: #CBD5E1 !important;
+    background: #F1F5F9 !important;
+}
+
+body.light-mode .modal-footer .btn-outline-light:hover {
+    color: #0F172A !important;
+    background: #E2E8F0 !important;
+}
+
 
 
