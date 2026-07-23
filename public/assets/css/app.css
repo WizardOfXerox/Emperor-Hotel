@@ -737,23 +737,32 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     font-size: 1.1rem;
 }
 
-@media (max-width: 991px) {
+@media (max-width: 991.98px) {
     .app-shell {
-        grid-template-columns: 1fr;
+        display: block !important;
+        grid-template-columns: 1fr !important;
     }
 
     .sidebar-panel {
-        gap: 1rem;
+        display: none !important;
     }
 
     .content-panel {
-        padding: 1rem;
+        padding: 1.25rem 0.85rem !important;
     }
 
-    .content-card {
-        padding: 1.25rem;
+    .content-card,
+    .panel-card {
+        padding: 1.25rem 1rem !important;
     }
 
+    .support-widget-btn {
+        bottom: 1.25rem !important;
+        right: 1.25rem !important;
+        width: 48px !important;
+        height: 48px !important;
+        z-index: 1040 !important;
+    }
 }
 
 @media (max-width: 575px) {

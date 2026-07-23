@@ -101,8 +101,73 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
         'users' => ['label' => 'Users', 'href' => 'users.php', 'icon' => 'bi-people'],
     ];
 
+    // Mobile Top Navigation Bar (< 992px)
+    echo '<div class="admin-mobile-nav d-lg-none d-flex align-items-center justify-content-between p-3 shadow-sm" style="background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.3); position: sticky; top: 0; z-index: 1030;">';
+    echo '<div class="d-flex align-items-center gap-2">';
+    echo '<button class="btn btn-sm btn-outline-warning rounded-circle p-0 d-inline-flex align-items-center justify-content-center" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebarMobile" aria-controls="adminSidebarMobile" style="width: 38px; height: 38px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.4); background: rgba(15, 23, 42, 0.85);"><i class="bi bi-list fs-4 text-warning"></i></button>';
+    echo '<a class="d-flex align-items-center gap-2 text-decoration-none" href="dashboard.php">';
+    echo '<img src="../assets/images/branding/emperors-hotel-logo.svg" alt="Emperor Hotel" style="width: 28px; height: 28px;">';
+    echo '<span class="font-serif fw-bold text-gold-gradient small text-uppercase tracking-wider d-none d-sm-inline">Emperor Admin</span>';
+    echo '</a>';
+    echo '</div>';
+    echo '<div class="d-flex align-items-center gap-2">';
+    echo '<button type="button" class="btn btn-sm btn-outline-warning theme-toggle-btn rounded-circle me-1 d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px; padding: 0;" onclick="toggleEmperorTheme()" title="Switch Theme"><i class="bi bi-sun-fill fs-5"></i></button>';
+    echo '<div class="dropdown position-relative" id="adminNotifDropdownMobile">';
+    echo '<button class="btn btn-outline-warning rounded-circle p-0 position-relative shadow-sm d-inline-flex align-items-center justify-content-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 38px; height: 38px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.4); background: rgba(15, 23, 42, 0.85);">';
+    echo '<i class="bi bi-bell-fill fs-6"></i>';
+    echo '<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger fw-bold" id="adminNotifBadgeMobile" style="display: none; font-size: 0.65rem; border: 2px solid #020617;">0</span>';
+    echo '</button>';
+    echo '<ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg rounded-4 p-3" style="width: 320px; max-height: 400px; overflow-y: auto; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(212, 175, 55, 0.45);" id="adminNotifListMobile">';
+    echo '<li class="dropdown-header text-uppercase tracking-wider font-serif fw-bold px-0 pb-2 mb-2 border-bottom border-secondary d-flex align-items-center justify-content-between text-warning">';
+    echo '<span><i class="bi bi-bell-fill me-2"></i>Notifications</span>';
+    echo '<span class="badge bg-gold text-dark font-sans fw-bold text-xs" id="adminNotifHeaderBadgeMobile">0 Pending</span>';
+    echo '</li>';
+    echo '<div id="adminNotifItemsMobile" class="d-flex flex-column gap-2">';
+    echo '<li class="text-center py-3 text-muted small"><i class="bi bi-check2-circle me-1 text-success"></i>No unread notifications</li>';
+    echo '</div>';
+    echo '</ul>';
+    echo '</div>';
+    echo '</div>';
+    echo '</div>';
+
+    // Mobile Navigation Slide-Out Offcanvas Drawer
+    echo '<div class="offcanvas offcanvas-start bg-dark text-white border-end border-warning-subtle" id="adminSidebarMobile" tabindex="-1" aria-labelledby="adminSidebarMobileLabel" style="max-width: 280px; background: #020617 !important;">';
+    echo '<div class="offcanvas-header border-bottom border-secondary pb-3">';
+    echo '<div>';
+    echo '<p class="eyebrow mb-1 text-warning">Emperor Hotel</p>';
+    echo '<h5 class="offcanvas-title font-serif fw-bold" id="adminSidebarMobileLabel">Admin Panel</h5>';
+    echo '</div>';
+    echo '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>';
+    echo '</div>';
+    echo '<div class="offcanvas-body d-flex flex-column justify-content-between p-3">';
+    echo '<div>';
+    echo '<div class="profile-card mb-3 p-3 rounded-3" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(212, 175, 55, 0.2);">';
+    echo '<div class="small text-uppercase text-muted">Signed in as</div>';
+    echo '<div class="fw-semibold text-white">' . e($user['full_name']) . '</div>';
+    echo '<div class="small text-warning fw-bold">' . e(ucfirst($user['role'])) . '</div>';
+    echo '</div>';
+    echo '<nav class="nav flex-column gap-2">';
+    foreach ($links as $key => $link) {
+        $isActive = $active === $key ? ' active' : '';
+        echo '<a class="sidebar-link' . $isActive . ' text-decoration-none px-3 py-2.5 rounded-3 d-flex align-items-center gap-2" href="' . e($link['href']) . '">';
+        echo '<i class="bi ' . e($link['icon']) . '"></i>';
+        echo '<span>' . e($link['label']) . '</span>';
+        echo '</a>';
+    }
+    echo '</nav>';
+    echo '</div>';
+    echo '<div class="d-grid gap-2 pt-3 border-top border-secondary mt-4">';
+    echo '<a class="btn btn-warning btn-sm fw-semibold" href="../site/home.php"><i class="bi bi-house-door-fill me-2"></i>Home</a>';
+    echo '<a class="btn btn-outline-light btn-sm" href="../auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Log Out</a>';
+    echo '</div>';
+    echo '</div>';
+    echo '</div>';
+
+    // App Shell Container
     echo '<div class="app-shell">';
-    echo '<aside class="sidebar-panel">';
+    
+    // Desktop Sidebar (Visible >= 992px)
+    echo '<aside class="sidebar-panel d-none d-lg-flex">';
     echo '<div>';
     echo '<div class="brand-block">';
     echo '<p class="eyebrow mb-2">Emperor Hotel</p>';
@@ -131,11 +196,13 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
     echo '<a class="btn btn-outline-light" href="../auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Log Out</a>';
     echo '</div>';
     echo '</aside>';
+
+    // Main Content Panel
     echo '<main class="content-panel">';
     echo '<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">';
     echo '<div><p class="eyebrow mb-1">Hotel Reservation System</p><h2 class="page-title mb-0">' . e($title) . '</h2></div>';
-    echo '<div class="d-flex align-items-center gap-3">';
-    echo '<button type="button" class="btn btn-outline-warning btn-sm fw-bold theme-toggle-btn rounded-pill px-3 py-2 d-flex align-items-center shadow-sm" onclick="toggleEmperorTheme()"><i class="bi bi-sun-fill me-1"></i> Light Mode</button>';
+    echo '<div class="d-none d-lg-flex align-items-center gap-3">';
+    echo '<button type="button" class="btn btn-outline-warning btn-sm theme-toggle-btn rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px; padding: 0;" onclick="toggleEmperorTheme()" title="Switch Theme"><i class="bi bi-sun-fill fs-5"></i></button>';
     echo '<div class="dropdown position-relative" id="adminNotifDropdown">';
     echo '<button class="btn btn-outline-warning rounded-circle p-2 position-relative shadow-sm d-flex align-items-center justify-content-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 44px; height: 44px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.4); background: rgba(15, 23, 42, 0.85);">';
     echo '<i class="bi bi-bell-fill fs-5"></i>';
