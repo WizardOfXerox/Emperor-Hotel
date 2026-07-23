@@ -1599,4 +1599,84 @@ body.light-mode .kiosk-room-item p {
     color: #0f172a !important;
 }
 
+/* ===== LIGHT MODE FOR NAVBAR REGISTER BUTTON ===== */
+body.light-mode .home-nav__cta--secondary {
+    color: #0f172a !important;
+    background: rgba(212, 175, 55, 0.15) !important;
+    border: 1px solid rgba(180, 140, 60, 0.5) !important;
+    font-weight: 700 !important;
+}
+
+body.light-mode .home-nav__cta--secondary:hover {
+    color: #000000 !important;
+    background: rgba(212, 175, 55, 0.28) !important;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3) !important;
+}
+
+/* ===== LIGHT MODE FOR AUTH PAGES (login.php & register.php) ===== */
+body.light-mode .auth-wrapper {
+    background: radial-gradient(circle at top, rgba(212, 175, 55, 0.15), transparent 30%),
+                linear-gradient(180deg, #f8f6f0 0%, #eae7dc 100%) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .auth-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.25) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .auth-card h1,
+body.light-mode .auth-card .display-brand {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+}
+
+body.light-mode .auth-card .muted-copy,
+body.light-mode .auth-card .eyebrow,
+body.light-mode .auth-card p {
+    color: #475569 !important;
+}
+
+body.light-mode .auth-card label,
+body.light-mode .auth-card .form-label {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+}
+
+body.light-mode .auth-card .form-control,
+body.light-mode .auth-card .form-select {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .auth-card .form-control:focus,
+body.light-mode .auth-card .form-select:focus {
+    background: #ffffff !important;
+    border-color: #d4af37 !important;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .auth-card a,
+body.light-mode .auth-card .text-warning {
+    color: #b45309 !important;
+    font-weight: 700 !important;
+}
+
+body.light-mode .auth-card a:hover {
+    color: #78350f !important;
+    text-decoration: underline !important;
+}
+
+body.light-mode .auth-card .btn-warning {
+    background: linear-gradient(135deg, #d4af37 0%, #ffdf73 50%, #aa7c11 100%) !important;
+    color: #070a10 !important;
+    border: none !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4) !important;
+}
+
 
