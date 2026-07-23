@@ -436,20 +436,21 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                 <input type="hidden" name="action" value="create">
                 <div class="modal-header border-secondary">
                     <div>
-                        <p class="eyebrow mb-1">Create Room</p>
-                        <h5 class="modal-title" id="createRoomModalLabel">New Room Record</h5>
+                        <p class="eyebrow mb-1">Room & Suite Inventory</p>
+                        <h5 class="modal-title" id="createRoomModalLabel">Create New Room / Suite</h5>
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body d-grid gap-3">
+                    <p class="text-xs text-light-emphasis mb-0">Assign room number, select or type a Suite name, and specify the floor. Adding rooms to a new floor automatically creates an interactive floor map tab.</p>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label" for="create_room_number">Room Number</label>
-                            <input class="form-control bg-dark text-light border-secondary" id="create_room_number" name="room_number" type="text" placeholder="e.g. 105" required>
+                            <label class="form-label" for="create_room_number">Room / Unit Number</label>
+                            <input class="form-control bg-dark text-light border-secondary" id="create_room_number" name="room_number" type="text" placeholder="e.g. 401" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="create_room_type">Room Type</label>
-                            <input class="form-control bg-dark text-light border-secondary" id="create_room_type" name="room_type" list="room_type_list" placeholder="Select or type new room type..." value="<?php echo e($roomTypes[0] ?? 'Imperial Deluxe'); ?>" required>
+                            <label class="form-label" for="create_room_type">Suite / Room Type</label>
+                            <input class="form-control bg-dark text-light border-secondary" id="create_room_type" name="room_type" list="room_type_list" placeholder="e.g. Penthouse Suite, Royal Executive..." value="<?php echo e($roomTypes[0] ?? 'Imperial Deluxe'); ?>" required>
                             <datalist id="room_type_list">
                                 <?php foreach ($roomTypes as $type): ?>
                                     <option value="<?php echo e($type); ?>"></option>
@@ -459,7 +460,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                     </div>
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label" for="create_floor">Floor</label>
+                            <label class="form-label" for="create_floor">Floor Number</label>
                             <input class="form-control bg-dark text-light border-secondary" id="create_floor" name="floor" type="number" min="1" value="1" required>
                         </div>
                         <div class="col-md-4">
