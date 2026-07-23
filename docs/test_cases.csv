@@ -1,52 +1,115 @@
 Test Case ID,Module,Test Scenario,Test Steps,Test Data,Expected Result,Actual Result,Status
-TC-001,Authentication,Verify valid login,"1. Open login page (/public/auth/login.php)
-2. Enter registered email and password
+TC-001,Authentication,Verify valid customer login,"1. Open login page (/public/auth/login.php)
+2. Enter registered customer email and password
 3. Click Log In","Email: customer@emperor.test
-Password: password123",User is successfully authenticated and redirected to User/Admin Dashboard,User successfully logged in and dashboard is displayed,PASS
-TC-002,Authentication,Verify invalid login,"1. Open login page (/public/auth/login.php)
-2. Enter invalid email or password
-3. Click Log In","Email: wrong@emperor.test
-Password: wrongpass",Error flash message "Invalid login credentials" appears,Error flash message is displayed and login is blocked,PASS
-TC-003,Authentication,Register new customer account,"1. Open registration page (/public/auth/register.php)
-2. Fill required fields (Full Name, Email, Password)
+Password: password123",User is authenticated and redirected to User Dashboard (/public/user/dashboard.php),Customer logged in successfully and redirected to dashboard,PASS
+TC-002,Authentication,Verify valid admin login,"1. Open login page (/public/auth/login.php)
+2. Enter admin credentials
+3. Click Log In","Email: admin@emperor.test
+Password: admin123",Admin authenticated and redirected to Admin Dashboard (/public/admin/dashboard.php),Admin role verified and redirected to admin panel,PASS
+TC-003,Authentication,Rejection of invalid credentials,"1. Open login page (/public/auth/login.php)
+2. Enter wrong password
+3. Click Log In","Email: customer@emperor.test
+Password: wrongpass",System blocks login displays flash error "Invalid login credentials",Error message displayed and login attempt rejected,PASS
+TC-004,Authentication,Register new customer account,"1. Open registration page (/public/auth/register.php)
+2. Fill Full Name Email Password
 3. Click Register","Name: Juan Dela Cruz
 Email: juan@emperor.test
-Password: Secret123!",Account is created successfully and user is redirected to login,Customer record saved and redirected with success message,PASS
-TC-004,Interactive Calendar,Select stay dates range on 7-column calendar,"1. Open home page (/public/site/home.php)
-2. Click check-in date cell on grid
-3. Click check-out date cell on grid","Check-In: 2026-07-23
-Check-Out: 2026-07-31",Selected date range is highlighted on grid without UTC timezone mismatch,Selected dates highlight correctly (e.g. 23 to 31) and duration badge updates,PASS
-TC-005,Hotel Floor Map,Live in-place room availability filter,"1. Open home page (/public/site/home.php)
-2. Select stay dates on inline calendar widget
-3. Click Filter / Search","Check-In: 2026-07-23
-Check-Out: 2026-07-31",Floor Map room badges dynamically update status (Available, Reserved, Occupied) in-place without page reload,Floor map refreshes room statuses in-place via AJAX and updates URL parameters,PASS
-TC-006,Room Showcase,Navigate to room detail with prefilled dates,"1. Click an available room block on Interactive Floor Map
-2. Inspect room-detail.php URL and specs","Room ID: 1 (#101)
-Dates: 2026-07-23 to 2026-07-31",Room detail page opens displaying 5-star obsidian glassmorphism theme, photo gallery, and prefilled stay dates,Room details render cleanly with stay dates, total rate calculator, and reserve CTA,PASS
-TC-007,Reservation,Submit new hotel stay reservation,"1. Click Reserve Room #101 Now
-2. On User Dashboard, verify prefilled stay dates & room selection
-3. Select payment method and click Submit Reservation","Room: #101 Imperial Deluxe
-Payment: Cash / Online",Reservation is created with status Pending, total cost calculated, and payment reference generated,Reservation saved in database, cost tracker accurate, and reference shown,PASS
-TC-008,Reservation,Cancel active reservation,"1. Go to User Dashboard (/public/user/dashboard.php)
-2. Locate pending/confirmed booking
-3. Click Cancel",Reservation ID: #12,Reservation status changes to Cancelled in database and list updates,Booking cancelled successfully and status badge updates to Cancelled,PASS
-TC-009,Reviews & Ratings,Submit verified guest stay review,"1. Go to User Dashboard (/public/user/dashboard.php)
-2. Click Review Stay on completed reservation
-3. Select star rating and enter comment
-4. Click Submit Review","Rating: 5 Stars
-Comment: Exceptional luxury and butler service!",Review is saved and average rating score updates on room detail page,Review recorded in database and reflected on room showcase ratings,PASS
-TC-010,Admin Room Management,Create & edit hotel room records,"1. Log in as Admin (/public/admin/rooms.php)
-2. Fill room form (Room #, Type, Floor, Price, Status)
-3. Click Save Room","Room #: 401
-Type: Emperor Presidential
-Rate: PHP 25000.00",Room record is added/updated in database and displayed in inventory table,Room #401 created successfully and reflected in inventory & floor map,PASS
-TC-011,Admin Data Export,Search rooms & export/import XML inventory,"1. Open Admin Rooms (/public/admin/rooms.php)
-2. Apply room type/status filters
-3. Click Export XML",Filter: All Rooms,XML file (rooms-export.xml) containing formatted room inventory is downloaded,File downloads properly with valid XML structure,PASS
-TC-012,Admin Operations,Update reservation status & check-in guest,"1. Open Admin Reservations (/public/admin/reservations.php)
-2. Select reservation
-3. Update status to Confirmed or Checked-in","Reservation ID: #12
-New Status: Checked-in",Reservation status is updated and room availability reflects changes across system,Status updated in DB and room availability synced automatically,PASS
-TC-013,Payment Management,Verify payment transaction references,"1. Open Admin Payments (/public/admin/payments.php)
-2. Inspect payment records
-3. Confirm cash/online payment reference",Payment Reference: EMP-PAY-XXXXX,Payment status marks as Confirmed and balance due clears on guest dashboard,Payment confirmed and balance updated to Paid,PASS
+Password: Secret123!",Account created in database and redirected to login page with success flash,Account inserted into users table and redirected with message,PASS
+TC-005,Authentication,Password reset request via OTP,"1. Open forgot password page (/public/auth/forgot-password.php)
+2. Enter registered email address
+3. Click Send OTP Code",Email: customer@emperor.test,OTP code generated in database and redirected to OTP verification page,OTP code saved to database and user navigated to OTP step,PASS
+TC-006,User Management,Admin user creation with phone number,"1. Log in as Admin (/public/admin/users.php)
+2. Fill user form including Phone Number
+3. Click Create User Account","Name: Maria Santos
+Phone: +63 917 123 4567
+Email: maria@emperor.test",User record created phone number synced with guests table and displayed in grid,User created and phone number visible in accounts table,PASS
+TC-007,User Management,Automated SMTP welcome email dispatch,"1. Create user account on Admin Users page
+2. Verify email dispatch logs and confirmation banner",Target: maria@emperor.test,System dispatches welcome email via SMTP engine with account credentials notice,Welcome email processed via SMTP engine and success notice shown,PASS
+TC-008,Interactive Calendar,7-column calendar month navigation,"1. Open home page (/public/site/home.php)
+2. Click next/prev month chevron buttons (< and >)",Action: shiftCalendarMonth(1),Month title updates (e.g. August 2026) and 7-column days grid re-renders,Month shifted correctly and days grid re-rendered,PASS
+TC-009,Interactive Calendar,Local timezone date range selection,"1. On 7-column calendar click check-in day (e.g. 23)
+2. Click check-out day (e.g. 31)","Check-In: 2026-07-23
+Check-Out: 2026-07-31",Date range highlights on grid without UTC off-by-one error; duration badge updates,Dates 23 to 31 highlighted accurately and duration badge displays 8 Nights,PASS
+TC-010,Interactive Calendar,Min/Max date bounds & past check-in guard,1. Attempt to click a date prior to today's system date on calendar grid,Date: Past Date,Past date buttons are disabled with dimmed opacity and cannot be selected,Past dates disabled and click handler blocked,PASS
+TC-011,Interactive Calendar,Date-aware real-time AJAX room availability,"1. Select stay dates on inline calendar widget
+2. Click Search / Filter","Check-In: 2026-07-23
+Check-Out: 2026-07-31",map_availability.php JSON API queries database and floor map badges update live,Floor map room badges refresh status in-place without page reload,PASS
+TC-012,Public Frontend,100vh Fullscreen hero background banner,"1. Open home page (/public/site/home.php)
+2. Inspect viewport and layout margins",Viewport: 1366x768,Hero banner covers 100vh cleanly without bottom whitespace gaps,Hero background renders 100vh fullscreen layout,PASS
+TC-013,Public Frontend,Interactive Floor Map room badges,"1. On home page click floor selection tabs (Floor 1 Floor 2 Floor 3)",Floors: 1 2 3,"Room blocks display room number suite type price and color-coded status badge",Room blocks render correctly per floor with accurate status badges,PASS
+TC-014,Public Frontend,Dynamic suite capacity display notes,1. Inspect room selection cards on home suites and reservation forms,"Suite Types: Imperial Royal Emperor","Cards display capacity notes (Max 2 Guests Max 4 Guests Max 6 Guests)",Capacity badges display accurate maximum occupancy numbers,PASS
+TC-015,Public Frontend,Suites showcase infinite auto-slide carousels,"1. Open suites showcase page (/public/site/suites.php)
+2. Test photo carousels for all 3 suite categories","Carousels: Imperial Royal Emperor",Carousels loop infinitely with smooth CSS transitions and dual nav buttons,Photo carousels slide smoothly and loop continuously,PASS
+TC-016,Public Frontend,Dynamic Inspect Suite Details routing,1. Click Inspect Suite Details & Reviews on Royal Executive card,Suite: Royal Executive,Page navigates to room-detail.php?id=13 (first room #201 of Royal Executive),Navigated to room ID #13 instead of generic default,PASS
+TC-017,Room Detail,5-Star obsidian room detail page & rate calculator,"1. Open room-detail.php?id=13&check_in=2026-07-23&check_out=2026-07-31","Room ID: 13
+Nights: 8",Page displays luxury gallery room specs and calculates total rate (PHP 60000.00),Total rate calculated accurately (8 x PHP 7500 = PHP 60000) with reserve CTA,PASS
+TC-018,Customer Booking,Self-service customer reservation submission,"1. Click Reserve Room #201 Now
+2. On User Dashboard select room card and payment mode
+3. Click Submit Reservation","Room: #201 Royal Executive
+Payment: Online",Reservation created in database with status Pending and payment reference generated,Reservation inserted into DB cost tracker accurate reference displayed,PASS
+TC-019,Customer Booking,Live Cost Tracker recalculation,"1. On User Dashboard change check-in or check-out dates","Check-In: 2026-07-25
+Check-Out: 2026-07-30",Cost tracker recalculates room nights (5 nights) and estimated total instantly,Subtotal and estimated total updated live in DOM,PASS
+TC-020,Customer Booking,Payment route selection (Cash vs Online),1. Select Cash payment mode on customer booking form,Method: Cash,System notes automatic pending cash payment reference creation upon submission,Payment route notice updated and cash workflow executed,PASS
+TC-021,Customer Booking,Automated online payment gateway simulation,"1. Select Credit Card payment mode and submit
+2. On /public/user/payment.php submit test card details",Card: 4111222233334444,"Payment status set to Paid transaction logged and balance cleared",Simulated payment processed with status Paid,PASS
+TC-022,Customer Booking,Automated reservation confirmation upon payment,1. Submit full payment for pending reservation on payment gateway,Amount: Full Total,"Reservation status automatically changes from Pending to Confirmed in DB",Payment::syncFullyPaidReservation() auto-confirmed reservation status,PASS
+TC-023,Customer Booking,Customer booking history tracking,1. Log in as customer and open /public/user/dashboard.php,Account: Customer,Table lists user's active & past reservations with real-time status badges,Reservation history loaded cleanly with accurate status badges,PASS
+TC-024,Customer Booking,Self-service reservation cancellation,"1. Locate pending reservation on User Dashboard
+2. Click Cancel Reservation",Reservation ID: #15,Reservation status changes to Cancelled and room availability releases,Status updated to Cancelled and room marked Available in DB,PASS
+TC-025,Customer Booking,Verified guest review & 5-star rating submission,"1. Click Review Stay on completed reservation
+2. Select 5 stars enter feedback submit","Rating: 5 Stars
+Comment: Outstanding service!",Review saved in reviews table and average rating score updated on showcase,Review recorded in DB and reflected in suite recommendation scores,PASS
+TC-026,Admin Desk,Walk-in Create Reservation form & 7-column calendar,"1. Log in as Admin (/public/admin/create-reservation.php)
+2. Select dates on 7-column calendar grid","Check-In: 2026-07-25
+Check-Out: 2026-07-28",7-column calendar grid re-renders dates and room cards filter availability live,Interactive calendar updated dates and room cards refreshed live,PASS
+TC-027,Admin Desk,Guest full-name splitting & account upsert,1. Enter full name Alexander Wright on Create Reservation form,Full Name: Alexander Wright,"Name split into First: Alexander Last: Wright and saved/upserted in guests table",Guest record created/linked properly in database,PASS
+TC-028,Admin Desk,Flattened Payment & Settlement section layout,1. Inspect Payment & Settlement section on create-reservation.php,CSS: .panel-card .cost-tracker,Outer card border removed so cost tracker merges seamlessly without double border,Cost tracker renders cleanly without double card borders,PASS
+TC-029,Admin Desk,Room inclusions preview box,1. Select a room card on Create Reservation form,Room: #301 Emperor Presidential,"Preview box populates suite inclusions (Full AI room hub Private office Skyline glass)",Inclusions preview updated live upon room card selection,PASS
+TC-030,Admin Records,Reservation Records search & status filter toolbar,"1. Open Admin Reservation Records (/public/admin/reservations.php)
+2. Search guest name or filter status Confirmed","Query: Alexander
+Status: Confirmed",Table filters records in real-time matching query or status,Table filtered dynamically matching search query and status,PASS
+TC-031,Admin Records,Booking Logs audit trail table,1. Open Admin Booking Logs (/public/admin/booking-records.php),Filter: All Logs,Displays read-only audit log of all historical reservation records with search toolbar,Read-only audit log table loaded with search & filter controls,PASS
+TC-032,Admin Records,Per-reservation Manage Modal action dispatcher,1. Click Manage button on any reservation row in table,Reservation ID: #18,Manage modal opens with reservation details payment progress and front desk actions,Manage modal displayed with contextual front desk action buttons,PASS
+TC-033,Admin Records,Strict check-in payment validation safeguard,"1. Locate unconfirmed/unpaid Pending reservation in Manage modal
+2. Inspect action buttons",Status: Pending,Check In button is hidden until reservation status is Confirmed,Check-in button hidden and server exception enforces confirmation requirement,PASS
+TC-034,Admin Records,Active stay extension with overlap protection,"1. Open Manage modal for active stay
+2. Enter extended check-out date and click Extend Stay",New Check-Out: 2026-08-05,"System verifies room has no overlapping bookings extends stay and updates total cost",Stay extended cleanly and reservation total increased by added room nights,PASS
+TC-035,Admin Records,Front desk check-out & room status release,"1. Open Manage modal for checked-in guest
+2. Click Check Out",Reservation ID: #18,Reservation status changes to Checked-out and room status releases to Available,Reservation marked Checked-out and room status updated to Available,PASS
+TC-036,Admin Records,Printable luxury voucher receipt generation,"1. On Manage modal or table row click Receipt",Reservation ID: #18,Printable luxury receipt page opens with hotel branding guest details and payment breakdown,Printable receipt generated with full reservation & transaction details,PASS
+TC-037,Admin Inventory,Visual Floor Map availability breakdown,"1. Open Admin Rooms (/public/admin/rooms.php)
+2. Inspect Floor Map card",Floors: Floor 1 Floor 2 Floor 3,"Cards display count of Available Not Available and Filtered rooms per floor",Floor map visual summary displayed accurately per floor,PASS
+TC-038,Admin Inventory,Room inventory CRUD operations,"1. On rooms.php fill New Room form (Room #501 Type Floor Rate Status)
+2. Submit form","Room #: 501
+Type: Imperial Deluxe
+Rate: PHP 4500.00",Room #501 created in database and displayed in paginated inventory table,Room created successfully and visible in room inventory list,PASS
+TC-039,Admin Inventory,Bulk room rate update by suite category,"1. On rooms.php enter new rate under Bulk Update Prices (e.g. PHP 5000)
+2. Click Set Rate","Type: Imperial Deluxe
+New Rate: PHP 5000.00",All 12 Imperial Deluxe rooms updated to PHP 5000.00 nightly rate in database,Bulk price update executed across all matching room records,PASS
+TC-040,Admin Inventory,Room inventory XML export & import,"1. Click Export XML on rooms.php
+2. Upload exported XML via import form",Action: Export & Import,rooms-export.xml downloaded with valid DOMDocument XML schema and re-imported cleanly,XML exported and imported with zero schema errors,PASS
+TC-041,Admin Payments,Manual payment entry & reference generation,"1. Open Admin Payments (/public/admin/payments.php)
+2. Select reservation enter payment amount & method save","Reservation ID: #18
+Amount: PHP 10000.00",Payment record saved with auto-generated reference (EMP-PAY-XXXXX),Payment inserted into payments table with generated reference,PASS
+TC-042,Admin Payments,Outstanding balance calculation & payment cap,1. Attempt to enter payment exceeding remaining balance due,"Balance: PHP 5000
+Attempted: PHP 10000",Validation error blocks payment from exceeding reservation total,Excess payment attempt blocked by server validation,PASS
+TC-043,Admin Payments,Pending payment transaction review,"1. On Admin Payments inspect pending transactions table
+2. Click Confirm Payment",Payment ID: #7,Payment status updated to Confirmed and reservation balance updated,Payment confirmed and reservation total balance updated,PASS
+TC-044,Admin Guests,Guest directory real-time search,"1. Open Admin Guests (/public/admin/guests.php)
+2. Enter guest name phone or email in search input",Search: Santos,Guest directory table filters matching records in real-time,Matching guest records displayed in search results,PASS
+TC-045,Admin Guests,Guest stay history & payment summary inspection,1. On Admin Guests click View History for selected guest,Guest ID: #5,"Panel displays guest's past reservations total spent and printable receipt links",Full guest reservation history and financial summary displayed,PASS
+TC-046,Reports & Analytics,Date-filtered room occupancy report,"1. Open Admin Reports (/public/admin/reports.php)
+2. Set date range and click Run Report","Start: 2026-07-01
+End: 2026-07-31","Displays booked room nights available room nights and occupancy rate by suite type",Occupancy rates calculated accurately for selected date range,PASS
+TC-047,Reports & Analytics,Revenue report by room type & payment method,1. Inspect Revenue tables on reports.php,Period: July 2026,Displays confirmed revenue breakdown by suite category and payment method,Confirmed revenue totals calculated and grouped accurately,PASS
+TC-048,Reports & Analytics,Booking demand trend line chart (Chart.js),1. Inspect Visual Analytics section on reports.php,Chart ID: #trendLineChart,Interactive Chart.js line chart renders daily active vs cancelled reservation trends,Line chart rendered with glowing gold trend lines and hover tooltips,PASS
+TC-049,Reports & Analytics,Payment method revenue share doughnut chart,1. Inspect Financial Distribution section on reports.php,Chart ID: #paymentPieChart,Chart.js doughnut chart renders percentage share of Cash Card GCash and Bank Transfer,Doughnut chart rendered cleanly with custom color legend,PASS
+TC-050,Reports & Analytics,Booked room nights suite volume bar chart,1. Inspect Inventory Performance section on reports.php,Chart ID: #occupancyBarChart,Chart.js bar chart renders booked room nights per suite category,Bar chart rendered with gold gradient bars and scale ticks,PASS
+TC-051,Reports & Analytics,Recommendation Engine guest rating score bar chart,1. Inspect Recommendation Engine section on reports.php,Chart ID: #ratingsBarChart,Chart.js horizontal bar chart renders average guest rating scores out of 5.0 per suite,Horizontal bar chart rendered with average ratings per suite type,PASS
+TC-052,AI Assistant,Database-aware customer support chat widget,"1. Open AI support widget on customer frontend
+2. Ask What are the room prices?",Query: Room prices,Pattern matcher queries live database and returns structured HTML price table,Live room prices queried from DB and formatted as HTML table,PASS
+TC-053,AI Assistant,Admin AI analytics & real-time context injection,"1. Open AI support widget on Admin Panel
+2. Ask What is our revenue this month?",Query: Monthly revenue,AI compiles live database sales metrics and returns exact confirmed revenue total,Live admin analytics compiled and returned with context breakdown,PASS
+TC-054,System Notifications,Auto-dismiss flash alert banners (3-second timer),"1. Perform any action triggering flash alert banner (e.g. login update room)
+2. Wait 3 seconds",Timer: 3000ms,Alert banner automatically fades out and removes from DOM after 3 seconds; manual X button closes instantly,Alert banner faded out after 3 seconds and removed cleanly from DOM,PASS
