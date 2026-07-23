@@ -72,6 +72,13 @@ $reservations = $reservationModel->all();
 $paymentTotals = $paymentModel->totalsByReservation();
 $summaryRows = $paymentModel->summaryByStatus();
 
+$latestReferences = [];
+foreach ($payments as $p) {
+    if (!isset($latestReferences[(int) $p['reservation_id']]) && !empty($p['transaction_reference'])) {
+        $latestReferences[(int) $p['reservation_id']] = $p['transaction_reference'];
+    }
+}
+
 renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/admin/payments.css']);
 ?>
 <section class="row g-4">
@@ -106,6 +113,7 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                                 $reservationTotal = (float) $reservation['total_amount'];
                                 $balanceDue = max(0, $reservationTotal - (float) $totals['confirmed_amount']);
                                 $activeBalanceDue = max(0, $reservationTotal - (float) $totals['confirmed_amount'] - (float) $totals['pending_amount']);
+                                $referenceId = $latestReferences[$reservationId] ?? ('PAY-' . str_pad((string) $reservationId, 5, '0', STR_PAD_LEFT) . '-' . date('YmdHis'));
                             ?>
                             <option
                                 value="<?php echo e($reservationId); ?>"
@@ -119,6 +127,7 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                                 data-room="<?php echo e('Room ' . $reservation['room_number'] . ' - ' . $reservation['room_type']); ?>"
                                 data-stay="<?php echo e($reservation['check_in'] . ' to ' . $reservation['check_out']); ?>"
                                 data-status="<?php echo e($reservation['status']); ?>"
+                                data-reference="<?php echo e($referenceId); ?>"
                                 <?php echo $selectedReservationId === $reservationId ? 'selected' : ''; ?>
                             >
                                 <?php echo e('#' . $reservationId . ' - ' . $reservation['first_name'] . ' ' . $reservation['last_name'] . ' - Room ' . $reservation['room_number']); ?>
@@ -171,10 +180,20 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                     <div class="form-text">Use Confirmed for accepted payments. Use Pending for admin review. Use Refunded to record a guest refund.</div>
                 </div>
                 <div class="panel-card p-3">
-                    <p class="eyebrow mb-1">Transaction Reference</p>
-                    <p class="muted-copy small mb-0">An official reference like <strong>PAY-00001-YYYYMMDDHHMMSS</strong> will be generated automatically upon saving.</p>
+                    <p class="eyebrow mb-1">Transaction Reference ID</p>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-hash text-warning fs-5"></i>
+                        <code class="fs-6 fw-bold text-warning text-break" data-payment-reference>Choose a reservation</code>
+                    </div>
                 </div>
-                <button class="btn btn-warning fw-semibold" type="submit" <?php echo !$reservations ? 'disabled' : ''; ?>><i class="bi bi-check-circle me-1"></i>Save Payment Transaction</button>
+                <div class="d-flex gap-2 align-items-center mt-1">
+                    <button class="btn btn-success fw-bold flex-grow-1 py-2" type="submit" name="payment_status" value="Confirmed" data-payment-btn-confirm <?php echo !$reservations ? 'disabled' : ''; ?>>
+                        <i class="bi bi-check-circle-fill me-1"></i>Confirm Payment
+                    </button>
+                    <button class="btn btn-outline-danger fw-bold flex-grow-1 py-2" type="submit" name="payment_status" value="Refunded" data-payment-btn-refund <?php echo !$reservations ? 'disabled' : ''; ?>>
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Process Refund
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -261,26 +280,6 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                                 <td><?php echo e(date('Y-m-d', strtotime($payment['payment_date']))); ?></td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <?php if ($status === 'Pending'): ?>
-                                            <form method="post" class="d-inline">
-                                                <input type="hidden" name="action" value="update_status">
-                                                <input type="hidden" name="payment_id" value="<?php echo e($payment['payment_id']); ?>">
-                                                <input type="hidden" name="amount" value="<?php echo e($payment['amount']); ?>">
-                                                <input type="hidden" name="payment_status" value="Confirmed">
-                                                <button type="submit" class="btn btn-sm btn-success text-nowrap px-2 py-1 text-xs fw-bold shadow-sm" title="Approve and confirm this payment">
-                                                    <i class="bi bi-check-circle me-1"></i>Confirm
-                                                </button>
-                                            </form>
-                                            <form method="post" class="d-inline">
-                                                <input type="hidden" name="action" value="update_status">
-                                                <input type="hidden" name="payment_id" value="<?php echo e($payment['payment_id']); ?>">
-                                                <input type="hidden" name="amount" value="<?php echo e($payment['amount']); ?>">
-                                                <input type="hidden" name="payment_status" value="Refunded">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger text-nowrap px-2 py-1 text-xs fw-bold" title="Refund this transaction">
-                                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Refund
-                                                </button>
-                                            </form>
-                                        <?php endif; ?>
                                         <a class="btn btn-sm btn-warning text-nowrap px-2 py-1 text-xs fw-semibold" href="payments.php?reservation_id=<?php echo e($payment['reservation_id']); ?>" title="Populate this reservation in Payment Entry form">
                                             <i class="bi bi-wallet2 me-1"></i>Manage Entry
                                         </a>
@@ -335,18 +334,20 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
             reservationSelect.dispatchEvent(new Event("change"));
         });
     }
-    const simulatedInput = form.querySelector("#is_simulated");
-    const statusInput = form.querySelector("#payment_status");
     const methodInput = form.querySelector("#payment_method");
-    const submitButton = form.querySelector("button[type='submit']");
+    const statusInput = form.querySelector("#payment_status");
+    const confirmBtn = form.querySelector("[data-payment-btn-confirm]");
+    const refundBtn = form.querySelector("[data-payment-btn-refund]");
     const entryNote = form.querySelector("[data-payment-entry-note]");
-    const paymentEntryFields = [amountInput, methodInput, statusInput, simulatedInput, submitButton].filter(Boolean);
+    const referenceTag = form.querySelector("[data-payment-reference]");
+    const paymentEntryFields = [amountInput, methodInput, statusInput, confirmBtn, refundBtn].filter(Boolean);
+
     const money = (amount) => `PHP ${Number(amount || 0).toLocaleString("en-PH", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     })}`;
     const text = (selector, value) => {
-        const element = tracker.querySelector(selector);
+        const element = form.querySelector(selector) || tracker.querySelector(selector);
 
         if (element) {
             element.textContent = value;
@@ -376,6 +377,7 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
             text("[data-payment-pending]", money(0));
             text("[data-payment-balance]", money(0));
             text("[data-payment-active-balance]", money(0));
+            text("[data-payment-reference]", "Choose a reservation");
             if (amountInput) {
                 amountInput.value = "";
                 amountInput.removeAttribute("max");
@@ -398,6 +400,7 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
         text("[data-payment-pending]", money(option.dataset.pending));
         text("[data-payment-balance]", money(balance));
         text("[data-payment-active-balance]", money(activeBalance));
+        text("[data-payment-reference]", option.dataset.reference || "PAY-00000-YYYYMMDDHHMMSS");
 
         if (amountInput && (amountInput.dataset.autofilled !== "false")) {
             amountInput.value = activeBalance > 0 ? activeBalance.toFixed(2) : "0.00";
@@ -407,13 +410,15 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
 
         if (activeBalance <= 0) {
             const note = pending > 0
-                ? "No new payment can be added because pending transaction(s) already reserve the remaining balance. Review or adjust the existing transaction below."
-                : "No new payment can be added because this reservation has no remaining payable balance.";
-            setPaymentEntryState(false, note);
+                ? "No new payment can be added because pending transaction(s) already reserve the remaining balance. Use Process Refund if returning funds."
+                : "This reservation balance is fully settled (PHP 0.00 balance due). Use Process Refund if returning funds.";
+            setPaymentEntryState(true, note);
+            if (confirmBtn) confirmBtn.disabled = true;
+            if (refundBtn) refundBtn.disabled = false;
             return;
         }
 
-        setPaymentEntryState(true, `You can record up to ${money(activeBalance)} for this reservation.`);
+        setPaymentEntryState(true, `You can record or confirm up to ${money(activeBalance)} for this reservation.`);
     };
 
     if (amountInput) {
