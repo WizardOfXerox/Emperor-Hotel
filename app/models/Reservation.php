@@ -1048,6 +1048,31 @@ class Reservation
         }
     }
 
+    public function roomPerformanceStats(?string $startDate = null, ?string $endDate = null): array
+    {
+        $params = [];
+        $where = "WHERE r.status NOT IN ('Cancelled')";
+
+        if ($startDate && $endDate) {
+            $where .= " AND r.created_at >= :start_date AND r.created_at <= :end_date";
+            $params[':start_date'] = $startDate . ' 00:00:00';
+            $params[':end_date'] = $endDate . ' 23:59:59';
+        }
+
+        $sql = "SELECT rm.room_id, rm.room_number, rm.room_type, rm.floor, rm.price_per_night,
+                       COUNT(r.reservation_id) AS total_bookings, 
+                       COALESCE(SUM(DATEDIFF(r.check_out, r.check_in)), 0) AS total_nights_booked,
+                       COALESCE(SUM(r.total_amount), 0) AS total_revenue
+                FROM rooms rm
+                LEFT JOIN reservations r ON rm.room_id = r.room_id {$where}
+                GROUP BY rm.room_id, rm.room_number, rm.room_type, rm.floor, rm.price_per_night
+                ORDER BY total_bookings DESC, total_revenue DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     private function validateReportDateRange(string $startDate, string $endDate): array
     {
         if ($startDate === '' || $endDate === '') {

@@ -39,6 +39,10 @@ class SupportAssistant
         }
 
         if ($scope === 'admin') {
+            if ($this->matchesAny($normalized, ['most booked room', 'room number', 'which room number', 'what room number', 'top room number', 'popular room', 'best room number', 'most booked'])) {
+                return $this->adminMostBookedRoomReply($range);
+            }
+
             if ($this->matchesAny($normalized, ['housekeeping', 'cleaning', 'dirty rooms', 'dirty room', 'maintenance'])) {
                 return $this->adminHousekeepingReply();
             }
@@ -757,6 +761,22 @@ class SupportAssistant
                 );
             }
 
+            // Specific Room Number Performance Data
+            $roomStats = $this->reservationModel->roomPerformanceStats();
+            $lines[] = 'Specific Room Numbers Performance Rankings (All Rooms):';
+            foreach ($roomStats as $row) {
+                $lines[] = sprintf(
+                    '  * Room #%s (Type: %s, Floor: %d, Price: %s): %d bookings, %d nights, total revenue: %s',
+                    $row['room_number'],
+                    $row['room_type'],
+                    (int) $row['floor'],
+                    formatMoney((float) $row['price_per_night']),
+                    (int) $row['total_bookings'],
+                    (int) $row['total_nights_booked'],
+                    formatMoney((float) $row['total_revenue'])
+                );
+            }
+
             // Get operational alerts
             $alerts = $this->reservationModel->operationalAlerts();
             $lines[] = 'Operational Alerts:';
@@ -1036,6 +1056,68 @@ class SupportAssistant
             'text' => $html,
             'kind' => 'admin-forecast',
             'quick_chips' => ['📈 Monthly Sales', '🧹 Dirty Rooms', '🚨 Pending Risks', '📊 Room Occupancy'],
+        ];
+    }
+
+    private function adminMostBookedRoomReply(array $range = []): array
+    {
+        $startDate = $range['start'] ?? null;
+        $endDate = $range['end'] ?? null;
+        $stats = $this->reservationModel->roomPerformanceStats($startDate, $endDate);
+
+        if (!$stats) {
+            $html = "<div style='background: rgba(15,23,42,0.9); border: 1px solid rgba(212,175,55,0.4); border-radius: 8px; padding: 10px; text-align: center;'>
+                        <strong style='color:#ffdf73; font-size:12px;'>No Room Performance Data Available</strong>
+                     </div>";
+            return [
+                'text' => $html,
+                'kind' => 'admin-room-rankings',
+                'quick_chips' => ['📊 Executive Forecast', '📈 Monthly Sales', '🧹 Dirty Rooms'],
+            ];
+        }
+
+        $topRoom = $stats[0];
+        $topNum = htmlspecialchars((string) $topRoom['room_number']);
+        $topType = htmlspecialchars((string) $topRoom['room_type']);
+        $topBookings = (int) $topRoom['total_bookings'];
+        $topNights = (int) $topRoom['total_nights_booked'];
+        $topRev = formatMoney((float) $topRoom['total_revenue']);
+
+        $html = "
+        <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 8px; padding: 8px 10px;'>
+            <div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:13px; margin-bottom:6px;'>🏆 Most Booked Room Number</div>
+            <div style='background:rgba(212,175,55,0.12); border:1px solid rgba(212,175,55,0.4); border-radius:6px; padding:6px 8px; margin-bottom:6px;'>
+                <strong style='color:#ffdf73; font-size:13px;'>Room #{$topNum} &bull; {$topType}</strong>
+                <div style='font-size:11px; color:#cbd5e1; margin-top:2px;'>
+                    <strong>{$topBookings} Bookings</strong> ({$topNights} Nights) &bull; Revenue: <strong style='color:#4ade80;'>{$topRev}</strong>
+                </div>
+            </div>
+            <div style='font-size:11px; color:#94a3b8; font-weight:bold; margin-bottom:4px;'>Top Performing Rooms Ranking:</div>
+            <div style='display:flex; flex-direction:column; gap:4px;'>";
+
+        foreach (array_slice($stats, 1, 4) as $index => $room) {
+            $num = htmlspecialchars((string) $room['room_number']);
+            $type = htmlspecialchars((string) $room['room_type']);
+            $bookings = (int) $room['total_bookings'];
+            $rev = formatMoney((float) $room['total_revenue']);
+            $rank = $index + 2;
+
+            $html .= "
+            <div style='display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:4px 8px; border-radius:6px; font-size:11px;'>
+                <span style='color:#cbd5e1;'>#{$rank}. <strong style='color:#ffdf73;'>Room #{$num}</strong> ({$type})</span>
+                <span style='color:#94a3b8;'>{$bookings} stays &bull; {$rev}</span>
+            </div>";
+        }
+
+        $html .= "
+            </div>
+            <a href='../admin/reports.php' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:4px 10px; border-radius:6px; text-decoration:none; margin-top:6px; font-size:11px;'>Full Analytics &rarr;</a>
+        </div>";
+
+        return [
+            'text' => $html,
+            'kind' => 'admin-room-rankings',
+            'quick_chips' => ['📊 Executive Forecast', '📈 Monthly Sales', '🧹 Dirty Rooms'],
         ];
     }
 
