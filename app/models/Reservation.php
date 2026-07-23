@@ -313,12 +313,11 @@ class Reservation
 
         return match ($status) {
             'Pending' => [
-                'confirm' => 'Confirm',
-                'cancel' => 'Cancel',
+                'cancel' => 'Cancel Reservation',
             ],
             'Confirmed' => [
                 'check_in' => 'Check In',
-                'cancel' => 'Cancel',
+                'cancel' => 'Cancel Reservation',
             ],
             'Checked-in' => [
                 'check_out' => 'Check Out',
