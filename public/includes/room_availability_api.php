@@ -4,27 +4,18 @@ declare(strict_types=1);
 
 function roomAvailabilityPayload(Reservation $reservationModel, string $checkIn, string $checkOut, ?int $excludeReservationId = null): array
 {
-    $today = date('Y-m-d');
-    $tomorrow = date('Y-m-d', strtotime('+1 day'));
-
-    if (trim($checkIn) === '') {
-        $checkIn = $today;
-    }
-    if (trim($checkOut) === '') {
-        $checkOut = $tomorrow;
-    }
-
     if (!$reservationModel->dateRangeIsValid($checkIn, $checkOut)) {
-        $checkIn = $today;
-        $checkOut = $tomorrow;
+        return [
+            'ok' => false,
+            'message' => 'Choose a valid future check-in and check-out date.',
+            'rooms' => [],
+        ];
     }
 
     $rooms = $reservationModel->roomsWithDateAvailability($checkIn, $checkOut, $excludeReservationId);
 
     return [
         'ok' => true,
-        'check_in' => $checkIn,
-        'check_out' => $checkOut,
         'rooms' => array_map(
             static fn (array $room): array => [
                 'room_id' => (int) $room['room_id'],
