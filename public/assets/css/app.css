@@ -563,10 +563,71 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
         rgba(15, 23, 42, 0.9);
 }
 
-.panel-card .cost-tracker {
-    border: none;
-    background: transparent;
-    padding: 0;
+
+/* ==========================================================================
+   GLOBAL 7-COLUMN INTERACTIVE CALENDAR GRID STYLES
+   ========================================================================== */
+.calendar-grid-header,
+.calendar-grid-days {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 6px !important;
+    max-width: 520px !important;
+    margin: 0 auto !important;
+}
+
+.calendar-day-btn {
+    width: 100%;
+    max-width: 44px;
+    height: 44px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #F8FAFC;
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.calendar-day-btn:hover:not(.is-disabled) {
+    background: rgba(212, 175, 55, 0.3) !important;
+    border-color: #D4AF37 !important;
+    color: #FFDF73 !important;
+    transform: scale(1.06);
+}
+
+.calendar-day-btn.is-selected {
+    background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important;
+    color: #070A10 !important;
+    border: none !important;
+    font-weight: 900 !important;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.6) !important;
+}
+
+.calendar-day-btn.in-range {
+    background: rgba(212, 175, 55, 0.25) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    color: #FFDF73 !important;
+}
+
+.calendar-day-btn.is-disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: rgba(15, 23, 42, 0.4);
+    border-color: transparent;
+}
+
+.calendar-day-empty {
+    width: 100%;
+    max-width: 44px;
+    height: 44px;
+    margin: 0 auto;
+    opacity: 0;
 }
 
 .cost-tracker__head {
