@@ -34,12 +34,18 @@ function sendSmtpEmail(string $toEmail, string $subject, string $bodyHtml, ?stri
     // In local development / offline / presentation mode without active internet or SMTP credentials,
     // we instantly log and flash an on-screen Toast/Notice containing the 6-digit OTP code
     // so the system works 100% reliably on localhost even when completely offline!
-    if (!$hasInternet || empty($smtpHost) || empty($smtpUser)) {
+    if (!$hasInternet || empty($smtpHost) || empty($smtpUser) || empty($smtpPass)) {
         if ($otpCode !== null && function_exists('setFlash')) {
-            $modeNotice = !$hasInternet ? 'Offline / Localhost Mode' : 'SMTP Presentation Mode';
+            if (!$hasInternet) {
+                $modeNotice = 'Offline / Localhost Mode';
+            } elseif (empty($smtpPass)) {
+                $modeNotice = 'SMTP_PASS Missing in .env';
+            } else {
+                $modeNotice = 'SMTP Presentation Mode';
+            }
             setFlash(
                 'info',
-                "📩 [{$modeNotice}] Verification email generated for <strong>{$toEmail}</strong>. Verification Code: <strong style='font-size: 1.15rem; letter-spacing: 2px; color: #ffdf73;'>{$otpCode}</strong>"
+                "📩 [{$modeNotice}] Verification code generated for <strong>{$toEmail}</strong>. Verification Code: <strong style='font-size: 1.15rem; letter-spacing: 2px; color: #ffdf73;'>{$otpCode}</strong>"
             );
         }
         return true;
