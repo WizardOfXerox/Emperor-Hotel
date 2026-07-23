@@ -1281,4 +1281,170 @@ body.light-mode main[style*="background:#070A10"] {
     background: #f4f1ea !important;
 }
 
+/* ===== ROOM DIRECTORY SPECIFIC CLASS STYLES ===== */
+.rooms-page-banner {
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    color: #ffffff;
+}
+
+.rooms-banner-badge {
+    background: rgba(212, 175, 55, 0.2);
+    color: #FFDF73;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+}
+
+.rooms-total-pill {
+    background: rgba(212, 175, 55, 0.15);
+    color: #FFDF73;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.kiosk-room-card {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    color: #ffffff;
+}
+
+.sidebar-filter-card {
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+    color: #ffffff;
+}
+
+.room-pill-gold {
+    background: rgba(212, 175, 55, 0.15);
+    color: #FFDF73;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.room-pill-glass {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F8FAFC;
+}
+
+/* ===== LIGHT MODE OVERRIDES FOR ROOM DIRECTORY ===== */
+body.light-mode .rooms-page-banner {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .rooms-page-banner h1,
+body.light-mode .rooms-page-banner p {
+    color: #0f172a !important;
+}
+
+body.light-mode .rooms-banner-badge {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    border-color: #fde68a !important;
+}
+
+body.light-mode .rooms-total-pill {
+    background: #fffbeb !important;
+    color: #b45309 !important;
+    border-color: #fde68a !important;
+}
+
+body.light-mode .kiosk-room-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .kiosk-room-card h5,
+body.light-mode .kiosk-room-card p,
+body.light-mode .kiosk-room-card small,
+body.light-mode .kiosk-room-card li {
+    color: #0f172a !important;
+}
+
+body.light-mode .sidebar-filter-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .sidebar-filter-card label,
+body.light-mode .sidebar-filter-card span,
+body.light-mode .sidebar-filter-card p,
+body.light-mode .sidebar-filter-card div,
+body.light-mode .sidebar-filter-card button {
+    color: #0f172a !important;
+}
+
+body.light-mode .sidebar-filter-card input[type="text"] {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+body.light-mode .room-pill-gold {
+    background: #fffbeb !important;
+    color: #b45309 !important;
+    border-color: #fde68a !important;
+}
+
+body.light-mode .room-pill-glass {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+}
+
+body.light-mode .sidebar-filter-card #calendarVisualGrid,
+body.light-mode .sidebar-filter-card .calendar-visual-grid {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .sidebar-filter-card .calendar-grid-header div {
+    color: #0f172a !important;
+}
+
+/* ===== LIGHT MODE ROOM DETAIL CONTRAST FIXES ===== */
+body.light-mode .room-detail-specs-box small {
+    color: #64748b !important;
+}
+
+body.light-mode .room-detail-specs-box span,
+body.light-mode .room-detail-specs-box div,
+body.light-mode .room-detail-specs-box strong {
+    color: #0f172a !important;
+}
+
+body.light-mode #floorsSidebarAccordion,
+body.light-mode .custom-scrollbar,
+body.light-mode #floorsSidebarAccordion .accordion-body,
+body.light-mode #floorsSidebarAccordion .accordion-item {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+body.light-mode #floorsSidebarAccordion .list-group-item:not(.shadow) {
+    background: #f8fafc !important;
+    color: #1e293b !important;
+}
+
+body.light-mode #floorsSidebarAccordion .list-group-item span,
+body.light-mode #floorsSidebarAccordion .list-group-item strong {
+    color: #0f172a !important;
+}
+
+body.light-mode .room-detail-card small,
+body.light-mode .room-detail-card li,
+body.light-mode .room-detail-card div,
+body.light-mode .room-detail-card span {
+    color: #0f172a !important;
+}
+
 

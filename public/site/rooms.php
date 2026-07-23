@@ -53,17 +53,17 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
 <div class="container-fluid px-lg-4 px-xl-5 py-4">
 
     <!-- Page Title Header Banner -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 p-4 rounded-4 text-white shadow-lg border" style="background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.4) !important;">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 p-4 rounded-4 shadow-lg border rooms-page-banner">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge rounded-pill px-3 py-1 font-serif fw-bold text-xs" style="background: rgba(212, 175, 55, 0.2); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.4);"><i class="bi bi-door-open-fill me-1"></i>ROOM DIRECTORY &amp; SELECTION</span>
+                <span class="badge rounded-pill px-3 py-1 font-serif fw-bold text-xs rooms-banner-badge"><i class="bi bi-door-open-fill me-1"></i>ROOM DIRECTORY &amp; SELECTION</span>
                 <span class="text-warning text-xs font-serif opacity-75">EMPEROR HOTEL</span>
             </div>
-            <h1 class="h3 font-serif fw-bold text-white mb-0">Explore &amp; Pick Your Suite</h1>
-            <p class="text-light opacity-75 text-xs mb-0">Filter by stay dates, search room numbers, or toggle categories using the sidebar filter on the right.</p>
+            <h1 class="h3 font-serif fw-bold mb-0">Explore &amp; Pick Your Suite</h1>
+            <p class="text-xs mb-0 opacity-75">Filter by stay dates, search room numbers, or toggle categories using the sidebar filter on the right.</p>
         </div>
         <div>
-            <span class="badge rounded-pill px-3 py-2 text-xs font-serif fw-bold" style="background: rgba(212, 175, 55, 0.15); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.3);">
+            <span class="badge rounded-pill px-3 py-2 text-xs font-serif fw-bold rooms-total-pill">
                 Showing <?= count($rooms) ?> Suites Total
             </span>
         </div>
@@ -86,7 +86,7 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
                     $detailUrl = 'room-detail.php?id=' . (int)$rm['room_id'] . '&check_in=' . urlencode($checkIn) . '&check_out=' . urlencode($checkOut);
                 ?>
                     <div class="col-12 col-md-6 col-xl-4 kiosk-room-item" data-type="<?= e($rmType) ?>" data-avail="<?= $isAvail ? '1' : '0' ?>" data-room-num="<?= e($rm['room_number']) ?>">
-                        <div class="card rounded-4 h-100 overflow-hidden border shadow-lg d-flex flex-column justify-content-between position-relative" style="background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 55, 0.3) !important; transition: transform 0.25s ease, box-shadow 0.25s ease;">
+                        <div class="card rounded-4 h-100 overflow-hidden border shadow-lg d-flex flex-column justify-content-between position-relative kiosk-room-card">
                             
                             <div>
                                 <!-- Suite Photo Banner & Status Badges -->
@@ -112,30 +112,30 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
                                     <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                                         <div>
                                             <span class="text-xs text-uppercase tracking-wider text-warning font-serif fw-bold d-block"><?= e($rmType) ?></span>
-                                            <h5 class="font-serif fw-bold text-white mb-0">Room #<?= e($rm['room_number']) ?></h5>
+                                            <h5 class="font-serif fw-bold mb-0">Room #<?= e($rm['room_number']) ?></h5>
                                         </div>
                                         <div class="text-end">
                                             <strong class="fs-5 text-warning font-serif d-block">₱<?= number_format((float)$rm['price_per_night']) ?></strong>
-                                            <small class="text-light opacity-75 text-xs">per night</small>
+                                            <small class="opacity-75 text-xs">per night</small>
                                         </div>
                                     </div>
 
-                                    <p class="text-light opacity-75 text-xs mb-3 line-clamp-2" style="min-height: 36px;"><?= e($rmInfo['tagline'] ?? '') ?></p>
+                                    <p class="opacity-75 text-xs mb-3 line-clamp-2" style="min-height: 36px;"><?= e($rmInfo['tagline'] ?? '') ?></p>
 
                                     <!-- Key Specs Pills -->
                                     <div class="d-flex flex-wrap gap-2 mb-3">
-                                        <span class="badge rounded-pill text-xs fw-semibold px-2 py-1" style="background: rgba(212, 175, 55, 0.15); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.3);">
+                                        <span class="badge rounded-pill text-xs fw-semibold px-2 py-1 room-pill-gold">
                                             <i class="bi bi-people-fill me-1"></i>Up to <?= $maxCap ?> Guests
                                         </span>
-                                        <span class="badge rounded-pill text-xs fw-semibold px-2 py-1" style="background: rgba(255, 255, 255, 0.1); color: #F8FAFC;">
+                                        <span class="badge rounded-pill text-xs fw-semibold px-2 py-1 room-pill-glass">
                                             <i class="bi bi-eye-fill me-1"></i><?= e($rmInfo['view_type'] ?? 'Skyline View') ?>
                                         </span>
                                     </div>
 
                                     <!-- Executive Perks -->
                                     <div class="border-top border-secondary pt-2">
-                                        <small class="text-light opacity-75 text-xs fw-bold d-block mb-1"><i class="bi bi-stars text-warning me-1"></i>Suite Amenities:</small>
-                                        <ul class="list-unstyled text-xs text-light opacity-80 m-0 ps-1">
+                                        <small class="opacity-75 text-xs fw-bold d-block mb-1"><i class="bi bi-stars text-warning me-1"></i>Suite Amenities:</small>
+                                        <ul class="list-unstyled text-xs opacity-80 m-0 ps-1">
                                             <?php foreach (array_slice($perks, 0, 2) as $pk): ?>
                                                 <li class="mb-1"><i class="bi bi-check2 text-warning me-1"></i><?= e($pk) ?></li>
                                             <?php endforeach; ?>
@@ -160,7 +160,7 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
         <!-- RIGHT: SIDEBAR FILTER PANEL -->
         <div class="col-12 col-lg-4 col-xl-3">
             <div class="position-sticky-desktop" style="z-index: 10;">
-                <div class="card rounded-4 p-4 shadow-lg text-light border d-flex flex-column gap-4" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+                <div class="card rounded-4 p-4 shadow-lg border d-flex flex-column gap-4 sidebar-filter-card">
 
                     <!-- 1. Search Bar -->
                     <div>

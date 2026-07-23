@@ -167,29 +167,29 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
     </style>
     <div class="container-fluid px-lg-4 px-xl-5 py-3">
         <!-- Navigation & Room Switcher Controls -->
-        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3 p-3 rounded-4" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.35);">
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3 p-3 rounded-4 room-detail-nav-bar shadow-sm">
             <div class="d-flex flex-wrap align-items-center gap-2">
                 <a href="rooms.php#suite-catalog" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold shadow text-uppercase tracking-wider" style="background: rgba(30, 41, 59, 0.9); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.45);">
                     <i class="bi bi-arrow-left me-1"></i>Back to Catalog
                 </a>
 
                 <?php if ($prevRoom): ?>
-                    <a href="room-detail.php?id=<?= (int)$prevRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold text-light shadow-sm" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3);" title="Go to Room #<?= e($prevRoom['room_number']) ?>">
+                    <a href="room-detail.php?id=<?= (int)$prevRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold shadow-sm" style="border: 1px solid rgba(212, 175, 55, 0.3);" title="Go to Room #<?= e($prevRoom['room_number']) ?>">
                         <i class="bi bi-chevron-left me-1" style="color: #FFDF73;"></i>Prev: Room #<?= e($prevRoom['room_number']) ?>
                     </a>
                 <?php endif; ?>
                 <?php if ($nextRoom): ?>
-                    <a href="room-detail.php?id=<?= (int)$nextRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold text-light shadow-sm" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3);" title="Go to Room #<?= e($nextRoom['room_number']) ?>">
+                    <a href="room-detail.php?id=<?= (int)$nextRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold shadow-sm" style="border: 1px solid rgba(212, 175, 55, 0.3);" title="Go to Room #<?= e($nextRoom['room_number']) ?>">
                         Next: Room #<?= e($nextRoom['room_number']) ?><i class="bi bi-chevron-right ms-1" style="color: #FFDF73;"></i>
                     </a>
                 <?php endif; ?>
             </div>
             
-            <div class="text-light opacity-90 small fw-semibold font-serif">
-                <a href="home.php" class="text-decoration-none text-light opacity-75">Home</a> / 
-                <a href="rooms.php" class="text-decoration-none text-light opacity-75">Rooms</a> / 
+            <div class="small fw-semibold font-serif">
+                <a href="home.php" class="text-decoration-none opacity-75">Home</a> / 
+                <a href="rooms.php" class="text-decoration-none opacity-75">Rooms</a> / 
                 <span style="color: #FFDF73;"><?= e($roomType) ?></span> / 
-                <span class="text-white fw-bold">Room #<?= e($room['room_number']) ?></span>
+                <span class="fw-bold">Room #<?= e($room['room_number']) ?></span>
             </div>
         </div>
 
@@ -197,7 +197,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
         <div class="row g-3 g-xl-4 mb-5">
             <!-- Col 1: Room Hero & Gallery -->
             <div class="col-12 col-lg-5 col-xl-5">
-                <div class="card rounded-4 overflow-hidden shadow-lg border" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+                <div class="card rounded-4 overflow-hidden shadow-lg border room-detail-card">
                     <div class="position-relative">
                         <img src="<?= e($typeCatalog['hero']) ?>" id="mainRoomHeroImage" class="card-img-top w-100 object-fit-cover transition-all" style="min-height: 260px; height: 45vh; max-height: 440px;" alt="<?= e($roomType) ?>">
                         
@@ -239,22 +239,22 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
 
             <!-- Col 2: Room Specs & Fast Booking Box -->
             <div class="col-12 col-lg-4 col-xl-4">
-                <div class="card rounded-4 p-4 shadow-lg h-100 d-flex flex-column justify-content-between border" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+                <div class="card rounded-4 p-4 shadow-lg h-100 d-flex flex-column justify-content-between border room-detail-card">
                     <div>
                         <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-secondary">
                             <span class="badge px-3 py-1 rounded-pill font-serif fw-bold" style="background: rgba(212, 175, 55, 0.2); border: 1px solid rgba(212, 175, 55, 0.5); color: #FFDF73;">
                                 <i class="bi bi-layers me-1"></i>Floor <?= e($room['floor']) ?>
                             </span>
                             <div style="color: #FBBF24;" class="fw-bold fs-6">
-                                <i class="bi bi-star-fill me-1"></i><?= number_format($ratingData['avg_rating'], 1) ?> <span class="text-light opacity-75 text-xs font-normal">(<?= $ratingData['review_count'] ?> Guest Reviews)</span>
+                                <i class="bi bi-star-fill me-1"></i><?= number_format($ratingData['avg_rating'], 1) ?> <span class="opacity-75 text-xs font-normal">(<?= $ratingData['review_count'] ?> Guest Reviews)</span>
                             </div>
                         </div>
 
                         <h2 class="font-serif fw-bold mb-1" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><?= e($roomType) ?></h2>
-                        <p class="text-light opacity-90 small mb-4 fw-semibold"><?= e($typeCatalog['tagline']) ?></p>
+                        <p class="small mb-4 fw-semibold opacity-90"><?= e($typeCatalog['tagline']) ?></p>
 
                         <!-- Key Spec Grid -->
-                        <div class="row row-cols-2 g-3 p-3 rounded-4 mb-4 border" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+                        <div class="row row-cols-2 g-3 p-3 rounded-4 mb-4 border room-detail-specs-box">
                             <div class="col">
                                 <small class="text-light opacity-75 text-xs text-uppercase d-block fw-bold tracking-wider mb-1">Bed Configuration</small>
                                 <span class="fw-bold text-white"><i class="bi bi-door-closed me-1" style="color: #FFDF73;"></i><?= e($room['bed_type'] ?? 'King Bed') ?></span>
@@ -390,17 +390,17 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
         <!-- Suite Overview & Features -->
         <div class="row g-4 mb-5">
             <div class="col-12 col-md-8">
-                <div class="card rounded-4 p-4 shadow-lg border h-100" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+                <div class="card rounded-4 p-4 shadow-lg border h-100 room-detail-card">
                     <h4 class="font-serif fw-bold mb-3" style="color: #FFDF73; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-file-text-fill me-2"></i>Suite Architectural Overview</h4>
-                    <p class="text-light opacity-90 leading-relaxed mb-4 fs-6 fw-normal"><?= e($typeCatalog['details']) ?></p>
+                    <p class="leading-relaxed mb-4 fs-6 fw-normal opacity-90"><?= e($typeCatalog['details']) ?></p>
 
                     <h5 class="font-serif fw-bold mb-3" style="color: #FFDF73;"><i class="bi bi-sliders me-2"></i>Room Amenities & Features</h5>
                     <div class="row row-cols-1 row-cols-sm-2 g-3">
                         <?php foreach ($typeCatalog['features'] as $feature): ?>
                             <div class="col">
-                                <div class="p-3 rounded-3 border d-flex align-items-center h-100" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+                                <div class="p-3 rounded-3 border d-flex align-items-center h-100 room-detail-specs-box">
                                     <i class="bi bi-check2-square fs-5 me-3" style="color: #FFDF73;"></i>
-                                    <span class="small fw-semibold text-white"><?= e($feature) ?></span>
+                                    <span class="small fw-semibold"><?= e($feature) ?></span>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -409,7 +409,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
             </div>
 
             <div class="col-12 col-md-4">
-                <div class="card rounded-4 p-4 shadow-lg border h-100" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+                <div class="card rounded-4 p-4 shadow-lg border h-100 room-detail-card">
                     <h5 class="font-serif fw-bold mb-4" style="color: #FFDF73;"><i class="bi bi-shield-check me-2"></i>5-Star Guarantees</h5>
                     <ul class="list-unstyled text-light opacity-90 small mb-0">
                         <li class="mb-3 d-flex align-items-start">
