@@ -113,18 +113,18 @@
                     }
                 }
 
-                const badgeBg = n.status === 'Pending' ? 'bg-warning text-dark' : 'bg-success text-white';
+                const badgeBg = n.status === 'Pending' ? 'bg-warning text-dark' : (n.status === 'Conflict' ? 'bg-danger text-white' : 'bg-success text-white');
 
                 listHtml += `
-                    <a href="../admin/reservations.php?search=${encodeURIComponent(n.guest_name)}" class="dropdown-item p-2 rounded-3 text-light d-flex align-items-center justify-content-between gap-2 text-wrap" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.2);">
+                    <a href="../admin/reservations.php?search=${encodeURIComponent(n.guest_name)}" class="dropdown-item notif-item-card p-3 rounded-3 d-flex align-items-center justify-content-between gap-2 text-wrap text-decoration-none mb-1">
                         <div>
-                            <div class="fw-bold font-serif text-gold small"><i class="bi bi-door-closed me-1"></i>${escapeHtml(n.guest_name)}</div>
-                            <div class="text-xs text-light opacity-90">${escapeHtml(n.room_type)} (#${escapeHtml(n.room_number)}) &bull; <strong>${escapeHtml(n.amount)}</strong></div>
-                            <div class="text-xs text-muted">${escapeHtml(n.check_in)} &rarr; ${escapeHtml(n.check_out)}</div>
+                            <div class="fw-bold font-serif notif-guest-name small"><i class="bi bi-door-closed me-1"></i>${escapeHtml(n.guest_name)}</div>
+                            <div class="text-xs notif-details mt-1">${escapeHtml(n.room_type)} (#${escapeHtml(n.room_number)}) &bull; <strong>${escapeHtml(n.amount)}</strong></div>
+                            <div class="text-xs notif-meta mt-1">${escapeHtml(n.check_in)} &rarr; ${escapeHtml(n.check_out)}</div>
                         </div>
-                        <div class="text-end">
+                        <div class="text-end flex-shrink-0">
                             <span class="badge ${badgeBg} text-xs px-2 py-1 mb-1 d-block">${escapeHtml(n.status)}</span>
-                            <small class="text-muted text-xs d-block">${escapeHtml(n.time_ago)}</small>
+                            <small class="notif-meta text-xs d-block">${escapeHtml(n.time_ago)}</small>
                         </div>
                     </a>
                 `;

@@ -117,7 +117,7 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
     echo '<i class="bi bi-bell-fill fs-6"></i>';
     echo '<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger fw-bold" id="adminNotifBadgeMobile" style="display: none; font-size: 0.65rem; border: 2px solid #020617;">0</span>';
     echo '</button>';
-    echo '<ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg rounded-4 p-3" style="width: 320px; max-height: 400px; overflow-y: auto; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(212, 175, 55, 0.45);" id="adminNotifListMobile">';
+    echo '<ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-4 p-3 admin-notif-dropdown" style="width: 320px; max-height: 400px; overflow-y: auto;" id="adminNotifListMobile">';
     echo '<li class="dropdown-header text-uppercase tracking-wider font-serif fw-bold px-0 pb-2 mb-2 border-bottom border-secondary d-flex align-items-center justify-content-between text-warning">';
     echo '<span><i class="bi bi-bell-fill me-2"></i>Notifications</span>';
     echo '<span class="badge bg-gold text-dark font-sans fw-bold text-xs" id="adminNotifHeaderBadgeMobile">0 Pending</span>';
@@ -208,7 +208,7 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
     echo '<i class="bi bi-bell-fill fs-5"></i>';
     echo '<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger fw-bold" id="adminNotifBadge" style="display: none; font-size: 0.7rem; border: 2px solid #020617;">0</span>';
     echo '</button>';
-    echo '<ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg rounded-4 p-3" style="width: 360px; max-height: 480px; overflow-y: auto; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(212, 175, 55, 0.45);" id="adminNotifList">';
+    echo '<ul class="dropdown-menu dropdown-menu-end shadow-lg rounded-4 p-3 admin-notif-dropdown" style="width: 360px; max-height: 480px; overflow-y: auto;" id="adminNotifList">';
     echo '<li class="dropdown-header text-uppercase tracking-wider font-serif fw-bold px-0 pb-2 mb-2 border-bottom border-secondary d-flex align-items-center justify-content-between text-warning">';
     echo '<span><i class="bi bi-bell-fill me-2"></i>New Reservations</span>';
     echo '<span class="badge bg-gold text-dark font-sans fw-bold text-xs" id="adminNotifHeaderBadge">0 Pending</span>';

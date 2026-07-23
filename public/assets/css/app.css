@@ -2644,4 +2644,84 @@ body.light-mode .auth-form-col .auth-footer-text {
     color: #475569 !important;
 }
 
+/* ===== ADMIN NOTIFICATIONS STYLING ===== */
+.admin-notif-dropdown {
+    background: rgba(15, 23, 42, 0.98) !important;
+    border: 1px solid rgba(212, 175, 55, 0.45) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6) !important;
+}
+
+.notif-item-card {
+    background: rgba(30, 41, 59, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    transition: all 0.2s ease-in-out;
+}
+
+.notif-item-card:hover {
+    background: rgba(47, 63, 86, 0.95);
+    border-color: rgba(212, 175, 55, 0.5);
+    transform: translateY(-1px);
+}
+
+.notif-guest-name {
+    color: #FFDF73;
+}
+
+.notif-details {
+    color: #F8FAFC;
+}
+
+.notif-meta {
+    color: #94A3B8;
+}
+
+/* Light Mode Overrides for Admin Notifications */
+body.light-mode .admin-notif-dropdown {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(180, 83, 9, 0.3) !important;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15) !important;
+}
+
+body.light-mode .admin-notif-dropdown .dropdown-header {
+    color: #B45309 !important;
+    border-color: #E2E8F0 !important;
+}
+
+body.light-mode .admin-notif-dropdown .dropdown-header #adminNotifHeaderBadge,
+body.light-mode .admin-notif-dropdown .dropdown-header #adminNotifHeaderBadgeMobile {
+    background: #FEF3C7 !important;
+    color: #92400E !important;
+}
+
+body.light-mode .notif-item-card {
+    background: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+}
+
+body.light-mode .notif-item-card:hover {
+    background: #F1F5F9 !important;
+    border-color: #CBD5E1 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode .notif-guest-name {
+    color: #B45309 !important;
+}
+
+body.light-mode .notif-details {
+    color: #0F172A !important;
+}
+
+body.light-mode .notif-meta {
+    color: #64748B !important;
+}
+
+body.light-mode #adminNotifDropdown > button,
+body.light-mode #adminNotifDropdownMobile > button {
+    background: #FFFFFF !important;
+    color: #B45309 !important;
+    border-color: rgba(180, 83, 9, 0.35) !important;
+}
+
+
 
