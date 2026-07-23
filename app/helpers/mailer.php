@@ -26,7 +26,7 @@ function sendSmtpEmail(string $toEmail, string $subject, string $bodyHtml, ?stri
     $smtpHost = getenv('SMTP_HOST') ?: ($_ENV['SMTP_HOST'] ?? ($_SERVER['SMTP_HOST'] ?? ''));
     $smtpPort = (int) (getenv('SMTP_PORT') ?: ($_ENV['SMTP_PORT'] ?? ($_SERVER['SMTP_PORT'] ?? 587)));
     $smtpUser = getenv('SMTP_USER') ?: ($_ENV['SMTP_USER'] ?? ($_SERVER['SMTP_USER'] ?? ''));
-    $smtpPass = getenv('SMTP_PASS') ?: ($_ENV['SMTP_PASS'] ?? ($_SERVER['SMTP_PASS'] ?? ''));
+    $smtpPass = getenv('SMTP_PASSWORD') ?: (getenv('SMTP_PASS') ?: ($_ENV['SMTP_PASSWORD'] ?? ($_ENV['SMTP_PASS'] ?? ($_SERVER['SMTP_PASSWORD'] ?? ($_SERVER['SMTP_PASS'] ?? '')))));
     $smtpCrypto = getenv('SMTP_CRYPTO') ?: ($_ENV['SMTP_CRYPTO'] ?? ($_SERVER['SMTP_CRYPTO'] ?? ($smtpPort === 465 ? 'ssl' : 'tls')));
 
     $hasInternet = isInternetConnected();
