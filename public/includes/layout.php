@@ -245,6 +245,100 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 400);
         });
     }, 3000);
+
+    const handleDynamicFetch = (url) => {
+        const contentPanel = document.querySelector(".content-panel") || document.body;
+        
+        contentPanel.style.opacity = "0.5";
+        contentPanel.style.transition = "opacity 0.15s ease";
+
+        fetch(url, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(res => res.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+
+            const oldPanels = document.querySelectorAll(".content-panel > section, .content-panel > div");
+            const newPanels = doc.querySelectorAll(".content-panel > section, .content-panel > div");
+
+            if (oldPanels.length && newPanels.length && oldPanels.length === newPanels.length) {
+                oldPanels.forEach((oldP, idx) => {
+                    if (newPanels[idx]) {
+                        oldP.replaceWith(newPanels[idx]);
+                    }
+                });
+            } else {
+                const newContent = doc.querySelector(".content-panel");
+                if (newContent) {
+                    contentPanel.innerHTML = newContent.innerHTML;
+                }
+            }
+
+            window.history.pushState(null, "", url);
+        })
+        .catch(err => {
+            console.error("AJAX filter error, falling back to page reload:", err);
+            window.location.href = url;
+        })
+        .finally(() => {
+            contentPanel.style.opacity = "1";
+            attachDynamicEvents();
+        });
+    };
+
+    const attachDynamicEvents = () => {
+        document.querySelectorAll('form[method="get"]').forEach(form => {
+            if (form.dataset.ajaxAttached) return;
+            form.dataset.ajaxAttached = "true";
+
+            form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const params = new URLSearchParams(formData);
+                const actionUrl = form.getAttribute("action") || window.location.pathname;
+                const fullUrl = actionUrl + "?" + params.toString();
+                handleDynamicFetch(fullUrl);
+            });
+
+            form.querySelectorAll("select").forEach(select => {
+                select.onchange = null;
+                select.addEventListener("change", () => {
+                    form.dispatchEvent(new Event("submit", { cancelable: true }));
+                });
+            });
+
+            form.querySelectorAll('input[type="text"], input[type="search"]').forEach(input => {
+                let debounceTimer;
+                input.addEventListener("input", () => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        form.dispatchEvent(new Event("submit", { cancelable: true }));
+                    }, 350);
+                });
+            });
+        });
+
+        document.querySelectorAll('.pagination-container a, .pagination a, a[title="Reset Filters"], a[href="rooms.php"], a[href="booking-records.php"], a[href="reservations.php"], a[href="payments.php"]').forEach(link => {
+            if (link.dataset.ajaxAttached) return;
+            link.dataset.ajaxAttached = "true";
+
+            link.addEventListener("click", (e) => {
+                const href = link.getAttribute("href");
+                if (href && !href.startsWith("#") && !href.startsWith("javascript:")) {
+                    e.preventDefault();
+                    handleDynamicFetch(href);
+                }
+            });
+        });
+    };
+
+    attachDynamicEvents();
+
+    window.addEventListener("popstate", () => {
+        handleDynamicFetch(window.location.href);
+    });
 });
 </script>
 HTML;

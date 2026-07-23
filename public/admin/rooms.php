@@ -192,18 +192,6 @@ $paginationBase = roomFiltersQuery($filters);
 
 renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/rooms.css']);
 ?>
-<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
-    <div>
-        <p class="eyebrow mb-1">Room Management & Inventory</p>
-        <h2 class="mb-0 font-serif">Hotel Rooms & Suites</h2>
-        <p class="muted-copy mb-0">Manage floor plans, room pricing, custom suite types, and real-time availability.</p>
-    </div>
-    <div>
-        <button class="btn btn-warning btn-lg fw-bold shadow-sm px-4" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal">
-            <i class="bi bi-plus-circle-fill me-2"></i>Create New Room
-        </button>
-    </div>
-</div>
 
 <section class="stats-grid mb-4">
     <article class="stat-tile">

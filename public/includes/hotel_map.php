@@ -61,13 +61,20 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
                 <?php endif; ?>
             </small>
         </div>
-        <!-- Status Legend -->
-        <div class="d-flex flex-wrap gap-2 text-xs small">
-            <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold map-legend-available"><i class="bi bi-circle-fill me-1"></i>Available</span>
-            <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold map-legend-reserved"><i class="bi bi-circle-fill me-1"></i>Reserved</span>
-            <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold map-legend-occupied"><i class="bi bi-circle-fill me-1"></i>Occupied</span>
-            <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold map-legend-cleaning"><i class="bi bi-circle-fill me-1"></i>Cleaning</span>
-            <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold map-legend-maintenance"><i class="bi bi-circle-fill me-1"></i>Maintenance</span>
+        <div class="d-flex align-items-center gap-3">
+            <!-- Status Legend -->
+            <div class="d-flex flex-wrap gap-2 text-xs small">
+                <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold map-legend-available"><i class="bi bi-circle-fill me-1"></i>Available</span>
+                <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold map-legend-reserved"><i class="bi bi-circle-fill me-1"></i>Reserved</span>
+                <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold map-legend-occupied"><i class="bi bi-circle-fill me-1"></i>Occupied</span>
+                <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold map-legend-cleaning"><i class="bi bi-circle-fill me-1"></i>Cleaning</span>
+                <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold map-legend-maintenance"><i class="bi bi-circle-fill me-1"></i>Maintenance</span>
+            </div>
+            <?php if ($mode === 'admin'): ?>
+                <button class="btn btn-warning btn-sm fw-bold px-3 text-nowrap shadow-sm" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+                    <i class="bi bi-plus-circle-fill me-1"></i>Create New Room
+                </button>
+            <?php endif; ?>
         </div>
     </div>
 
