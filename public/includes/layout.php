@@ -29,6 +29,38 @@ function renderHeader(string $title, array $extraStylesheets = [], string $bodyC
     <link rel="apple-touch-icon" href="../assets/images/branding/emperors-hotel-logo.svg">
     <link href="../assets/css/app.css" rel="stylesheet">
     {$extraStylesheetLinks}
+    <script>
+        (function() {
+            if (localStorage.getItem('emperor_theme') === 'light') {
+                document.documentElement.classList.add('light-mode');
+            }
+        })();
+        function toggleEmperorTheme() {
+            const isLight = document.documentElement.classList.toggle('light-mode');
+            if (document.body) {
+                document.body.classList.toggle('light-mode', isLight);
+            }
+            localStorage.setItem('emperor_theme', isLight ? 'light' : 'dark');
+            updateThemeToggleButtons(isLight);
+        }
+        function updateThemeToggleButtons(isLight) {
+            document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+                btn.innerHTML = isLight 
+                    ? '<i class="bi bi-moon-stars-fill me-1 text-primary"></i> Dark Mode' 
+                    : '<i class="bi bi-sun-fill me-1 text-warning"></i> Light Mode';
+                btn.classList.toggle('btn-outline-dark', isLight);
+                btn.classList.toggle('btn-outline-warning', !isLight);
+            });
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const isLight = localStorage.getItem('emperor_theme') === 'light';
+            if (isLight) {
+                document.documentElement.classList.add('light-mode');
+                document.body.classList.add('light-mode');
+            }
+            updateThemeToggleButtons(isLight);
+        });
+    </script>
 </head>
 <body{$bodyClassAttribute}>
 HTML;
@@ -101,6 +133,7 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
     echo '<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">';
     echo '<div><p class="eyebrow mb-1">Hotel Reservation System</p><h2 class="page-title mb-0">' . e($title) . '</h2></div>';
     echo '<div class="d-flex align-items-center gap-3">';
+    echo '<button type="button" class="btn btn-outline-warning btn-sm fw-bold theme-toggle-btn rounded-pill px-3 py-2 d-flex align-items-center shadow-sm" onclick="toggleEmperorTheme()"><i class="bi bi-sun-fill me-1"></i> Light Mode</button>';
     echo '<div class="dropdown position-relative" id="adminNotifDropdown">';
     echo '<button class="btn btn-outline-warning rounded-circle p-2 position-relative shadow-sm d-flex align-items-center justify-content-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 44px; height: 44px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.4); background: rgba(15, 23, 42, 0.85);">';
     echo '<i class="bi bi-bell-fill fs-5"></i>';
@@ -163,6 +196,7 @@ function renderSiteLayoutStart(string $title, ?array $user = null, string $siteP
     echo '<a class="btn btn-outline-light btn-sm" href="' . e($sitePrefix . 'home.php') . '">Home</a>';
     echo '<a class="btn btn-outline-warning btn-sm fw-bold font-serif" href="' . e($sitePrefix . 'rooms.php') . '"><i class="bi bi-door-open-fill me-1 text-warning"></i>Rooms</a>';
     echo '<a class="btn btn-outline-light btn-sm" href="' . e($sitePrefix . 'suites.php') . '">Suites</a>';
+    echo '<button type="button" class="btn btn-outline-warning btn-sm fw-bold theme-toggle-btn rounded-pill px-3 py-1 d-flex align-items-center shadow-sm" onclick="toggleEmperorTheme()"><i class="bi bi-sun-fill me-1"></i> Light Mode</button>';
 
     if ($user) {
         if ($user['role'] === 'admin') {
