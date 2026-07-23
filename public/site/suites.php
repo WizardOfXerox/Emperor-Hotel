@@ -72,6 +72,6 @@ renderHeader('Suites Showcase | Emperor Hotel', ['../assets/css/site/home.css', 
 
 <?php renderSupportWidget('customer'); ?>
 <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="../assets/js/support-widget.js" defer></script>
+<script src="../assets/js/support-widget.js?v=<?= time() ?>" defer></script>
 </body>
 </html>

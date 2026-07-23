@@ -229,7 +229,7 @@ function renderAdminLayoutEnd(): void
     echo '</div>';
     renderSupportWidget('admin');
     echo '<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>';
-    echo '<script src="../assets/js/support-widget.js" defer></script>';
+    echo '<script src="../assets/js/support-widget.js?v=' . time() . '" defer></script>';
     echo '<script src="../assets/js/admin-notifications.js" defer></script>';
     echo <<<'HTML'
 <script>

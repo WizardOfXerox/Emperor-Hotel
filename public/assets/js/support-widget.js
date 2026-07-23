@@ -484,12 +484,12 @@
     }
 
     function renderMessageContent(text) {
-        const normalizedText = String(text).replace(/\r\n/g, '\n');
+        const normalizedText = String(text).replace(/\r\n/g, '\n').trim();
         const container = document.createElement('div');
         container.className = 'support-message-content';
 
         // Check if message contains HTML markup (like interactive cards, links, badges)
-        if (/<[a-z][\s\S]*>/i.test(normalizedText)) {
+        if (/<[a-z][\s\S]*>/i.test(normalizedText) || normalizedText.startsWith('<div') || normalizedText.includes('class=')) {
             container.innerHTML = normalizedText;
             return container;
         }
@@ -566,7 +566,15 @@
         node.className = 'support-message support-message--' + role;
 
         if (role === 'bot') {
-            node.appendChild(renderMessageContent(text));
+            const textStr = String(text).trim();
+            if (/<[a-z][\s\S]*>/i.test(textStr) || textStr.startsWith('<div') || textStr.includes('class=')) {
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'support-message-content';
+                contentDiv.innerHTML = textStr;
+                node.appendChild(contentDiv);
+            } else {
+                node.appendChild(renderMessageContent(textStr));
+            }
         } else {
             node.textContent = text;
         }

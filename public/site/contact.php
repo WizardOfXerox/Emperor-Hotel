@@ -205,6 +205,6 @@ renderHeader('Contact Us | Emperor Hotel', ['../assets/css/site/home.css', '../a
 <?php renderSupportWidget('customer'); ?>
 
 <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="../assets/js/support-widget.js" defer></script>
+<script src="../assets/js/support-widget.js?v=<?= time() ?>" defer></script>
 </body>
 </html>
