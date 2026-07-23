@@ -126,7 +126,30 @@ function getRoomCatalogData(array|string|int $roomOrType): array
         $roomId = (string)($roomOrType['room_id'] ?? '');
         $type = (string)($roomOrType['room_type'] ?? 'Imperial Deluxe');
 
-        $baseTypeCatalog = $catalog[$type] ?? $catalog['Imperial Deluxe'];
+        $dynamicFallback = [
+            'slug' => strtolower(trim((string) preg_replace('/[^a-zA-Z0-9]+/', '-', $type), '-')),
+            'hero' => '../assets/images/rooms/imperial-deluxe/hero.jpg',
+            'carousel' => [
+                '../assets/images/rooms/imperial-deluxe/carousel/1.jpg',
+                '../assets/images/rooms/imperial-deluxe/carousel/2.jpg',
+                '../assets/images/rooms/imperial-deluxe/carousel/3.jpg',
+            ],
+            'tagline' => 'Experience luxury & comfort in our ' . $type . '.',
+            'details' => 'A beautifully appointed ' . $type . ' suite equipped with modern amenities, luxury bedding, and high-speed Wi-Fi.',
+            'ideal_for' => 'Leisure and business travelers',
+            'bed_options' => ['Queen Bed', 'King Bed'],
+            'max_capacity' => 2,
+            'view_type' => 'City Skyline View',
+            'dimensions' => '45 sqm / 484 sq ft',
+            'included_perks' => ['Complimentary Breakfast', 'High-Speed Priority Wi-Fi'],
+            'features' => [
+                'Plush luxury bedding with high thread-count linen',
+                'Smart TV, digital climate control, and minibar',
+                'Modern rainfall shower and luxury vanity',
+            ],
+        ];
+
+        $baseTypeCatalog = $catalog[$type] ?? $dynamicFallback;
         $override = $perRoom[$roomNum] ?? ($perRoom[$roomId] ?? []);
 
         $merged = array_merge($baseTypeCatalog, array_filter($override));
@@ -162,7 +185,28 @@ function getRoomCatalogData(array|string|int $roomOrType): array
         return array_merge($catalog['Imperial Deluxe'], $perRoom[$strKey]);
     }
 
-    return $catalog['Imperial Deluxe'];
+    return [
+        'slug' => strtolower(trim((string) preg_replace('/[^a-zA-Z0-9]+/', '-', $strKey), '-')),
+        'hero' => '../assets/images/rooms/imperial-deluxe/hero.jpg',
+        'carousel' => [
+            '../assets/images/rooms/imperial-deluxe/carousel/1.jpg',
+            '../assets/images/rooms/imperial-deluxe/carousel/2.jpg',
+            '../assets/images/rooms/imperial-deluxe/carousel/3.jpg',
+        ],
+        'tagline' => 'Experience luxury & comfort in our ' . $strKey . '.',
+        'details' => 'A beautifully appointed ' . $strKey . ' suite equipped with modern amenities, luxury bedding, and high-speed Wi-Fi.',
+        'ideal_for' => 'Leisure and business travelers',
+        'bed_options' => ['Queen Bed', 'King Bed'],
+        'max_capacity' => 2,
+        'view_type' => 'City Skyline View',
+        'dimensions' => '45 sqm / 484 sq ft',
+        'included_perks' => ['Complimentary Breakfast', 'High-Speed Priority Wi-Fi'],
+        'features' => [
+            'Plush luxury bedding with high thread-count linen',
+            'Smart TV, digital climate control, and minibar',
+            'Modern rainfall shower and luxury vanity',
+        ],
+    ];
 }
 
 function roomIncludedPerksForType(string $roomType): array

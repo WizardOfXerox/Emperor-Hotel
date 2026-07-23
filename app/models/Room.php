@@ -16,9 +16,29 @@ class Room
     {
     }
 
-    public static function types(): array
+    public static function types(?PDO $db = null): array
     {
-        return self::ROOM_TYPES;
+        $defaultTypes = self::ROOM_TYPES;
+
+        if ($db instanceof PDO) {
+            try {
+                $stmt = $db->query("SELECT DISTINCT room_type FROM rooms WHERE room_type IS NOT NULL AND TRIM(room_type) != '' ORDER BY room_type ASC");
+                $dbTypes = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                if (!empty($dbTypes)) {
+                    return array_values(array_unique(array_merge($defaultTypes, $dbTypes)));
+                }
+            } catch (Throwable $e) {
+                // Fallback to default list if query fails
+            }
+        }
+
+        return $defaultTypes;
+    }
+
+    public function getTypes(): array
+    {
+        return self::types($this->db);
     }
 
     public static function statuses(): array
@@ -410,8 +430,8 @@ class Room
 
     private function assertRoomType(string $roomType): void
     {
-        if (!in_array($roomType, self::ROOM_TYPES, true)) {
-            throw new RuntimeException('Please choose a valid room type.');
+        if (trim($roomType) === '') {
+            throw new RuntimeException('Please enter or choose a room type.');
         }
     }
 
@@ -443,7 +463,7 @@ class Room
         }
 
         $roomType = trim((string) ($filters['room_type'] ?? ''));
-        if ($roomType !== '' && in_array($roomType, self::ROOM_TYPES, true)) {
+        if ($roomType !== '' && $roomType !== 'all') {
             $clauses[] = 'room_type = :room_type';
             $params['room_type'] = $roomType;
         }

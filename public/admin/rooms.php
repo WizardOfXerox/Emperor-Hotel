@@ -176,6 +176,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$roomTypes = $roomModel->getTypes();
+$roomStatuses = Room::statuses();
 $roomData = $roomModel->paginated($filters, $page, $perPage);
 $rooms = $roomData['rows'];
 $summary = $roomModel->statusSummary();
@@ -434,11 +436,12 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="create_room_type">Room Type</label>
-                            <select class="form-select bg-dark text-light border-secondary" id="create_room_type" name="room_type">
+                            <input class="form-control bg-dark text-light border-secondary" id="create_room_type" name="room_type" list="room_type_list" placeholder="Select or type new room type..." value="<?php echo e($roomTypes[0] ?? 'Imperial Deluxe'); ?>" required>
+                            <datalist id="room_type_list">
                                 <?php foreach ($roomTypes as $type): ?>
-                                    <option value="<?php echo e($type); ?>"><?php echo e($type); ?></option>
+                                    <option value="<?php echo e($type); ?>"></option>
                                 <?php endforeach; ?>
-                            </select>
+                            </datalist>
                         </div>
                     </div>
                     <div class="row g-3">
@@ -527,11 +530,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="edit_room_type_<?php echo $roomId; ?>">Room Type</label>
-                                <select class="form-select bg-dark text-light border-secondary" id="edit_room_type_<?php echo $roomId; ?>" name="room_type">
-                                    <?php foreach ($roomTypes as $type): ?>
-                                        <option value="<?php echo e($type); ?>" <?php echo $room['room_type'] === $type ? 'selected' : ''; ?>><?php echo e($type); ?></option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <input class="form-control bg-dark text-light border-secondary" id="edit_room_type_<?php echo $roomId; ?>" name="room_type" list="room_type_list" placeholder="Select or type room type..." value="<?php echo e($room['room_type']); ?>" required>
                             </div>
                         </div>
                         <div class="row g-3">
