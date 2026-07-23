@@ -184,7 +184,7 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
                     
                     $detailUrl = 'room-detail.php?id=' . (int)$rm['room_id'] . '&check_in=' . urlencode($checkIn) . '&check_out=' . urlencode($checkOut);
                 ?>
-                    <div class="col-12 col-md-6 col-xl-4 kiosk-room-item" data-type="<?= e($rmType) ?>" data-avail="<?= $isAvail ? '1' : '0' ?>" data-room-num="<?= e($rm['room_number']) ?>">
+                    <div class="col-12 col-md-6 col-xl-4 kiosk-room-item" id="room-card-<?= (int)$rm['room_id'] ?>" data-type="<?= e($rmType) ?>" data-avail="<?= $isAvail ? '1' : '0' ?>" data-room-num="<?= e($rm['room_number']) ?>">
                         <div class="card rounded-4 h-100 overflow-hidden border shadow-lg d-flex flex-column justify-content-between position-relative kiosk-room-card">
                             
                             <div>

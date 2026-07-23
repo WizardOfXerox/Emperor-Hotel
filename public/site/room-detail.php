@@ -107,7 +107,9 @@ $typeCatalog = $catalog[$roomType] ?? [
 $reviews = $reviewModel->reviewsForRoom((int) $room['room_id'], 10);
 $ratingData = $reviewModel->averageRatingForRoom((int) $room['room_id']);
 
-$isAvailable = $room['status'] === 'Available';
+// Guests can book any room that is not currently Reserved or Occupied for their stay dates (including Cleaning status)
+$isAvailable = $room['status'] !== 'Reserved' && $room['status'] !== 'Occupied' && $room['status'] !== 'Maintenance';
+$publicStatus = ($room['status'] === 'Cleaning') ? 'Available' : $room['status'];
 
 $inD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkIn) ?: new DateTimeImmutable('today');
 $outD = DateTimeImmutable::createFromFormat('!Y-m-d', $checkOut) ?: (new DateTimeImmutable('today'))->modify('+1 day');
@@ -169,7 +171,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
         <!-- Navigation & Room Switcher Controls -->
         <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3 p-3 rounded-4 room-detail-nav-bar shadow-sm">
             <div class="d-flex flex-wrap align-items-center gap-2">
-                <a href="rooms.php#suite-catalog" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold shadow text-uppercase tracking-wider room-nav-btn">
+                <a href="rooms.php?check_in=<?= urlencode($checkIn) ?>&check_out=<?= urlencode($checkOut) ?>#room-card-<?= (int)$room['room_id'] ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold shadow text-uppercase tracking-wider room-nav-btn">
                     <i class="bi bi-arrow-left me-1 text-warning"></i><span class="room-nav-btn-text">Back to Catalog</span>
                 </a>
 
@@ -206,16 +208,15 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                         </span>
                         
                         <?php
-                        $badgeBg = match ($room['status']) {
+                        $badgeBg = match ($publicStatus) {
                             'Available' => 'background: rgba(16, 185, 129, 0.9); border: 1.5px solid #10B981; color: #FFFFFF;',
                             'Reserved' => 'background: rgba(59, 130, 246, 0.9); border: 1.5px solid #3B82F6; color: #FFFFFF;',
                             'Occupied' => 'background: rgba(245, 158, 11, 0.9); border: 1.5px solid #F59E0B; color: #FFFFFF;',
-                            'Cleaning' => 'background: rgba(168, 85, 247, 0.9); border: 1.5px solid #A855F7; color: #FFFFFF;',
                             default => 'background: rgba(244, 63, 94, 0.9); border: 1.5px solid #F43F5E; color: #FFFFFF;',
                         };
                         ?>
                         <span class="position-absolute top-0 end-0 m-3 badge fs-6 px-4 py-2 rounded-pill shadow-lg fw-bold" style="<?= $badgeBg ?>">
-                            <i class="bi bi-circle-fill me-1 fs-6"></i><?= e($room['status']) ?>
+                            <i class="bi bi-circle-fill me-1 fs-6"></i><?= e($publicStatus) ?>
                         </span>
                     </div>
                     
@@ -360,11 +361,11 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                                         <div class="list-group list-group-flush">
                                             <?php foreach ($fRooms as $fRoom): 
                                                 $isCurrent = (int)$fRoom['room_id'] === (int)$room['room_id'];
-                                                $fBadgeStyle = match ($fRoom['status']) {
+                                                $fStatusDisplay = ($fRoom['status'] === 'Cleaning') ? 'Available' : $fRoom['status'];
+                                                $fBadgeStyle = match ($fStatusDisplay) {
                                                     'Available' => 'background: rgba(16, 185, 129, 0.35); color: #A7F3D0;',
                                                     'Reserved' => 'background: rgba(59, 130, 246, 0.35); color: #BFDBFE;',
                                                     'Occupied' => 'background: rgba(245, 158, 11, 0.35); color: #FDE68A;',
-                                                    'Cleaning' => 'background: rgba(168, 85, 247, 0.35); color: #DDD6FE;',
                                                     default => 'background: rgba(148, 163, 184, 0.3); color: #F1F5F9;',
                                                 };
                                             ?>
@@ -374,7 +375,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                                                     <div class="me-2 text-wrap" style="line-height: 1.25; font-size: 0.8rem;">
                                                         <i class="bi bi-door-closed me-1"></i><strong>#<?= e($fRoom['room_number']) ?></strong> &mdash; <span><?= e($fRoom['room_type']) ?></span>
                                                     </div>
-                                                    <span class="badge text-xs px-2 py-1 rounded-pill fw-bold flex-shrink-0" style="<?= $fBadgeStyle ?>"><?= $fRoom['status'] ?></span>
+                                                    <span class="badge text-xs px-2 py-1 rounded-pill fw-bold flex-shrink-0" style="<?= $fBadgeStyle ?>"><?= $fStatusDisplay ?></span>
                                                 </a>
                                             <?php endforeach; ?>
                                         </div>
@@ -514,11 +515,11 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                         $isSelf = (int)$otherRoom['room_id'] === (int)$room['room_id'];
                         $otherTypeCatalog = $catalog[$otherRoom['room_type']] ?? null;
                         $otherImg = $otherTypeCatalog['hero'] ?? '../assets/images/rooms/hero.jpg';
-                        $otherBadgeClass = match ($otherRoom['status']) {
+                        $otherPublicStatus = ($otherRoom['status'] === 'Cleaning') ? 'Available' : $otherRoom['status'];
+                        $otherBadgeClass = match ($otherPublicStatus) {
                             'Available' => 'status-badge-available',
                             'Reserved' => 'status-badge-reserved',
                             'Occupied' => 'status-badge-occupied',
-                            'Cleaning' => 'status-badge-cleaning',
                             default => 'status-badge-reserved',
                         };
                     ?>
@@ -530,7 +531,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                             <div class="position-relative overflow-hidden" style="height: 140px;">
                                 <img src="<?= e($otherImg) ?>" alt="Room #<?= e($otherRoom['room_number']) ?>" class="w-100 h-100 object-fit-cover transition-transform">
                                 <div class="position-absolute top-0 start-0 p-2">
-                                    <span class="badge text-xs px-2 py-1 rounded-pill fw-bold <?= $otherBadgeClass ?>"><?= $otherRoom['status'] ?></span>
+                                    <span class="badge text-xs px-2 py-1 rounded-pill fw-bold <?= $otherBadgeClass ?>"><?= $otherPublicStatus ?></span>
                                 </div>
                                 <div class="position-absolute top-0 end-0 p-2">
                                     <span class="badge font-serif fw-bold px-2 py-1 text-xs room-number-badge">#<?= e($otherRoom['room_number']) ?></span>
