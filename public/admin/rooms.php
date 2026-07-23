@@ -682,7 +682,7 @@ const roomDataStats = <?php echo json_encode(array_map(static fn(array $r): arra
     'room_type' => (string)$r['room_type'],
     'floor' => (int)$r['floor'],
     'price' => (float)$r['price_per_night'],
-], $rooms), JSON_THROW_ON_ERROR); ?>;
+], $roomModel->all()), JSON_THROW_ON_ERROR); ?>;
 
 function updateBulkTargetOptions() {
     const targetTypeSelect = document.getElementById('bulkTargetType');
