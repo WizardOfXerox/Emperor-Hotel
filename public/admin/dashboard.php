@@ -215,12 +215,17 @@ renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/
                     <small>No overlapping active reservations were detected.</small>
                 <?php endif; ?>
                 <?php foreach ($operationalAlerts['overbooking_conflicts'] as $conflict): ?>
-                    <a class="text-warning text-decoration-none small d-block mt-1" href="reservations.php?search=<?php echo e($conflict['room_number']); ?>" title="View & Resolve Room <?php echo e($conflict['room_number']); ?> Overlap">
-                        <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>
+                    <a class="text-danger text-decoration-none small d-block mt-1" href="reservations.php?search=<?php echo e($conflict['room_number']); ?>" title="View & Resolve Room <?php echo e($conflict['room_number']); ?> Overlap">
+                        <i class="bi bi-exclamation-triangle-fill me-1 text-danger"></i>
                         Room <?php echo e($conflict['room_number']); ?> &mdash; <?php echo e($conflict['conflict_pairs']); ?> conflict pair(s)
-                        <span class="badge bg-warning text-dark ms-1 font-serif text-xs">Resolve <i class="bi bi-arrow-right"></i></span>
+                        <span class="badge bg-danger ms-1 text-xs">Resolve <i class="bi bi-arrow-right"></i></span>
                     </a>
                 <?php endforeach; ?>
+                <?php if ($operationalAlerts['overbooking_conflicts']): ?>
+                    <a class="text-warning text-decoration-none small d-block mt-2" href="reservations.php?status=Conflict">
+                        <i class="bi bi-flag-fill me-1"></i>View all Conflict reservations <i class="bi bi-arrow-right"></i>
+                    </a>
+                <?php endif; ?>
             </article>
         </div>
     <?php endif; ?>

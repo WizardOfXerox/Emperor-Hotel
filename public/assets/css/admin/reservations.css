@@ -159,3 +159,50 @@
         max-width: none;
     }
 }
+
+/* ── Conflict Status Visuals ── */
+
+.badge-conflict {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(239, 68, 68, 0.18);
+    color: #ef4444;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    animation: conflict-pulse 2s ease-in-out infinite;
+}
+
+@keyframes conflict-pulse {
+    0%, 100% { background: rgba(239, 68, 68, 0.18); }
+    50% { background: rgba(239, 68, 68, 0.28); }
+}
+
+.conflict-row {
+    border-left: 3px solid #ef4444 !important;
+    background: rgba(239, 68, 68, 0.06) !important;
+}
+
+.conflict-row:hover {
+    background: rgba(239, 68, 68, 0.12) !important;
+}
+
+.conflict-alert-banner {
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 14px;
+    background: rgba(239, 68, 68, 0.08);
+}
+
+.conflict-modal-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 14px;
+    background: rgba(239, 68, 68, 0.08);
+}

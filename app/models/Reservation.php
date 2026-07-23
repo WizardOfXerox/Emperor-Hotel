@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 class Reservation
 {
-    private const STATUSES = ['Pending', 'Confirmed', 'Checked-in', 'Checked-out', 'Cancelled'];
+    private const STATUSES = ['Pending', 'Confirmed', 'Checked-in', 'Checked-out', 'Cancelled', 'Conflict'];
 
     private const FRONT_DESK_ACTIONS = [
         'confirm' => 'Confirmed',
         'check_in' => 'Checked-in',
         'check_out' => 'Checked-out',
         'cancel' => 'Cancelled',
+        'resolve_conflict' => 'Pending',
     ];
 
     public function __construct(private PDO $db)
@@ -317,6 +318,10 @@ class Reservation
             'Checked-in' => [
                 'check_out' => 'Check Out',
             ],
+            'Conflict' => [
+                'resolve_conflict' => 'Reset to Pending',
+                'cancel' => 'Cancel',
+            ],
             default => [],
         };
     }
@@ -337,6 +342,10 @@ class Reservation
 
         if ($action === 'check_in' && $reservation['status'] !== 'Confirmed') {
             throw new RuntimeException('Reservation must be Confirmed with payment settlement before checking in.');
+        }
+
+        if ($action === 'resolve_conflict' && $reservation['status'] !== 'Conflict') {
+            throw new RuntimeException('Only reservations in Conflict status can be resolved.');
         }
 
         $newStatus = self::FRONT_DESK_ACTIONS[$action];
@@ -448,6 +457,85 @@ class Reservation
             'overdue_checkouts' => $overdueStatement->fetchAll(),
             'overbooking_conflicts' => $conflictStatement->fetchAll(),
         ];
+    }
+
+    /**
+     * Detects all active date-overlapping reservations for the same room
+     * and flags them with 'Conflict' status. Returns the count of flagged reservations.
+     */
+    public function flagOverlappingConflicts(): int
+    {
+        // Find all reservation IDs that are part of an overlap conflict
+        $conflictIds = $this->getConflictingReservationIds();
+
+        if (empty($conflictIds)) {
+            return 0;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($conflictIds), '?'));
+
+        // Only flag reservations that are currently Pending or Confirmed (don't touch Checked-in, etc.)
+        $statement = $this->db->prepare(
+            "UPDATE reservations
+             SET status = 'Conflict'
+             WHERE reservation_id IN ($placeholders)
+               AND status IN ('Pending', 'Confirmed')"
+        );
+        $statement->execute($conflictIds);
+
+        $flagged = $statement->rowCount();
+
+        // Sync room statuses for affected rooms
+        if ($flagged > 0) {
+            $roomStmt = $this->db->prepare(
+                "SELECT DISTINCT room_id FROM reservations WHERE reservation_id IN ($placeholders)"
+            );
+            $roomStmt->execute($conflictIds);
+            foreach ($roomStmt->fetchAll() as $room) {
+                $this->syncRoomStatus((int) $room['room_id']);
+            }
+        }
+
+        return $flagged;
+    }
+
+    /**
+     * Returns an array of reservation IDs that are involved in active date overlaps.
+     */
+    public function getConflictingReservationIds(): array
+    {
+        $statement = $this->db->query(
+            "SELECT DISTINCT r1.reservation_id
+             FROM reservations r1
+             INNER JOIN reservations r2
+                ON r2.room_id = r1.room_id
+               AND r2.reservation_id != r1.reservation_id
+             WHERE r1.status NOT IN ('Cancelled', 'Checked-out')
+               AND r2.status NOT IN ('Cancelled', 'Checked-out')
+               AND r1.check_in < r2.check_out
+               AND r1.check_out > r2.check_in"
+        );
+
+        return array_column($statement->fetchAll(), 'reservation_id');
+    }
+
+    /**
+     * Returns detailed conflict pair information for display in the reservations view.
+     * Each row includes both sides of the overlap with dates and guest info.
+     */
+    public function getConflictDetails(): array
+    {
+        $statement = $this->db->query(
+            "SELECT r.reservation_id, r.room_id, r.check_in, r.check_out, r.status,
+                    g.first_name, g.last_name, rm.room_number, rm.room_type
+             FROM reservations r
+             INNER JOIN guests g ON g.guest_id = r.guest_id
+             INNER JOIN rooms rm ON rm.room_id = r.room_id
+             WHERE r.status = 'Conflict'
+             ORDER BY rm.room_number ASC, r.check_in ASC"
+        );
+
+        return $statement->fetchAll();
     }
 
     public function occupancyReport(string $startDate, string $endDate): array
@@ -627,7 +715,7 @@ class Reservation
 
     public function statusBreakdown(): array
     {
-        $statuses = ['Pending', 'Confirmed', 'Checked-in', 'Checked-out', 'Cancelled'];
+        $statuses = ['Pending', 'Confirmed', 'Checked-in', 'Checked-out', 'Cancelled', 'Conflict'];
         $counts = array_fill_keys($statuses, 0);
 
         // SQL: Counts reservations by status for the reservation status chart.

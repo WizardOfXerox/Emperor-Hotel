@@ -36,9 +36,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('reservations.php');
         }
 
-        if (in_array($action, ['confirm', 'check_in', 'check_out', 'cancel'], true)) {
+        if (in_array($action, ['confirm', 'check_in', 'check_out', 'cancel', 'resolve_conflict'], true)) {
             $newStatus = $reservationModel->applyFrontDeskAction((int) ($_POST['reservation_id'] ?? 0), $action);
             setFlash('success', 'Reservation status changed to ' . $newStatus . '.');
+            redirect('reservations.php');
+        }
+
+        if ($action === 'flag_conflicts') {
+            $flagged = $reservationModel->flagOverlappingConflicts();
+            if ($flagged > 0) {
+                setFlash('success', $flagged . ' overlapping reservation(s) flagged as Conflict.');
+            } else {
+                setFlash('success', 'No new overlapping conflicts detected.');
+            }
             redirect('reservations.php');
         }
 
@@ -68,6 +78,10 @@ $statusFilter = trim((string) ($_GET['status'] ?? ''));
 
 $reservations = $reservationModel->searchAndFilter($search, $statusFilter);
 $paymentTotals = $paymentModel->totalsByReservation();
+
+// Detect active overlap conflict IDs for visual highlighting (even before flagging)
+$conflictingIds = $reservationModel->getConflictingReservationIds();
+$conflictIdSet = array_flip($conflictingIds);
 
 renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['../assets/css/admin/reservations.css?v=20260530-manage-reservations']);
 ?>
@@ -99,6 +113,7 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
                 <option value="Checked-in" <?php echo $statusFilter === 'Checked-in' ? 'selected' : ''; ?>>Checked-in</option>
                 <option value="Checked-out" <?php echo $statusFilter === 'Checked-out' ? 'selected' : ''; ?>>Checked-out</option>
                 <option value="Cancelled" <?php echo $statusFilter === 'Cancelled' ? 'selected' : ''; ?>>Cancelled</option>
+                <option value="Conflict" <?php echo $statusFilter === 'Conflict' ? 'selected' : ''; ?>>⚠ Conflict</option>
             </select>
         </div>
         <div class="col-md-2 col-lg-2 d-flex gap-2">
@@ -108,6 +123,22 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
             <?php endif; ?>
         </div>
     </form>
+
+    <?php if (!empty($conflictingIds)): ?>
+        <div class="conflict-alert-banner mb-3">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                <strong class="text-danger"><?php echo e(count($conflictingIds)); ?> reservation(s) have overlapping dates</strong>
+                <span class="text-light-emphasis small">— Reservations for the same room with clashing check-in/check-out dates.</span>
+                <form method="post" class="ms-auto">
+                    <input type="hidden" name="action" value="flag_conflicts">
+                    <button class="btn btn-sm btn-outline-danger fw-semibold" type="submit">
+                        <i class="bi bi-flag-fill me-1"></i>Flag All as Conflict
+                    </button>
+                </form>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <div class="table-responsive">
         <table class="table table-dark-soft align-middle mb-0 booking-records-table">
@@ -128,20 +159,37 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
                     </tr>
                 <?php endif; ?>
                 <?php foreach ($reservations as $reservation): ?>
-                    <tr>
+                    <?php
+                        $resId = (int) $reservation['reservation_id'];
+                        $isConflicting = isset($conflictIdSet[$resId]);
+                        $isConflictStatus = $reservation['status'] === 'Conflict';
+                        $rowClass = ($isConflicting || $isConflictStatus) ? 'conflict-row' : '';
+                    ?>
+                    <tr class="<?php echo $rowClass; ?>">
                         <td><?php echo e($reservation['first_name'] . ' ' . $reservation['last_name']); ?></td>
                         <td><?php echo e($reservation['room_number'] . ' • ' . $reservation['room_type']); ?></td>
-                        <td><?php echo e($reservation['check_in']); ?> to <?php echo e($reservation['check_out']); ?></td>
-                        <td><span class="badge-soft"><?php echo e($reservation['status']); ?></span></td>
+                        <td>
+                            <?php echo e($reservation['check_in']); ?> to <?php echo e($reservation['check_out']); ?>
+                            <?php if ($isConflicting && !$isConflictStatus): ?>
+                                <i class="bi bi-exclamation-triangle-fill text-warning ms-1" title="Date overlap detected"></i>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if ($isConflictStatus): ?>
+                                <span class="badge-conflict"><i class="bi bi-exclamation-triangle-fill me-1"></i><?php echo e($reservation['status']); ?></span>
+                            <?php else: ?>
+                                <span class="badge-soft"><?php echo e($reservation['status']); ?></span>
+                            <?php endif; ?>
+                        </td>
                         <td><?php echo e(formatMoney((float) $reservation['total_amount'])); ?></td>
                         <td class="reservation-actions-cell">
                             <button
-                                class="btn btn-sm btn-warning reservation-manage-button"
+                                class="btn btn-sm <?php echo $isConflictStatus ? 'btn-danger' : 'btn-warning'; ?> reservation-manage-button"
                                 type="button"
                                 data-bs-toggle="modal"
                                 data-bs-target="#reservationActionsModal<?php echo e($reservation['reservation_id']); ?>"
                             >
-                                Manage
+                                <?php echo $isConflictStatus ? 'Resolve' : 'Manage'; ?>
                             </button>
                         </td>
                     </tr>
@@ -185,6 +233,15 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <?php if ($reservation['status'] === 'Conflict'): ?>
+                            <div class="conflict-modal-banner">
+                                <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                                <div>
+                                    <strong class="text-danger d-block mb-1">Overlap Conflict Detected</strong>
+                                    <small class="text-light-emphasis">This reservation overlaps with another active booking for the same room. Resolve by cancelling one reservation, changing the room assignment, or adjusting dates.</small>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                         <div class="reservation-modal-summary" aria-label="Reservation details">
                             <div>
                                 <span>Guest</span>

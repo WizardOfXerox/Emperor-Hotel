@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     check_in DATE NOT NULL,
     check_out DATE NOT NULL,
     total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    status ENUM('Pending', 'Confirmed', 'Checked-in', 'Checked-out', 'Cancelled') NOT NULL DEFAULT 'Pending',
+    status ENUM('Pending', 'Confirmed', 'Checked-in', 'Checked-out', 'Cancelled', 'Conflict') NOT NULL DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
     FOREIGN KEY (guest_id) REFERENCES guests(guest_id) ON DELETE CASCADE,
