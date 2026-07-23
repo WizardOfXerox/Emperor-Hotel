@@ -52,3 +52,6 @@ Thumbs.db
 /reference-*.png
 /implementation-*.png
 /dashboard-*.png
+docs/*.png
+screenshot_*.png
+*.png

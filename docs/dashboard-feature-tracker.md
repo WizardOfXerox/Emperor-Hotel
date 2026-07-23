@@ -143,7 +143,12 @@ Current unresolved tracker rows:
 | Backend | Validation and error handling | Done | Server-side validation and flash messages exist across reservations, rooms, guests, users, and payments | Add CSRF tokens and more inline field hints later |
 | Reports | Occupancy report | Done | Admin Reports page shows date-filtered room nights, available room nights, and occupancy rate by room type | Add export to CSV/PDF later if required |
 | Reports | Revenue report | Done | Admin Reports page shows date-filtered confirmed revenue by room type and payment method | Add tax/service-charge breakdown later if required |
-| Reports | Reservation trend report | Done | Admin Reports page shows date-filtered daily active, cancelled, and total reservation counts | Add charts or CSV export later if required |
+| Reports | Reservation trend report & Chart.js graphs | Done | Admin Reports page includes 4 interactive Chart.js visual graphs: Booking Demand Trend Line, Payment Method Revenue Share Doughnut, Suite Occupancy Bar Chart, and Guest Rating Score Chart | Add export to CSV/PDF later if required |
+| Users | Phone Number & Guest Profile Sync | Done | Admin Users management collects phone numbers, synchronizes with the linked Guest model, and displays phone numbers in the Registered Accounts table | Keep profile sync intact across all actions |
+| Users | SMTP Welcome Email Notification | Done | Admin user account creation automatically dispatches welcome notifications via SMTP engine with on-screen confirmation notice | Keep SMTP helper credentials updated |
+| Reservations | Search & Status Filter Toolbar | Done | Real-time Search and Status Filter toolbar on Admin Reservation Records and Booking Logs pages allows filtering by guest name, room #, email, reservation ID, and status | Keep filter performance optimized |
+| Reservations | Strict Check-In Payment Validation | Done | Unconfirmed / unpaid pending reservations hide the Check-In button and throw server-side validation exception requiring confirmation & payment before check-in | Enforce status transition flow |
+| Reservations | Automated Credit Card Payment Confirmation | Done | Online payment gateway transactions automatically set payment status to Paid, auto-confirm reservation status, and mark room status as Reserved | Maintain automated sync |
 
 ## Suggested Next Build Order
 
