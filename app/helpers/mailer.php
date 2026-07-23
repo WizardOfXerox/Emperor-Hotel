@@ -3,6 +3,19 @@
 declare(strict_types=1);
 
 /**
+ * Check if the current device has active internet connectivity (1-second socket probe).
+ */
+function isInternetConnected(): bool
+{
+    $connected = @fsockopen('8.8.8.8', 53, $errno, $errstr, 1);
+    if ($connected) {
+        fclose($connected);
+        return true;
+    }
+    return false;
+}
+
+/**
  * Send an email via SMTP or fallback to simulated presentation mode.
  * 
  * Supports configurable environment variables:
@@ -16,14 +29,17 @@ function sendSmtpEmail(string $toEmail, string $subject, string $bodyHtml, ?stri
     $smtpPass = getenv('SMTP_PASS') ?: '';
     $smtpCrypto = getenv('SMTP_CRYPTO') ?: 'tls';
 
-    // In local development / presentation mode without active SMTP credentials,
-    // we log and flash an on-screen Toast/Notice containing the 6-digit OTP code
-    // so the student can demonstrate email authentication live during defense presentations!
-    if (empty($smtpHost) || empty($smtpUser)) {
+    $hasInternet = isInternetConnected();
+
+    // In local development / offline / presentation mode without active internet or SMTP credentials,
+    // we instantly log and flash an on-screen Toast/Notice containing the 6-digit OTP code
+    // so the system works 100% reliably on localhost even when completely offline!
+    if (!$hasInternet || empty($smtpHost) || empty($smtpUser)) {
         if ($otpCode !== null && function_exists('setFlash')) {
+            $modeNotice = !$hasInternet ? 'Offline / Localhost Mode' : 'SMTP Presentation Mode';
             setFlash(
                 'info',
-                "📩 [SMTP Presentation Mode] Verification email sent to <strong>{$toEmail}</strong>. Verification Code: <strong style='font-size: 1.1rem; letter-spacing: 2px; color: #ffc107;'>{$otpCode}</strong>"
+                "📩 [{$modeNotice}] Verification email generated for <strong>{$toEmail}</strong>. Verification Code: <strong style='font-size: 1.15rem; letter-spacing: 2px; color: #ffdf73;'>{$otpCode}</strong>"
             );
         }
         return true;
