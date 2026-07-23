@@ -1145,4 +1145,140 @@ body.light-mode .theme-toggle-btn:hover {
     border-color: #d97706 !important;
 }
 
+/* ==========================================================================
+   COMPREHENSIVE PUBLIC & ADMIN ROOMS LIGHT MODE THEME OVERRIDES
+   ========================================================================== */
+
+body.light-mode,
+html.light-mode body,
+body.light-mode.home-showcase-page,
+body.light-mode.rooms-showcase-page,
+body.light-mode main,
+body.light-mode .site-main {
+    background-color: #f4f1ea !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .home-nav,
+body.light-mode .rooms-nav,
+body.light-mode .site-nav {
+    background: #ffffff !important;
+    border-bottom: 1px solid rgba(180, 140, 60, 0.2) !important;
+}
+
+body.light-mode .home-nav__container,
+body.light-mode .rooms-nav__container {
+    background: #ffffff !important;
+    border-bottom: 1px solid rgba(180, 140, 60, 0.2) !important;
+}
+
+body.light-mode .home-nav__link,
+body.light-mode .rooms-nav__link {
+    color: #475569 !important;
+}
+
+body.light-mode .home-nav__link:hover,
+body.light-mode .home-nav__link--active,
+body.light-mode .rooms-nav__link:hover,
+body.light-mode .rooms-nav__link--active {
+    color: #b45309 !important;
+    background: #fffbeb !important;
+    border: 1px solid #fde68a !important;
+}
+
+body.light-mode .home-nav__logo img,
+body.light-mode .rooms-nav__logo img {
+    background-color: #ffffff !important;
+    border-color: rgba(180, 140, 60, 0.3) !important;
+}
+
+body.light-mode .rooms-hero__content h1,
+body.light-mode .home-hero__content h1,
+body.light-mode .hero-title {
+    color: #ffffff !important;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8) !important;
+}
+
+body.light-mode .rooms-catalog-header,
+body.light-mode .page-title-banner,
+body.light-mode .room-filters-card,
+body.light-mode .room-stat-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .room-card,
+body.light-mode .room-catalog-card,
+body.light-mode .suite-card,
+body.light-mode .room-detail-card,
+body.light-mode .panel-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .room-card h3,
+body.light-mode .room-card h4,
+body.light-mode .room-card h5,
+body.light-mode .room-catalog-card h3,
+body.light-mode .room-catalog-card h4,
+body.light-mode .room-catalog-card h5,
+body.light-mode .suite-card h3,
+body.light-mode .panel-card h4,
+body.light-mode .panel-card h5 {
+    color: #0f172a !important;
+}
+
+body.light-mode .room-card p,
+body.light-mode .room-catalog-card p,
+body.light-mode .suite-card p,
+body.light-mode .room-detail-card p,
+body.light-mode .panel-card p,
+body.light-mode .text-muted {
+    color: #475569 !important;
+}
+
+body.light-mode .room-price-tag,
+body.light-mode .price-amount,
+body.light-mode .room-card .price {
+    color: #d97706 !important;
+}
+
+body.light-mode .admin-page--rooms .table,
+body.light-mode .table {
+    color: #0f172a !important;
+    background-color: #ffffff !important;
+}
+
+body.light-mode .table th {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+body.light-mode .table td {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+body.light-mode .table tbody tr:hover {
+    background-color: #fffbeb !important;
+}
+
+body.light-mode .admin-page--rooms .card,
+body.light-mode .admin-page--rooms .panel-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode main[style*="background: #070A10"],
+body.light-mode main[style*="background:#070A10"] {
+    background: #f4f1ea !important;
+}
+
 

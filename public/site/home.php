@@ -38,6 +38,7 @@ renderHeader('Home | Emperor Hotel', ['../assets/css/site/home.css', '../assets/
         </div>
 
         <div class="home-nav__auth">
+            <button type="button" class="btn btn-sm btn-outline-warning theme-toggle-btn rounded-pill px-3 py-1 me-2 fw-semibold d-inline-flex align-items-center shadow-sm" onclick="toggleEmperorTheme()"><i class="bi bi-sun-fill me-1"></i> Light Mode</button>
             <?php if ($user): ?>
                 <a class="home-nav__cta home-nav__cta--primary" href="<?php echo e($dashboardHref); ?>"><?php echo e($dashboardLabel); ?></a>
                 <a class="home-nav__cta home-nav__cta--secondary" href="../auth/logout.php" title="Log Out"><i class="bi bi-box-arrow-right d-sm-none"></i><span class="d-none d-sm-inline">LOG OUT</span></a>
