@@ -323,7 +323,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                                 <i class="bi bi-lightning-charge-fill me-2"></i>Reserve Room #<?= e($room['room_number']) ?> Now
                             </a>
                         <?php else: ?>
-                            <div class="p-3 rounded-pill text-center fw-bold" style="background: rgba(30, 41, 59, 0.85); color: #94A3B8; border: 1px solid rgba(255, 255, 255, 0.15);">
+                            <div class="p-3 rounded-pill text-center fw-bold room-unavailable-banner">
                                 <i class="bi bi-info-circle me-2"></i>Room #<?= e($room['room_number']) ?> is Currently <?= e($room['status']) ?>
                             </div>
                         <?php endif; ?>

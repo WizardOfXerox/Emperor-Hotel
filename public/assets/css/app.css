@@ -2101,4 +2101,112 @@ body.light-mode .room-detail-sidebar .list-group-item:not(.fw-bold) {
     border: 1px solid #e2e8f0 !important;
 }
 
+/* ===== ROOM UNAVAILABLE BANNER ===== */
+.room-unavailable-banner {
+    background: rgba(30, 41, 59, 0.9) !important;
+    color: #cbd5e1 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+body.light-mode .room-unavailable-banner {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* ===== INTERACTIVE CALENDAR PICKER MODAL THEME ADAPTATION ===== */
+
+/* Dark Mode Defaults (body:not(.light-mode)) */
+body:not(.light-mode) .calendar-modal-content {
+    background: rgba(15, 23, 42, 0.96) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(212, 175, 55, 0.45) !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(25px);
+}
+
+body:not(.light-mode) .calendar-modal-content .modal-header {
+    border-bottom-color: rgba(212, 175, 55, 0.3) !important;
+}
+
+body:not(.light-mode) .calendar-modal-content .modal-header h4 {
+    color: #FFDF73 !important;
+}
+
+body:not(.light-mode) .calendar-modal-content .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+body:not(.light-mode) .calendar-modal-input {
+    background: rgba(30, 41, 59, 0.85) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+}
+
+body:not(.light-mode) .calendar-visual-grid {
+    background: rgba(30, 41, 59, 0.9) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    color: #f8fafc !important;
+}
+
+body:not(.light-mode) .calendar-visual-grid .calendar-month-title {
+    color: #FFDF73 !important;
+}
+
+body:not(.light-mode) .calendar-visual-grid .calendar-grid-header {
+    color: rgba(226, 232, 240, 0.75) !important;
+}
+
+body:not(.light-mode) .calendar-visual-grid .calendar-day-btn:not(.is-selected):not(.is-in-range) {
+    background: rgba(15, 23, 42, 0.6) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Light Mode Overrides (body.light-mode) */
+body.light-mode .calendar-modal-content {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid rgba(180, 140, 60, 0.25) !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15) !important;
+}
+
+body.light-mode .calendar-modal-content .modal-header {
+    border-bottom-color: #e2e8f0 !important;
+}
+
+body.light-mode .calendar-modal-content .modal-header h4 {
+    color: #0f172a !important;
+}
+
+body.light-mode .calendar-modal-content .btn-close {
+    filter: none !important;
+}
+
+body.light-mode .calendar-modal-input {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+body.light-mode .calendar-visual-grid {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .calendar-visual-grid .calendar-month-title {
+    color: #0f172a !important;
+}
+
+body.light-mode .calendar-visual-grid .calendar-grid-header {
+    color: #64748b !important;
+}
+
+body.light-mode .calendar-visual-grid .calendar-day-btn:not(.is-selected):not(.is-in-range) {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
 

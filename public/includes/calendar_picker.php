@@ -14,29 +14,25 @@ function renderCalendarPickerModal(string $checkInVal = '', string $checkOutVal 
 <!-- Calendar Modal -->
 <div class="modal fade" id="calendarPickerModal" tabindex="-1" aria-labelledby="calendarPickerModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
-    <div class="modal-content rounded-4 shadow-lg bg-dark text-light border" style="background: rgba(15, 23, 42, 0.96) !important; backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
-      <div class="modal-header border-bottom border-secondary px-4 py-3">
+    <div class="modal-content rounded-4 shadow-lg calendar-modal-content">
+      <div class="modal-header border-bottom px-4 py-3">
         <div>
-            <h4 class="font-serif fw-bold m-0" style="color: #FFDF73 !important; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-calendar-range me-2"></i>Select Stay Dates</h4>
-            <p class="text-light opacity-90 text-xs m-0 fw-semibold">Click check-in and check-out dates on the grid below.</p>
+            <h4 class="font-serif fw-bold m-0"><i class="bi bi-calendar-range me-2"></i>Select Stay Dates</h4>
+            <p class="opacity-75 text-xs m-0 fw-semibold">Click check-in and check-out dates on the grid below.</p>
         </div>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
       <div class="modal-body p-4">
         <form action="javascript:void(0);" method="GET" id="modalCalendarForm">
-            <div class="row g-2 mb-4 align-items-end">
-                <div class="col-12 col-sm-6">
-                    <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
-                    <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);" onchange="handleAutoCalendarDateUpdate()">
-                </div>
+            <div class="row g-3 mb-4 align-items-end">
                 <div class="col-12 col-sm-6">
                     <label class="form-label text-xs text-uppercase tracking-wider opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
-                    <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm border-warning fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>" onchange="handleAutoCalendarDateUpdate()">
+                    <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm calendar-modal-input fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>" onchange="handleAutoCalendarDateUpdate()">
                 </div>
                 <div class="col-12 col-sm-6">
                     <label class="form-label text-xs text-uppercase tracking-wider opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-right text-warning me-1"></i>Check-Out</label>
-                    <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning fw-bold py-2" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>" onchange="handleAutoCalendarDateUpdate()">
+                    <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm calendar-modal-input fw-bold py-2" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>" onchange="handleAutoCalendarDateUpdate()">
                 </div>
             </div>
         </form>
