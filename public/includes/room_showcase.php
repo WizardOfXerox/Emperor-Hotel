@@ -94,8 +94,11 @@ function renderRoomShowcaseSection(): void
 
         echo '<section class="rooms">';
         echo '<div class="container-carousel">';
+        $slideCount = count($roomInfo['carousel']);
         echo '<div class="carousel-wrapper position-relative">';
-        echo '<button class="carousel-control prev" type="button" data-carousel-prev aria-label="Previous ' . e($roomType) . ' image">&#10094;</button>';
+        if ($slideCount > 1) {
+            echo '<button class="carousel-control prev" type="button" data-carousel-prev aria-label="Previous ' . e($roomType) . ' image">&#10094;</button>';
+        }
         echo '<div class="carousel-track" data-carousel>';
 
         foreach ($roomInfo['carousel'] as $slideIndex => $imagePath) {
@@ -105,7 +108,9 @@ function renderRoomShowcaseSection(): void
         }
 
         echo '</div>';
-        echo '<button class="carousel-control next" type="button" data-carousel-next aria-label="Next ' . e($roomType) . ' image">&#10095;</button>';
+        if ($slideCount > 1) {
+            echo '<button class="carousel-control next" type="button" data-carousel-next aria-label="Next ' . e($roomType) . ' image">&#10095;</button>';
+        }
         echo '</div></div>';
 
         $availCount = (int) ($stats['available'] ?? 0);
@@ -183,7 +188,11 @@ function renderRoomShowcaseSection(): void
                 const nextBtn = wrapper.querySelector("[data-carousel-next]");
                 const slides = track ? Array.from(track.querySelectorAll(".carousel-slide")) : [];
 
-                if (!track || slides.length === 0) return;
+                if (!track || slides.length <= 1) {
+                    if (prevBtn) prevBtn.style.display = 'none';
+                    if (nextBtn) nextBtn.style.display = 'none';
+                    return;
+                }
 
                 let currentIndex = 0;
                 let autoSlideTimer = null;
