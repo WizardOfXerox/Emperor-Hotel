@@ -266,6 +266,26 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                                 <td><?php echo e(date('Y-m-d', strtotime($payment['payment_date']))); ?></td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
+                                        <?php if ($status === 'Pending'): ?>
+                                            <form method="post" class="d-inline">
+                                                <input type="hidden" name="action" value="update_status">
+                                                <input type="hidden" name="payment_id" value="<?php echo e($payment['payment_id']); ?>">
+                                                <input type="hidden" name="amount" value="<?php echo e($payment['amount']); ?>">
+                                                <input type="hidden" name="payment_status" value="Confirmed">
+                                                <button type="submit" class="btn btn-sm btn-success text-nowrap px-2 py-1 text-xs fw-bold shadow-sm" title="Approve and confirm this payment">
+                                                    <i class="bi bi-check-circle me-1"></i>Confirm
+                                                </button>
+                                            </form>
+                                            <form method="post" class="d-inline">
+                                                <input type="hidden" name="action" value="update_status">
+                                                <input type="hidden" name="payment_id" value="<?php echo e($payment['payment_id']); ?>">
+                                                <input type="hidden" name="amount" value="<?php echo e($payment['amount']); ?>">
+                                                <input type="hidden" name="payment_status" value="Refunded">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger text-nowrap px-2 py-1 text-xs fw-bold" title="Refund this transaction">
+                                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Refund
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
                                         <a class="btn btn-sm btn-outline-warning text-nowrap px-2 py-1 text-xs" href="receipt.php?reservation_id=<?php echo e($payment['reservation_id']); ?>" title="View Printable Receipt">
                                             <i class="bi bi-receipt me-1"></i>Receipt
                                         </a>
