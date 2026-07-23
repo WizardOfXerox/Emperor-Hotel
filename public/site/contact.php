@@ -6,6 +6,7 @@ require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/layout.php';
 
 $db = Database::connect();
+$hotelConfig = require APP_ROOT . '/app/config/hotel.php';
 $user = isLoggedIn() ? currentUser() : null;
 $dashboardHref = $user ? ($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php') : '../auth/login.php';
 $dashboardLabel = $user ? ($user['role'] === 'admin' ? 'ADMIN PANEL' : 'MY DASHBOARD') : 'LOG IN';
@@ -111,7 +112,7 @@ renderHeader('Contact Us | Emperor Hotel', ['../assets/css/site/home.css', '../a
                                 </div>
                                 <div>
                                     <h6 class="fw-bold mb-1 text-light">Address</h6>
-                                    <p class="small text-muted mb-0">Royal Bay Boulevard, Cultural Center Complex, Metro Manila 1000, Philippines</p>
+                                    <p class="small text-muted mb-0"><?php echo e($hotelConfig['address']); ?></p>
                                 </div>
                             </div>
 
@@ -121,7 +122,7 @@ renderHeader('Contact Us | Emperor Hotel', ['../assets/css/site/home.css', '../a
                                 </div>
                                 <div>
                                     <h6 class="fw-bold mb-1 text-light">Reservations & Concierge</h6>
-                                    <p class="small text-muted mb-0">+63 2 8888 7777 / +63 917 888 9999</p>
+                                    <p class="small text-muted mb-0"><?php echo e($hotelConfig['support_phone']); ?></p>
                                 </div>
                             </div>
 
@@ -131,7 +132,7 @@ renderHeader('Contact Us | Emperor Hotel', ['../assets/css/site/home.css', '../a
                                 </div>
                                 <div>
                                     <h6 class="fw-bold mb-1 text-light">Email Desk</h6>
-                                    <p class="small text-muted mb-0">concierge@emperorshotel.com</p>
+                                    <p class="small text-muted mb-0"><?php echo e($hotelConfig['support_email']); ?></p>
                                 </div>
                             </div>
 
