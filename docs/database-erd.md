@@ -27,6 +27,9 @@ erDiagram
         string email UK
         string password_hash
         enum role
+        boolean email_verified
+        string otp_code
+        datetime otp_expires_at
         datetime created_at
     }
 
@@ -46,6 +49,7 @@ erDiagram
         enum room_type
         int floor
         decimal price_per_night
+        decimal base_price_per_night
         enum status
         datetime created_at
     }

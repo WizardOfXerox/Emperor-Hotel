@@ -9,6 +9,8 @@ A robust, local-first web application designed for guest self-service booking an
 ## 🚀 Key Features
 
 ### 💻 Guest Portal & Booking Flow
+* **Dual-Mode SMTP & Offline OTP Verification**: Registration and reservation bookings generate 6-digit OTP verification codes delivered live via Gmail SMTP socket or instantly displayed on-screen during offline localhost presentations.
+* **Luxury Contact Us Page**: Interactive concierge inquiry page reading live `.env` support credentials (`SUPPORT_EMAIL`, `SUPPORT_PHONE`, `HOTEL_ADDRESS`) with instant SMTP inquiry dispatch.
 * **Dynamic Grid Layout Switcher**: Interactive toolbar on the room catalog enabling **Auto Responsive** layout calculation (`5 Cols` for ultra-wide screens ≥1600px, `4 Cols`, `3 Cols`, `2 Cols`, and `1 Col List View`) with `LocalStorage` persistence.
 * **Guest View Housekeeping Rule**: Rooms in internal housekeeping `Cleaning` state are mapped to **`Available`** for online guests so future stay reservations are not blocked, while staff preserve real-time room status tracking on the admin panel.
 * **Smart Back to Catalog Anchor Scroll**: `Back to Catalog` links on room detail pages attach `#room-card-ID` anchor hashes, smoothly scrolling back to the exact room card inspected.
@@ -19,10 +21,14 @@ A robust, local-first web application designed for guest self-service booking an
 * **Booking History & Self-Service Cancellation**: Consolidated timeline tracking guest stay records, verification states, and cancellation.
 
 ### 💼 Administrative Management Hub
-* **Unified Admin Dashboard**:
+* **Unified Admin Dashboard & Executive Analytics**:
   * Real-time KPI summaries (active customers, available rooms, pending reservations, monthly revenue).
+  * **Advanced Executive Hospitality Metrics**: ALOS (Average Length of Stay), Booking Lead Time, Cancellation Loss Rate ($PHP$), and Repeat Guest Loyalty Ratio.
   * Interactive data visualization powered by **Chart.js** (Occupancy rates, payment types, reservation statuses).
   * Operational watchlist highlighting overdue check-outs, pending actions, and payment failures.
+* **Simplified Suite Pricing Management**: Clean 2-field Suite Pricing card (`Select Suite / Floor` + `Price / Night (PHP)`) with dynamic baseline price reset (`rooms.base_price_per_night`).
+* **Floor-Based Room Number Range Validation**: Enforces strict floor-based room number limits ($N00$ to $N99$ for Floor $N$) with real-time UI hints and duplicate check.
+* **Luxury Glassmorphism Modal System**: Cohesive obsidian-gold glassmorphism modal popup theme (`#0B1120` to `#0F172A`) with gold focus glow and serif titles across all admin action dialogues.
 * **Booking Records Manage Modal & Refund Workflow**: Clean single-row table controls opening a comprehensive Front Desk action panel (Confirm, Check-In, Extend Stay, Check-Out, Process Refund, Cancel, Receipt generation, Payment collection, Delete).
 * **Process Refund & Financial Ledger**: Built-in refund entry workflow updating remaining balances while preserving immutable payment audit log records.
 * **XML Import/Export System**: Room inventory synchronization using native PHP `DOMDocument` XML parsers.

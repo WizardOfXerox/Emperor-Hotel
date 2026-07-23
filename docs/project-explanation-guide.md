@@ -29,11 +29,13 @@ The system is designed for a small hotel that needs a local reservation and fron
 
 It can:
 
-- Show public hotel pages.
-- Register and log in users.
+- Show public hotel pages including a luxury 5-Star Contact Us page (`contact.php`) with concierge email dispatch.
+- Register and log in users with 6-digit SMTP OTP email verification (`verify-otp.php`).
+- Support Dual-Mode SMTP socket delivery (real Gmail SMTP socket online or instant on-screen OTP fallback offline for 100% reliable localhost presentation).
 - Separate admin and user access.
-- Let users reserve rooms.
-- Let admins create walk-in reservations.
+- Let users reserve rooms with real-time OTP confirmation emails.
+- Let admins create walk-in reservations with floor-based room number range limits ($N00$ to $N99$ for Floor $N$).
+- Simplify Suite Pricing management with clean 2-field Suite Pricing cards and dynamic baseline rate reset (`rooms.base_price_per_night`).
 - Track room availability by date.
 - Prevent overlapping active reservations for the same room.
 - Require users and admins to manually choose an available room card.
@@ -41,9 +43,10 @@ It can:
 - Record manual and simulated payments.
 - Generate transaction references automatically.
 - Prevent pending and confirmed payments from exceeding the reservation total.
-- Print reservation receipts.
+- Print reservation receipts and process front-desk refunds with immutable transaction audit logs.
 - Search guest history.
-- Show dashboard charts and reports.
+- Show executive dashboard charts, visual demand curves, and 4 advanced hospitality metrics: ALOS (Average Length of Stay), Booking Lead Time (days), Cancellation Loss Rate ($PHP$), and Repeat Guest Loyalty Ratio (%).
+- Render all admin popups and modals in a luxury obsidian-gold glassmorphism theme (`#0B1120` to `#0F172A`).
 - Import and export room records through XML. XML is only used for room records, not every database table.
 - Provide an AI support chat that answers customer and admin questions from live hotel data first, then uses Gemini when the request is conversational or outside the local dataset rules.
 
