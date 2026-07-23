@@ -172,6 +172,29 @@
         .support-message p {
             margin: 0;
         }
+        .support-chips-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+        .support-chip-btn {
+            background: rgba(212, 175, 55, 0.12);
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            color: #ffdf73;
+            border-radius: 99px;
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .support-chip-btn:hover {
+            background: linear-gradient(135deg, #D4AF37, #FFDF73);
+            color: #020617;
+            transform: translateY(-1px);
+        }
         .support-message-table-wrap {
             overflow-x: auto;
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -462,10 +485,16 @@
 
     function renderMessageContent(text) {
         const normalizedText = String(text).replace(/\r\n/g, '\n');
-        const lines = normalizedText.split('\n');
         const container = document.createElement('div');
         container.className = 'support-message-content';
 
+        // Check if message contains HTML markup (like interactive cards, links, badges)
+        if (/<[a-z][\s\S]*>/i.test(normalizedText)) {
+            container.innerHTML = normalizedText;
+            return container;
+        }
+
+        const lines = normalizedText.split('\n');
         let currentTableLines = [];
 
         const flushTable = () => {
@@ -532,7 +561,7 @@
         return container;
     }
 
-    function appendMessage(role, text) {
+    function appendMessage(role, text, chips = []) {
         const node = document.createElement('div');
         node.className = 'support-message support-message--' + role;
 
@@ -543,6 +572,24 @@
         }
 
         messages.appendChild(node);
+
+        if (chips && Array.isArray(chips) && chips.length > 0) {
+            const chipsWrap = document.createElement('div');
+            chipsWrap.className = 'support-chips-wrap';
+            chips.forEach((chipText) => {
+                const btn = document.createElement('button');
+                btn.className = 'support-chip-btn';
+                btn.textContent = chipText;
+                btn.type = 'button';
+                btn.onclick = () => {
+                    input.value = chipText.replace(/^[^\w\s]+/, '').trim();
+                    sendMessage();
+                };
+                chipsWrap.appendChild(btn);
+            });
+            messages.appendChild(chipsWrap);
+        }
+
         messages.scrollTop = messages.scrollHeight;
         return node;
     }
@@ -607,7 +654,7 @@
                 return;
             }
 
-            appendMessage('bot', payload.reply);
+            appendMessage('bot', payload.reply, payload.quick_chips || []);
             addHistory('assistant', payload.reply);
         } catch (error) {
             appendMessage('meta', 'Network error while reaching support.');

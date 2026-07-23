@@ -65,8 +65,9 @@ try {
     echo json_encode([
         'ok' => true,
         'scope' => $scope,
-        'kind' => $response['kind'],
-        'reply' => $response['reply'],
+        'kind' => $response['kind'] ?? 'dataset',
+        'reply' => $response['reply'] ?? $response['text'] ?? '',
+        'quick_chips' => $response['quick_chips'] ?? [],
     ], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $exception) {
     http_response_code(500);
