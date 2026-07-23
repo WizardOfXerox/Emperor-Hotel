@@ -189,8 +189,8 @@ function renderRoomShowcaseSection(): void
                 const slides = track ? Array.from(track.querySelectorAll(".carousel-slide")) : [];
 
                 if (!track || slides.length <= 1) {
-                    if (prevBtn) prevBtn.style.display = 'none';
-                    if (nextBtn) nextBtn.style.display = 'none';
+                    if (prevBtn) prevBtn.style.display = "none";
+                    if (nextBtn) nextBtn.style.display = "none";
                     return;
                 }
 
