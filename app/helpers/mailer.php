@@ -23,11 +23,11 @@ function isInternetConnected(): bool
  */
 function sendSmtpEmail(string $toEmail, string $subject, string $bodyHtml, ?string $otpCode = null): bool
 {
-    $smtpHost = getenv('SMTP_HOST') ?: '';
-    $smtpPort = (int) (getenv('SMTP_PORT') ?: 587);
-    $smtpUser = getenv('SMTP_USER') ?: '';
-    $smtpPass = getenv('SMTP_PASS') ?: '';
-    $smtpCrypto = getenv('SMTP_CRYPTO') ?: 'tls';
+    $smtpHost = getenv('SMTP_HOST') ?: ($_ENV['SMTP_HOST'] ?? ($_SERVER['SMTP_HOST'] ?? ''));
+    $smtpPort = (int) (getenv('SMTP_PORT') ?: ($_ENV['SMTP_PORT'] ?? ($_SERVER['SMTP_PORT'] ?? 587)));
+    $smtpUser = getenv('SMTP_USER') ?: ($_ENV['SMTP_USER'] ?? ($_SERVER['SMTP_USER'] ?? ''));
+    $smtpPass = getenv('SMTP_PASS') ?: ($_ENV['SMTP_PASS'] ?? ($_SERVER['SMTP_PASS'] ?? ''));
+    $smtpCrypto = getenv('SMTP_CRYPTO') ?: ($_ENV['SMTP_CRYPTO'] ?? ($_SERVER['SMTP_CRYPTO'] ?? ($smtpPort === 465 ? 'ssl' : 'tls')));
 
     $hasInternet = isInternetConnected();
 
@@ -56,7 +56,7 @@ function sendSmtpEmail(string $toEmail, string $subject, string $bodyHtml, ?stri
         ]);
 
         $prefix = ($smtpCrypto === 'ssl') ? 'ssl://' : '';
-        $socket = fsockopen($prefix . $smtpHost, $smtpPort, $errno, $errstr, 10, $context);
+        $socket = stream_socket_client($prefix . $smtpHost . ':' . $smtpPort, $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $context);
 
         if (!$socket) {
             error_log("SMTP Connection failed: {$errstr} ({$errno})");
