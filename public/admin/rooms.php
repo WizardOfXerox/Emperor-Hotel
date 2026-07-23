@@ -296,66 +296,45 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
 <section class="row g-4">
     <div class="col-xl-4">
         <div class="panel-card p-4 mb-4">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3 border-bottom border-secondary border-opacity-25 pb-3">
-                <div>
-                    <p class="eyebrow mb-1"><i class="bi bi-sliders me-1 text-warning"></i>Yield Management & Pricing</p>
-                    <h3 class="mb-0">Smart Bulk Price Control</h3>
-                </div>
-                <div class="d-flex flex-wrap gap-1">
-                    <button type="button" class="btn btn-xs btn-outline-warning text-xs px-2 py-1 fw-semibold" onclick="applyPresetSurge(15, 'percentage')">🚀 Peak (+15%)</button>
-                    <button type="button" class="btn btn-xs btn-outline-warning text-xs px-2 py-1 fw-semibold" onclick="applyPresetSurge(10, 'percentage')">⚡ Weekend (+10%)</button>
-                    <button type="button" class="btn btn-xs btn-outline-light text-xs px-2 py-1" onclick="applyPresetSurge(-10, 'percentage')">🎁 Promo (-10%)</button>
-                    <button type="button" class="btn btn-xs btn-outline-success text-xs px-2 py-1 fw-semibold" onclick="applyResetStandard()"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset Standard</button>
-                </div>
+            <div class="mb-3 border-bottom border-secondary border-opacity-25 pb-3">
+                <p class="eyebrow mb-1"><i class="bi bi-tag-fill me-1 text-warning"></i>Suite Pricing</p>
+                <h3 class="mb-1">Update Suite Rate</h3>
+                <p class="muted-copy text-xs mb-0">Select a suite or floor and enter its price per night.</p>
             </div>
 
-            <form method="post" id="smartBulkPriceForm">
+            <form method="post" id="simpleSuiteRateForm">
                 <input type="hidden" name="action" value="smart_bulk_price">
-                <div class="d-grid gap-3">
-                    <div>
-                        <label class="form-label text-xs fw-semibold text-light-emphasis mb-1">Target Scope</label>
-                        <select class="form-select bg-dark text-light border-secondary mb-2" id="bulkTargetType" name="target_type" onchange="updateBulkTargetOptions()">
-                            <option value="all">Entire Hotel (All Suites)</option>
-                            <option value="suite">Specific Suite / Floor</option>
-                        </select>
-                        <select class="form-select bg-dark text-light border-secondary d-none" id="bulkTargetValue" name="target_value" onchange="calculateSmartPreview()">
-                        </select>
-                    </div>
+                <input type="hidden" name="adjustment_mode" value="fixed">
+                <input type="hidden" name="target_type" value="suite">
+                <input type="hidden" name="save_as_base_price" value="1">
 
-                    <div>
-                        <label class="form-label text-xs fw-semibold text-light-emphasis mb-1">Adjustment Action</label>
-                        <select class="form-select bg-dark text-light border-secondary" id="bulkAdjustmentMode" name="adjustment_mode" onchange="calculateSmartPreview()">
-                            <option value="fixed">Set Exact Price (PHP)</option>
-                            <option value="percentage">Percentage Change (% Surge/Discount)</option>
-                            <option value="offset">Fixed Offset (+ / - PHP per night)</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="form-label text-xs fw-semibold text-light-emphasis mb-1" id="bulkValueLabel">Set Exact Rate (PHP)</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-dark border-secondary text-warning" id="bulkValuePrefix">PHP</span>
-                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="bulkAdjustmentValue" name="adjustment_value" placeholder="e.g. 5000.00" oninput="calculateSmartPreview()" required>
-                        </div>
-                    </div>
-
-                    <div class="form-check form-switch my-1">
-                        <input class="form-check-input" type="checkbox" id="save_as_base_price" name="save_as_base_price" value="1">
-                        <label class="form-check-label text-xs text-light-emphasis fw-semibold" for="save_as_base_price">
-                            <i class="bi bi-bookmark-star-fill text-warning me-1"></i>Save as New Official Suite Base Rate
-                        </label>
-                    </div>
-
-                    <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-50 text-xs" id="bulkPreviewBanner">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="fw-semibold text-light-emphasis">Live Impact Preview</span>
-                            <span class="badge bg-gold text-dark font-mono fw-bold" id="bulkPreviewBadge">0 rooms selected</span>
-                        </div>
-                        <div id="bulkPreviewText" class="small text-muted">Select scope and adjustment to calculate live price impact.</div>
-                    </div>
-
-                    <button class="btn btn-warning fw-bold py-2 shadow-sm" type="submit"><i class="bi bi-lightning-charge-fill me-1"></i>Apply Smart Rate Update</button>
+                <div class="mb-3">
+                    <label class="form-label text-xs fw-semibold" for="simpleSuiteSelect">Select Suite / Floor</label>
+                    <select class="form-select bg-dark text-light border-secondary" id="simpleSuiteSelect" name="target_value" onchange="onSimpleSuiteSelectChange(this)">
+                        <option value="all" data-price="">Entire Hotel (All Suites)</option>
+                        <?php
+                            $suiteBaseRates = $roomModel->getSuiteBaseRates();
+                            foreach ($suiteBaseRates as $sRate):
+                                $currentP = number_format((float)$sRate['current_min_price'], 2, '.', '');
+                        ?>
+                            <option value="<?php echo e($sRate['room_type']); ?>" data-price="<?php echo e($currentP); ?>">
+                                <?php echo e($sRate['room_type']); ?> (PHP <?php echo e(number_format((float)$sRate['current_min_price'], 2)); ?>/night)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-xs fw-semibold" for="simplePriceInput">Price / Night (PHP)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark text-warning border-secondary">PHP</span>
+                        <input class="form-control bg-dark text-light border-secondary" id="simplePriceInput" name="adjustment_value" type="number" step="0.01" min="1" placeholder="e.g. 4500.00" required>
+                    </div>
+                </div>
+
+                <button class="btn btn-warning fw-bold w-100 py-2 shadow-sm" type="submit">
+                    <i class="bi bi-check-circle-fill me-1"></i>Update Suite Price
+                </button>
             </form>
         </div>
 
@@ -797,27 +776,24 @@ function calculateSmartPreview() {
     }
 }
 
-function applyPresetSurge(val, mode) {
-    const actionInput = document.querySelector('#smartBulkPriceForm input[name="action"]');
-    if (actionInput) actionInput.value = 'smart_bulk_price';
-    const modeSelect = document.getElementById('bulkAdjustmentMode');
-    const valInput = document.getElementById('bulkAdjustmentValue');
-    if (modeSelect) modeSelect.value = mode;
-    if (valInput) valInput.value = val;
-    calculateSmartPreview();
-}
-
-function applyResetStandard() {
-    if (confirm('Reset selected room prices back to their original baseline rates?')) {
-        const form = document.getElementById('smartBulkPriceForm');
-        const actionInput = form.querySelector('input[name="action"]');
-        if (actionInput) actionInput.value = 'reset_standard';
-        form.submit();
+function onSimpleSuiteSelectChange(selectEl) {
+    const selectedOption = selectEl.options[selectEl.selectedIndex];
+    const price = selectedOption ? selectedOption.getAttribute('data-price') : '';
+    const priceInput = document.getElementById('simplePriceInput');
+    if (priceInput) {
+        if (price) {
+            priceInput.value = price;
+        } else {
+            priceInput.placeholder = 'e.g. 4500.00';
+        }
     }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    updateBulkTargetOptions();
+    const simpleSelect = document.getElementById('simpleSuiteSelect');
+    if (simpleSelect) {
+        onSimpleSuiteSelectChange(simpleSelect);
+    }
 });
 </script>
 
