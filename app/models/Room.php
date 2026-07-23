@@ -243,6 +243,54 @@ class Room
         return $statement->rowCount();
     }
 
+    public function smartBulkUpdatePrice(array $options): int
+    {
+        $targetType = trim((string) ($options['target_type'] ?? 'all'));
+        $targetValue = trim((string) ($options['target_value'] ?? ''));
+        $adjustmentMode = trim((string) ($options['adjustment_mode'] ?? 'fixed'));
+        $adjustmentValue = (float) ($options['adjustment_value'] ?? 0);
+
+        if ($adjustmentValue == 0.0 && $adjustmentMode !== 'fixed') {
+            throw new RuntimeException('Please enter a valid adjustment value or percentage.');
+        }
+
+        $whereClause = 'WHERE 1=1';
+        $params = [];
+
+        if ($targetType === 'suite' && $targetValue !== '' && $targetValue !== 'all') {
+            $whereClause .= ' AND room_type = :target_value';
+            $params['target_value'] = $targetValue;
+        } elseif ($targetType === 'floor' && (int)$targetValue > 0) {
+            $whereClause .= ' AND floor = :target_value';
+            $params['target_value'] = (int)$targetValue;
+        }
+
+        if ($adjustmentMode === 'fixed') {
+            if ($adjustmentValue <= 0) {
+                throw new RuntimeException('Price per night must be greater than zero.');
+            }
+            $sql = "UPDATE rooms SET price_per_night = :new_price {$whereClause}";
+            $params['new_price'] = $adjustmentValue;
+        } elseif ($adjustmentMode === 'percentage') {
+            $multiplier = 1 + ($adjustmentValue / 100);
+            if ($multiplier <= 0) {
+                throw new RuntimeException('Percentage reduction would result in negative or zero price.');
+            }
+            $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night * :multiplier, 2)) {$whereClause}";
+            $params['multiplier'] = $multiplier;
+        } elseif ($adjustmentMode === 'offset') {
+            $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night + :offset, 2)) {$whereClause}";
+            $params['offset'] = $adjustmentValue;
+        } else {
+            throw new RuntimeException('Invalid price adjustment mode.');
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->rowCount();
+    }
+
     public function delete(int $roomId): bool
     {
         // SQL: Deletes one room by primary key. The database blocks deletion if restricted reservations still use it.

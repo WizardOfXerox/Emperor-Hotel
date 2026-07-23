@@ -131,13 +131,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('rooms.php' . $querySuffix);
         }
 
-        if ($action === 'update_type_price') {
-            $roomType = (string) ($_POST['room_type'] ?? '');
-            $pricePerNight = (float) ($_POST['price_per_night'] ?? -1);
-            $roomModel->updateTypePrice($roomType, $pricePerNight);
-            $updatedTypeSummary = $roomModel->typeSummary();
-            $totalRooms = $updatedTypeSummary[$roomType]['total'] ?? 0;
-            setFlash('success', "{$roomType} rate updated to " . formatMoney($pricePerNight) . " for {$totalRooms} room record(s).");
+        if ($action === 'smart_bulk_price' || $action === 'update_type_price') {
+            $updatedCount = $roomModel->smartBulkUpdatePrice([
+                'target_type' => $_POST['target_type'] ?? ($_POST['room_type'] ? 'suite' : 'all'),
+                'target_value' => $_POST['target_value'] ?? ($_POST['room_type'] ?? ''),
+                'adjustment_mode' => $_POST['adjustment_mode'] ?? 'fixed',
+                'adjustment_value' => (float) ($_POST['adjustment_value'] ?? ($_POST['price_per_night'] ?? 0)),
+            ]);
+            setFlash('success', "Smart Bulk Price Update complete! Updated rates for {$updatedCount} room(s).");
             redirect('rooms.php' . $querySuffix);
         }
 
@@ -286,48 +287,60 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
 <section class="row g-4">
     <div class="col-xl-4">
         <div class="panel-card p-4 mb-4">
-            <p class="eyebrow mb-1">Room Rates</p>
-            <h3 class="mb-2">Bulk Update Prices</h3>
-            <p class="muted-copy">Set one price for every room under the selected room type.</p>
-            <div class="d-grid gap-3">
-                <?php foreach ($roomTypes as $type): ?>
-                    <?php
-                        $rateInfo = $typeSummary[$type] ?? [
-                            'total' => 0,
-                            'lowest_price' => 0.0,
-                            'highest_price' => 0.0,
-                        ];
-                        $currentPrice = (float) $rateInfo['lowest_price'];
-                        $priceLabel = $rateInfo['lowest_price'] === $rateInfo['highest_price']
-                            ? formatMoney($currentPrice)
-                            : formatMoney((float) $rateInfo['lowest_price']) . ' - ' . formatMoney((float) $rateInfo['highest_price']);
-                    ?>
-                    <form method="post" class="p-3 rounded-3 border border-secondary-subtle">
-                        <input type="hidden" name="action" value="update_type_price">
-                        <input type="hidden" name="room_type" value="<?php echo e($type); ?>">
-                        <label class="form-label" for="rate_<?php echo e($rateInfo['total'] . '_' . str_replace(' ', '_', strtolower($type))); ?>">
-                            <?php echo e($type); ?>
-                        </label>
-                        <p class="form-text mb-2">
-                            <?php echo e($rateInfo['total']); ?> rooms currently at <?php echo e($priceLabel); ?>.
-                        </p>
-                        <div class="input-group">
-                            <span class="input-group-text">PHP</span>
-                            <input
-                                class="form-control"
-                                id="rate_<?php echo e($rateInfo['total'] . '_' . str_replace(' ', '_', strtolower($type))); ?>"
-                                name="price_per_night"
-                                type="number"
-                                min="0.01"
-                                step="0.01"
-                                value="<?php echo e(number_format($currentPrice, 2, '.', '')); ?>"
-                                required
-                            >
-                            <button class="btn btn-warning fw-semibold" type="submit">Set Rate</button>
-                        </div>
-                    </form>
-                <?php endforeach; ?>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3 border-bottom border-secondary border-opacity-25 pb-3">
+                <div>
+                    <p class="eyebrow mb-1"><i class="bi bi-sliders me-1 text-warning"></i>Yield Management & Pricing</p>
+                    <h3 class="mb-0">Smart Bulk Price Control</h3>
+                </div>
+                <div class="d-flex flex-wrap gap-1">
+                    <button type="button" class="btn btn-xs btn-outline-warning text-xs px-2 py-1 fw-semibold" onclick="applyPresetSurge(15, 'percentage')">🚀 Peak (+15%)</button>
+                    <button type="button" class="btn btn-xs btn-outline-warning text-xs px-2 py-1 fw-semibold" onclick="applyPresetSurge(10, 'percentage')">⚡ Weekend (+10%)</button>
+                    <button type="button" class="btn btn-xs btn-outline-light text-xs px-2 py-1" onclick="applyPresetSurge(-10, 'percentage')">🎁 Promo (-10%)</button>
+                </div>
             </div>
+
+            <form method="post" id="smartBulkPriceForm">
+                <input type="hidden" name="action" value="smart_bulk_price">
+                <div class="d-grid gap-3">
+                    <div>
+                        <label class="form-label text-xs fw-semibold text-light-emphasis mb-1">Target Scope</label>
+                        <select class="form-select bg-dark text-light border-secondary mb-2" id="bulkTargetType" name="target_type" onchange="updateBulkTargetOptions()">
+                            <option value="all">Entire Hotel (All Rooms)</option>
+                            <option value="suite">By Suite Type</option>
+                            <option value="floor">By Floor</option>
+                        </select>
+                        <select class="form-select bg-dark text-light border-secondary d-none" id="bulkTargetValue" name="target_value" onchange="calculateSmartPreview()">
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label text-xs fw-semibold text-light-emphasis mb-1">Adjustment Action</label>
+                        <select class="form-select bg-dark text-light border-secondary" id="bulkAdjustmentMode" name="adjustment_mode" onchange="calculateSmartPreview()">
+                            <option value="fixed">Set Exact Price (PHP)</option>
+                            <option value="percentage">Percentage Change (% Surge/Discount)</option>
+                            <option value="offset">Fixed Offset (+ / - PHP per night)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label text-xs fw-semibold text-light-emphasis mb-1" id="bulkValueLabel">Set Exact Rate (PHP)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-warning" id="bulkValuePrefix">PHP</span>
+                            <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="bulkAdjustmentValue" name="adjustment_value" placeholder="e.g. 5000.00" oninput="calculateSmartPreview()" required>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-50 text-xs" id="bulkPreviewBanner">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-semibold text-light-emphasis">Live Impact Preview</span>
+                            <span class="badge bg-gold text-dark font-mono fw-bold" id="bulkPreviewBadge">0 rooms selected</span>
+                        </div>
+                        <div id="bulkPreviewText" class="small text-muted">Select scope and adjustment to calculate live price impact.</div>
+                    </div>
+
+                    <button class="btn btn-warning fw-bold py-2 shadow-sm" type="submit"><i class="bi bi-lightning-charge-fill me-1"></i>Apply Smart Rate Update</button>
+                </div>
+            </form>
         </div>
 
         <div class="panel-card p-4">
@@ -663,6 +676,117 @@ function updateCustomSuiteValue(inputEl, hiddenInputId) {
         hiddenInput.value = inputEl.value.trim();
     }
 }
+
+const roomDataStats = <?php echo json_encode(array_map(static fn(array $r): array => [
+    'id' => (int)$r['room_id'],
+    'room_number' => (string)$r['room_number'],
+    'room_type' => (string)$r['room_type'],
+    'floor' => (int)$r['floor'],
+    'price' => (float)$r['price_per_night'],
+], $rooms), JSON_THROW_ON_ERROR); ?>;
+
+function updateBulkTargetOptions() {
+    const targetTypeSelect = document.getElementById('bulkTargetType');
+    const targetValueSelect = document.getElementById('bulkTargetValue');
+    if (!targetTypeSelect || !targetValueSelect) return;
+
+    const type = targetTypeSelect.value;
+    targetValueSelect.innerHTML = '';
+
+    if (type === 'all') {
+        targetValueSelect.classList.add('d-none');
+    } else if (type === 'suite') {
+        targetValueSelect.classList.remove('d-none');
+        targetValueSelect.innerHTML = '<option value="all">All Suite Types</option>';
+        const types = [...new Set(roomDataStats.map(r => r.room_type))];
+        types.forEach(t => {
+            targetValueSelect.innerHTML += `<option value="${t}">${t}</option>`;
+        });
+    } else if (type === 'floor') {
+        targetValueSelect.classList.remove('d-none');
+        targetValueSelect.innerHTML = '<option value="all">All Floors</option>';
+        const floors = [...new Set(roomDataStats.map(r => r.floor))].sort((a, b) => a - b);
+        floors.forEach(f => {
+            targetValueSelect.innerHTML += `<option value="${f}">Floor ${f}</option>`;
+        });
+    }
+    calculateSmartPreview();
+}
+
+function calculateSmartPreview() {
+    const targetTypeSelect = document.getElementById('bulkTargetType');
+    const targetValueSelect = document.getElementById('bulkTargetValue');
+    const modeSelect = document.getElementById('bulkAdjustmentMode');
+    const valInput = document.getElementById('bulkAdjustmentValue');
+
+    if (!targetTypeSelect || !modeSelect || !valInput) return;
+
+    const targetType = targetTypeSelect.value;
+    const targetValue = targetValueSelect ? targetValueSelect.value : '';
+    const mode = modeSelect.value;
+    const rawVal = parseFloat(valInput.value) || 0;
+    
+    const prefixEl = document.getElementById('bulkValuePrefix');
+    const labelEl = document.getElementById('bulkValueLabel');
+    const previewText = document.getElementById('bulkPreviewText');
+    const previewBadge = document.getElementById('bulkPreviewBadge');
+
+    if (mode === 'fixed') {
+        if (prefixEl) prefixEl.innerText = 'PHP';
+        if (labelEl) labelEl.innerText = 'Set Exact Rate (PHP)';
+    } else if (mode === 'percentage') {
+        if (prefixEl) prefixEl.innerText = '%';
+        if (labelEl) labelEl.innerText = 'Percentage Surge / Discount (%)';
+    } else if (mode === 'offset') {
+        if (prefixEl) prefixEl.innerText = '±PHP';
+        if (labelEl) labelEl.innerText = 'Offset Rate (+/- PHP)';
+    }
+
+    const affected = roomDataStats.filter(r => {
+        if (targetType === 'suite' && targetValue !== 'all' && targetValue !== '') return r.room_type === targetValue;
+        if (targetType === 'floor' && targetValue !== 'all' && targetValue !== '') return r.floor === parseInt(targetValue, 10);
+        return true;
+    });
+
+    const totalCount = affected.length;
+    if (totalCount === 0) {
+        if (previewBadge) previewBadge.innerText = '0 rooms selected';
+        if (previewText) previewText.innerText = 'No rooms match the selected target scope.';
+        return;
+    }
+
+    const currentAvg = affected.reduce((sum, r) => sum + r.price, 0) / totalCount;
+    let newAvg = currentAvg;
+
+    if (mode === 'fixed') {
+        newAvg = rawVal > 0 ? rawVal : currentAvg;
+    } else if (mode === 'percentage') {
+        newAvg = Math.max(1, currentAvg * (1 + rawVal / 100));
+    } else if (mode === 'offset') {
+        newAvg = Math.max(1, currentAvg + rawVal);
+    }
+
+    const diff = newAvg - currentAvg;
+    const diffSign = diff > 0 ? '+' : '';
+    const diffFormatted = diff !== 0 ? ` (${diffSign}PHP ${Math.abs(diff).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})})` : '';
+
+    if (previewBadge) previewBadge.innerText = `${totalCount} room(s) targeted`;
+    if (previewText) {
+        previewText.innerHTML = `Current avg: <strong>PHP ${currentAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> ➔ New avg: <strong class="text-warning">PHP ${newAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>${diffFormatted}`;
+    }
+}
+
+function applyPresetSurge(val, mode) {
+    const modeSelect = document.getElementById('bulkAdjustmentMode');
+    const valInput = document.getElementById('bulkAdjustmentValue');
+    if (modeSelect) modeSelect.value = mode;
+    if (valInput) valInput.value = val;
+    calculateSmartPreview();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    updateBulkTargetOptions();
+});
 </script>
 
 <?php renderAdminLayoutEnd(); ?>
