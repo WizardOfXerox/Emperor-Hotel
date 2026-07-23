@@ -350,7 +350,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                         <!-- Room Card Preview -->
                         <?php if ($selectedRoomObj): 
                             $selCatalog = $catalog[$selectedRoomType] ?? null;
-                            $selImg = $selCatalog['hero'] ?? '../assets/images/rooms/hero.jpg';
+                            $selImg = $selCatalog['hero'] ?? '../assets/images/rooms/imperial-deluxe/hero.jpg';
                         ?>
                             <div class="rounded-4 overflow-hidden mb-3 border position-relative" style="border: 1px solid rgba(212, 175, 55, 0.3) !important;">
                                 <img src="<?= e($selImg) ?>" alt="<?= e($selectedRoomType) ?>" class="w-100 object-fit-cover" style="height: 160px;">

@@ -2477,7 +2477,7 @@ body.light-mode .auth-split-card {
 
 .auth-hero-col {
     background: linear-gradient(135deg, rgba(7, 10, 16, 0.88) 0%, rgba(15, 23, 42, 0.78) 100%),
-                url('../images/rooms/hero.jpg') center/cover no-repeat;
+                url('../images/rooms/emperor-presidential-suite/hero.jpg') center/cover no-repeat;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -2488,7 +2488,7 @@ body.light-mode .auth-split-card {
 
 body.light-mode .auth-hero-col {
     background: linear-gradient(135deg, rgba(15, 23, 42, 0.90) 0%, rgba(30, 41, 59, 0.82) 100%),
-                url('../images/rooms/hero.jpg') center/cover no-repeat;
+                url('../images/rooms/emperor-presidential-suite/hero.jpg') center/cover no-repeat;
 }
 
 .auth-form-col {

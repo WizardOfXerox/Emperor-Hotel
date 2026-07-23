@@ -87,7 +87,7 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
     <?php if ($mostBookedRoom): 
         $mbType = $mostBookedRoom['room_type'];
         $mbInfo = $catalog[$mbType] ?? null;
-        $mbHeroImg = $mbInfo['hero'] ?? '../assets/images/rooms/hero.jpg';
+        $mbHeroImg = $mbInfo['hero'] ?? '../assets/images/rooms/imperial-deluxe/hero.jpg';
         $mbDetailUrl = 'room-detail.php?id=' . (int)$mostBookedRoom['room_id'] . '&check_in=' . urlencode($checkIn) . '&check_out=' . urlencode($checkOut);
         $mbRating = number_format((float)($mostBookedRoom['avg_rating'] ?: 5.0), 1);
     ?>
@@ -177,7 +177,7 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
                 <?php foreach ($rooms as $rm): 
                     $rmType = $rm['room_type'];
                     $rmInfo = $catalog[$rmType] ?? null;
-                    $heroImg = $rmInfo['hero'] ?? '../assets/images/rooms/hero.jpg';
+                    $heroImg = $rmInfo['hero'] ?? '../assets/images/rooms/imperial-deluxe/hero.jpg';
                     $maxCap = (int)($rm['capacity'] ?? ($rmInfo['max_capacity'] ?? 2));
                     $isAvail = $reservationModel->roomIsAvailable((int)$rm['room_id'], $checkIn, $checkOut);
                     $perks = $rmInfo['included_perks'] ?? ['Complimentary breakfast', 'Priority Wi-Fi'];

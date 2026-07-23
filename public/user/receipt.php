@@ -30,7 +30,7 @@ $latestPayment = $payments[0] ?? null;
 $catalog = roomCatalog();
 $roomType = $reservation['room_type'];
 $typeCatalog = $catalog[$roomType] ?? null;
-$heroImg = $typeCatalog['hero'] ?? '../assets/images/rooms/hero.jpg';
+$heroImg = $typeCatalog['hero'] ?? '../assets/images/rooms/imperial-deluxe/hero.jpg';
 
 $checkIn = new DateTimeImmutable($reservation['check_in']);
 $checkOut = new DateTimeImmutable($reservation['check_out']);

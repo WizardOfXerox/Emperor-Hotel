@@ -56,7 +56,7 @@ renderHeader('Suites Showcase | Emperor Hotel', ['../assets/css/site/home.css', 
     </div>
 
     <section class="rooms-hero" aria-label="Emperor Hotel suites page">
-        <img src="../assets/images/rooms/hero.jpg" alt="Luxury Suite at Emperor Hotel">
+        <img src="../assets/images/rooms/emperor-presidential-suite/hero.jpg" alt="Luxury Suite at Emperor Hotel">
         <div class="rooms-hero__content">
             <h1>SUITES &amp; ROOMS</h1>
             <p>DISCOVER EXTRAORDINARY ACCOMMODATIONS</p>

@@ -507,7 +507,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                     <?php foreach ($allRooms as $otherRoom): 
                         $isSelf = (int)$otherRoom['room_id'] === (int)$room['room_id'];
                         $otherTypeCatalog = $catalog[$otherRoom['room_type']] ?? null;
-                        $otherImg = $otherTypeCatalog['hero'] ?? '../assets/images/rooms/hero.jpg';
+                        $otherImg = $otherTypeCatalog['hero'] ?? '../assets/images/rooms/imperial-deluxe/hero.jpg';
                         $otherPublicStatus = ($otherRoom['status'] === 'Cleaning') ? 'Available' : $otherRoom['status'];
                         $otherBadgeClass = match ($otherPublicStatus) {
                             'Available' => 'status-badge-available',
