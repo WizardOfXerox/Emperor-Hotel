@@ -229,6 +229,11 @@ class Reservation
 
         if ($saved) {
             $this->syncRoomStatus((int) $existing['room_id']);
+
+            if (in_array($status, ['Confirmed', 'Checked-in', 'Checked-out'], true)) {
+                $paymentStmt = $this->db->prepare("UPDATE payments SET payment_status = 'Confirmed' WHERE reservation_id = :reservation_id AND payment_status = 'Pending'");
+                $paymentStmt->execute(['reservation_id' => $reservationId]);
+            }
         }
 
         return $saved;

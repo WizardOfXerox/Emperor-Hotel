@@ -89,6 +89,10 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                 <input type="hidden" name="action" value="create_payment">
                 <div>
                     <label class="form-label" for="reservation_id">Reservation</label>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text"><i class="bi bi-search text-warning"></i></span>
+                        <input type="text" class="form-control" id="reservation_search_input" placeholder="🔍 Search guest name, room #, or ID..." autocomplete="off" <?php echo !$reservations ? 'disabled' : ''; ?>>
+                    </div>
                     <select class="form-select" id="reservation_id" name="reservation_id" required data-payment-reservation <?php echo !$reservations ? 'disabled' : ''; ?>>
                         <option value="">Choose a reservation</option>
                         <?php foreach ($reservations as $reservation): ?>
@@ -287,7 +291,32 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
     }
 
     const reservationSelect = form.querySelector("[data-payment-reservation]");
+    const searchInput = form.querySelector("#reservation_search_input");
     const amountInput = form.querySelector("[data-payment-amount]");
+
+    if (searchInput && reservationSelect) {
+        searchInput.addEventListener("input", function () {
+            const query = this.value.toLowerCase().trim();
+            const options = Array.from(reservationSelect.options);
+            let firstMatch = null;
+
+            options.forEach((opt, idx) => {
+                if (idx === 0) return;
+                const txt = opt.textContent.toLowerCase();
+                const matches = txt.includes(query);
+                opt.style.display = matches ? "" : "none";
+                if (matches && !firstMatch) firstMatch = opt;
+            });
+
+            if (query.length > 0 && firstMatch) {
+                reservationSelect.value = firstMatch.value;
+            } else if (query.length === 0) {
+                options.forEach((opt) => (opt.style.display = ""));
+            }
+
+            reservationSelect.dispatchEvent(new Event("change"));
+        });
+    }
     const simulatedInput = form.querySelector("#is_simulated");
     const statusInput = form.querySelector("#payment_status");
     const methodInput = form.querySelector("#payment_method");
