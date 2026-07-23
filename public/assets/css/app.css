@@ -198,6 +198,63 @@ td.small.text-muted {
     background: rgba(15, 23, 42, 0.85);
 }
 
+/* ===== INPUT PLACEHOLDER CONTRAST FIXES ===== */
+.form-control::placeholder,
+textarea::placeholder,
+input::placeholder {
+    color: rgba(226, 232, 240, 0.65) !important;
+    opacity: 1 !important;
+}
+
+.form-control::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder,
+input::-webkit-input-placeholder {
+    color: rgba(226, 232, 240, 0.65) !important;
+    opacity: 1 !important;
+}
+
+.form-control::-moz-placeholder,
+textarea::-moz-placeholder,
+input::-moz-placeholder {
+    color: rgba(226, 232, 240, 0.65) !important;
+    opacity: 1 !important;
+}
+
+.form-control:-ms-input-placeholder,
+textarea:-ms-input-placeholder,
+input:-ms-input-placeholder {
+    color: rgba(226, 232, 240, 0.65) !important;
+    opacity: 1 !important;
+}
+
+body.light-mode .form-control::placeholder,
+body.light-mode textarea::placeholder,
+body.light-mode input::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+}
+
+body.light-mode .form-control::-webkit-input-placeholder,
+body.light-mode textarea::-webkit-input-placeholder,
+body.light-mode input::-webkit-input-placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+}
+
+body.light-mode .form-control::-moz-placeholder,
+body.light-mode textarea::-moz-placeholder,
+body.light-mode input::-moz-placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+}
+
+body.light-mode .form-control:-ms-input-placeholder,
+body.light-mode textarea:-ms-input-placeholder,
+body.light-mode input:-ms-input-placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important;
+}
+
 .input-group-text {
     color: #f8fafc;
     border-color: rgba(248, 250, 252, 0.12);
