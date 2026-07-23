@@ -2919,6 +2919,188 @@ body.light-mode .pagination .page-item.disabled .page-link {
     border-color: #E2E8F0 !important;
 }
 
+/* ════════════════════════════════════════════════════════════════ */
+/* 👑 EMPEROR HOTEL LUXURY MODAL THEME STYLING                      */
+/* ════════════════════════════════════════════════════════════════ */
+.modal-backdrop.show {
+    background-color: rgba(2, 6, 23, 0.82) !important;
+    backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    background: linear-gradient(145deg, #0B1120 0%, #0F172A 100%) !important;
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(212, 175, 55, 0.12) !important;
+    color: #F8FAFC !important;
+    overflow: hidden;
+}
+
+.modal-header {
+    background: rgba(11, 17, 32, 0.85) !important;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.25) !important;
+    padding: 1.25rem 1.75rem !important;
+}
+
+.modal-header .modal-title {
+    font-family: 'DM Serif Display', serif !important;
+    font-weight: 700 !important;
+    color: #F8FAFC !important;
+    letter-spacing: 0.02em;
+}
+
+.modal-header .btn-close {
+    background-color: rgba(212, 175, 55, 0.1) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    border-radius: 50% !important;
+    padding: 0.6rem !important;
+    opacity: 0.85 !important;
+    transition: all 0.2s ease-in-out;
+}
+
+.modal-header .btn-close:hover {
+    background-color: rgba(212, 175, 55, 0.25) !important;
+    border-color: #FBBF24 !important;
+    opacity: 1 !important;
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 1.75rem !important;
+}
+
+.modal-footer {
+    background: rgba(11, 17, 32, 0.85) !important;
+    border-top: 1px solid rgba(212, 175, 55, 0.25) !important;
+    padding: 1.25rem 1.75rem !important;
+}
+
+/* Modal Form Controls */
+.modal-body .form-label {
+    color: #FBBF24 !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    margin-bottom: 0.4rem !important;
+}
+
+.modal-body .form-control,
+.modal-body .form-select {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    color: #F8FAFC !important;
+    border-radius: 10px !important;
+    padding: 0.6rem 0.85rem !important;
+    font-size: 0.9rem !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.modal-body .form-control:focus,
+.modal-body .form-select:focus {
+    border-color: #FBBF24 !important;
+    box-shadow: 0 0 14px rgba(251, 191, 36, 0.3) !important;
+    background: rgba(15, 23, 42, 0.95) !important;
+    outline: none !important;
+}
+
+.modal-body .room-media-box {
+    background: rgba(15, 23, 42, 0.7) !important;
+    border: 1px solid rgba(212, 175, 55, 0.25) !important;
+    border-radius: 14px !important;
+    padding: 1.25rem !important;
+}
+
+.modal-body .room-media-box .eyebrow,
+.modal-body .room-media-box h6 {
+    color: #FBBF24 !important;
+}
+
+/* Modal Buttons */
+.modal-footer .btn-warning,
+.modal-body .btn-warning {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
+    border: 1px solid #FBBF24 !important;
+    color: #020617 !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3) !important;
+    transition: all 0.25s ease-in-out !important;
+}
+
+.modal-footer .btn-warning:hover,
+.modal-body .btn-warning:hover {
+    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%) !important;
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5) !important;
+    transform: translateY(-1px);
+}
+
+.modal-footer .btn-outline-light,
+.modal-footer .btn-secondary {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(248, 250, 252, 0.2) !important;
+    color: #F8FAFC !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+}
+
+.modal-footer .btn-outline-light:hover,
+.modal-footer .btn-secondary:hover {
+    background: rgba(248, 250, 252, 0.1) !important;
+    border-color: rgba(248, 250, 252, 0.4) !important;
+    color: #FFFFFF !important;
+}
+
+/* Light Mode Overrides for Luxury Modal */
+body.light-mode .modal-content {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
+    color: #0F172A !important;
+}
+
+body.light-mode .modal-header {
+    background: #FAF7F2 !important;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+body.light-mode .modal-header .modal-title {
+    color: #0F172A !important;
+}
+
+body.light-mode .modal-header .btn-close {
+    background-color: rgba(15, 23, 42, 0.05) !important;
+    border: 1px solid rgba(15, 23, 42, 0.15) !important;
+}
+
+body.light-mode .modal-body .form-label {
+    color: #B45309 !important;
+}
+
+body.light-mode .modal-body .form-control,
+body.light-mode .modal-body .form-select {
+    background: #FFFFFF !important;
+    border: 1px solid #CBD5E1 !important;
+    color: #0F172A !important;
+}
+
+body.light-mode .modal-body .form-control:focus,
+body.light-mode .modal-body .form-select:focus {
+    border-color: #D97706 !important;
+    box-shadow: 0 0 10px rgba(217, 119, 6, 0.25) !important;
+}
+
+body.light-mode .modal-body .room-media-box {
+    background: #FAF7F2 !important;
+    border: 1px solid #E2E8F0 !important;
+}
+
+body.light-mode .modal-footer {
+    background: #FAF7F2 !important;
+    border-top: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+
 
 
 
