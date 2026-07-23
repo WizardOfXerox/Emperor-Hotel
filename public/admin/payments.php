@@ -38,18 +38,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $reservationId = (int) ($_POST['reservation_id'] ?? 0);
-        $isSimulated = isset($_POST['is_simulated']);
-        $paymentStatus = $isSimulated ? 'Pending' : (string) ($_POST['payment_status'] ?? 'Confirmed');
+        $paymentStatus = (string) ($_POST['payment_status'] ?? 'Confirmed');
+        $amount = (float) ($_POST['amount'] ?? 0);
+
+        if ($amount <= 0 && $reservationId > 0) {
+            $resObj = $reservationModel->find($reservationId);
+            $totals = $paymentModel->totalsForReservation($reservationId);
+            $amount = max(0.01, (float) ($resObj['total_amount'] ?? 0) - (float) ($totals['confirmed_amount'] ?? 0));
+        }
 
         $paymentModel->create([
             'reservation_id' => $reservationId,
-            'amount' => (float) ($_POST['amount'] ?? 0),
-            'payment_method' => (string) ($_POST['payment_method'] ?? 'Cash'),
+            'amount' => $amount,
+            'payment_method' => 'Cash',
             'payment_status' => $paymentStatus,
-            'is_simulated' => $isSimulated,
+            'is_simulated' => false,
         ]);
 
-        setFlash('success', $isSimulated ? 'Simulated transaction recorded.' : 'Payment recorded. Fully paid pending reservations are confirmed automatically.');
+        setFlash('success', 'Payment action processed successfully. Reservation status updated automatically.');
         redirect('payments.php');
     } catch (Throwable $exception) {
         setFlash('error', $exception->getMessage());
@@ -157,28 +163,6 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                     <p class="muted-copy small mb-0">Confirmed payments reduce the balance. Pending payments reserve part of the balance until reviewed.</p>
                 </div>
 
-                <div>
-                    <label class="form-label" for="amount">Payment Amount (PHP)</label>
-                    <input class="form-control" id="amount" name="amount" type="number" min="0.01" step="0.01" required data-payment-amount <?php echo !$reservations ? 'disabled' : ''; ?>>
-                    <div class="form-text" data-payment-entry-note>Choose a reservation to fill the maximum payable amount.</div>
-                </div>
-                <div>
-                    <label class="form-label" for="payment_method">Payment Method</label>
-                    <select class="form-select" id="payment_method" name="payment_method" <?php echo !$reservations ? 'disabled' : ''; ?>>
-                        <?php foreach (Payment::methods() as $method): ?>
-                            <option value="<?php echo e($method); ?>" <?php echo $selectedPaymentMethod === $method ? 'selected' : ''; ?>><?php echo e($method); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div>
-                    <label class="form-label" for="payment_status">Transaction Status</label>
-                    <select class="form-select" id="payment_status" name="payment_status" <?php echo !$reservations ? 'disabled' : ''; ?>>
-                        <option value="Confirmed" <?php echo $selectedPaymentStatus === 'Confirmed' ? 'selected' : ''; ?>>Confirmed (Payment Accepted)</option>
-                        <option value="Pending" <?php echo $selectedPaymentStatus === 'Pending' ? 'selected' : ''; ?>>Pending (Needs Review)</option>
-                        <option value="Refunded" <?php echo $selectedPaymentStatus === 'Refunded' ? 'selected' : ''; ?>>Refunded (Process Refund)</option>
-                    </select>
-                    <div class="form-text">Use Confirmed for accepted payments. Use Pending for admin review. Use Refunded to record a guest refund.</div>
-                </div>
                 <div class="panel-card p-3">
                     <p class="eyebrow mb-1">Transaction Reference ID</p>
                     <div class="d-flex align-items-center gap-2">
@@ -342,13 +326,9 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
         }
     }
 
-    const methodInput = form.querySelector("#payment_method");
-    const statusInput = form.querySelector("#payment_status");
     const confirmBtn = form.querySelector("[data-payment-btn-confirm]");
     const refundBtn = form.querySelector("[data-payment-btn-refund]");
-    const entryNote = form.querySelector("[data-payment-entry-note]");
     const referenceTag = form.querySelector("[data-payment-reference]");
-    const paymentEntryFields = [amountInput, methodInput, statusInput, confirmBtn, refundBtn].filter(Boolean);
 
     const money = (amount) => `PHP ${Number(amount || 0).toLocaleString("en-PH", {
         minimumFractionDigits: 2,
@@ -359,16 +339,6 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
 
         if (element) {
             element.textContent = value;
-        }
-    };
-    const setPaymentEntryState = (enabled, note) => {
-        paymentEntryFields.forEach((field) => {
-            field.disabled = !enabled;
-        });
-
-        if (entryNote) {
-            entryNote.textContent = note;
-            entryNote.classList.toggle("text-warning", !enabled);
         }
     };
 
@@ -386,12 +356,9 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
             text("[data-payment-balance]", money(0));
             text("[data-payment-active-balance]", money(0));
             text("[data-payment-reference]", "Choose a reservation");
-            if (amountInput) {
-                amountInput.value = "";
-                amountInput.removeAttribute("max");
-                amountInput.dataset.autofilled = "true";
-            }
-            setPaymentEntryState(false, "Choose a reservation before recording a payment.");
+
+            if (confirmBtn) confirmBtn.disabled = true;
+            if (refundBtn) refundBtn.disabled = true;
             return;
         }
 
@@ -410,36 +377,12 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
         text("[data-payment-active-balance]", money(activeBalance));
         text("[data-payment-reference]", option.dataset.reference || "PAY-00000-YYYYMMDDHHMMSS");
 
-        if (amountInput && (amountInput.dataset.autofilled !== "false")) {
-            amountInput.value = activeBalance > 0 ? activeBalance.toFixed(2) : "0.00";
-            amountInput.max = activeBalance.toFixed(2);
-            amountInput.dataset.autofilled = "true";
-        }
-
-        if (activeBalance <= 0) {
-            const note = pending > 0
-                ? "No new payment can be added because pending transaction(s) already reserve the remaining balance. Use Process Refund if returning funds."
-                : "This reservation balance is fully settled (PHP 0.00 balance due). Use Process Refund if returning funds.";
-            setPaymentEntryState(true, note);
-            if (confirmBtn) confirmBtn.disabled = true;
-            if (refundBtn) refundBtn.disabled = false;
-            return;
-        }
-
-        setPaymentEntryState(true, `You can record or confirm up to ${money(activeBalance)} for this reservation.`);
+        if (confirmBtn) confirmBtn.disabled = false;
+        if (refundBtn) refundBtn.disabled = false;
     };
-
-    if (amountInput) {
-        amountInput.addEventListener("input", () => {
-            amountInput.dataset.autofilled = "false";
-        });
-    }
 
     if (reservationSelect) {
         reservationSelect.addEventListener("change", () => {
-            if (amountInput) {
-                amountInput.dataset.autofilled = "true";
-            }
             if (searchInput && reservationSelect.selectedOptions[0] && reservationSelect.value) {
                 searchInput.value = reservationSelect.selectedOptions[0].textContent.trim();
             }
