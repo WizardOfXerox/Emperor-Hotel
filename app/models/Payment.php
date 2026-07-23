@@ -61,6 +61,7 @@ class Payment
             $paymentStatus = (string) ($data['payment_status'] ?? 'Confirmed');
         }
 
+        $isSimulated = (bool) ($data['is_simulated'] ?? false);
         $transactionReference = self::generatedReference($reservationId, $isSimulated);
 
         if (!in_array($paymentMethod, self::PAYMENT_METHODS, true)) {

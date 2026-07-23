@@ -39,8 +39,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $reservationId = (int) ($_POST['reservation_id'] ?? 0);
         $paymentStatus = (string) ($_POST['payment_status'] ?? 'Confirmed');
-        $amount = (float) ($_POST['amount'] ?? 0);
 
+        $pendingStmt = $db->prepare("SELECT payment_id, amount FROM payments WHERE reservation_id = :res_id AND payment_status = 'Pending' ORDER BY payment_id DESC LIMIT 1");
+        $pendingStmt->execute(['res_id' => $reservationId]);
+        $pendingPayment = $pendingStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($pendingPayment) {
+            $paymentModel->updateReview(
+                (int) $pendingPayment['payment_id'],
+                (float) $pendingPayment['amount'],
+                $paymentStatus
+            );
+            setFlash('success', 'Transaction updated to ' . $paymentStatus . '. Reservation status synchronized automatically.');
+            redirect('payments.php?reservation_id=' . $reservationId);
+        }
+
+        $amount = (float) ($_POST['amount'] ?? 0);
         if ($amount <= 0 && $reservationId > 0) {
             $resObj = $reservationModel->find($reservationId);
             $totals = $paymentModel->totalsForReservation($reservationId);
@@ -56,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
 
         setFlash('success', 'Payment action processed successfully. Reservation status updated automatically.');
-        redirect('payments.php');
+        redirect('payments.php?reservation_id=' . $reservationId);
     } catch (Throwable $exception) {
         setFlash('error', $exception->getMessage());
         $query = [];
