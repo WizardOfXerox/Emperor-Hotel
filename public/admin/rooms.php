@@ -144,8 +144,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'target_value' => $_POST['target_value'] ?? ($_POST['room_type'] ?? ''),
                 'adjustment_mode' => $_POST['adjustment_mode'] ?? 'fixed',
                 'adjustment_value' => (float) ($_POST['adjustment_value'] ?? ($_POST['price_per_night'] ?? 0)),
+                'save_as_base_price' => !empty($_POST['save_as_base_price']),
             ]);
-            setFlash('success', "Smart Bulk Price Update complete! Updated rates for {$updatedCount} room(s).");
+            $msgSuffix = !empty($_POST['save_as_base_price']) ? ' Saved as new official suite base rate.' : '';
+            setFlash('success', "Smart Bulk Price Update complete! Updated rates for {$updatedCount} room(s).{$msgSuffix}");
             redirect('rooms.php' . $querySuffix);
         }
 
@@ -335,6 +337,13 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                             <span class="input-group-text bg-dark border-secondary text-warning" id="bulkValuePrefix">PHP</span>
                             <input type="number" step="0.01" class="form-control bg-dark text-light border-secondary" id="bulkAdjustmentValue" name="adjustment_value" placeholder="e.g. 5000.00" oninput="calculateSmartPreview()" required>
                         </div>
+                    </div>
+
+                    <div class="form-check form-switch my-1">
+                        <input class="form-check-input" type="checkbox" id="save_as_base_price" name="save_as_base_price" value="1">
+                        <label class="form-check-label text-xs text-light-emphasis fw-semibold" for="save_as_base_price">
+                            <i class="bi bi-bookmark-star-fill text-warning me-1"></i>Save as New Official Suite Base Rate
+                        </label>
                     </div>
 
                     <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-50 text-xs" id="bulkPreviewBanner">
@@ -690,6 +699,7 @@ const roomDataStats = <?php echo json_encode(array_map(static fn(array $r): arra
     'room_type' => (string)$r['room_type'],
     'floor' => (int)$r['floor'],
     'price' => (float)$r['price_per_night'],
+    'base_price' => (float)($r['base_price_per_night'] ?? $r['price_per_night']),
 ], $roomModel->all()), JSON_THROW_ON_ERROR); ?>;
 
 function updateBulkTargetOptions() {
@@ -766,6 +776,7 @@ function calculateSmartPreview() {
     }
 
     const currentAvg = affected.reduce((sum, r) => sum + r.price, 0) / totalCount;
+    const baseAvg = affected.reduce((sum, r) => sum + (r.base_price || r.price), 0) / totalCount;
     let newAvg = currentAvg;
 
     if (mode === 'fixed') {
@@ -782,7 +793,7 @@ function calculateSmartPreview() {
 
     if (previewBadge) previewBadge.innerText = `${totalCount} room(s) targeted`;
     if (previewText) {
-        previewText.innerHTML = `Current avg: <strong>PHP ${currentAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> ➔ New avg: <strong class="text-warning">PHP ${newAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>${diffFormatted}`;
+        previewText.innerHTML = `Base rate: <span class="text-light-emphasis">PHP ${baseAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> | Current avg: <strong>PHP ${currentAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> ➔ New avg: <strong class="text-warning">PHP ${newAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>${diffFormatted}`;
     }
 }
 

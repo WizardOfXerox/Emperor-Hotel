@@ -266,21 +266,35 @@ class Room
             $params['target_value'] = (int)$targetValue;
         }
 
+        $saveAsBase = !empty($options['save_as_base_price']);
+
         if ($adjustmentMode === 'fixed') {
             if ($adjustmentValue <= 0) {
                 throw new RuntimeException('Price per night must be greater than zero.');
             }
-            $sql = "UPDATE rooms SET price_per_night = :new_price {$whereClause}";
+            if ($saveAsBase) {
+                $sql = "UPDATE rooms SET price_per_night = :new_price, base_price_per_night = :new_price {$whereClause}";
+            } else {
+                $sql = "UPDATE rooms SET price_per_night = :new_price {$whereClause}";
+            }
             $params['new_price'] = $adjustmentValue;
         } elseif ($adjustmentMode === 'percentage') {
             $multiplier = 1 + ($adjustmentValue / 100);
             if ($multiplier <= 0) {
                 throw new RuntimeException('Percentage reduction would result in negative or zero price.');
             }
-            $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night * :multiplier, 2)) {$whereClause}";
+            if ($saveAsBase) {
+                $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night * :multiplier, 2)), base_price_per_night = GREATEST(1.00, ROUND(base_price_per_night * :multiplier, 2)) {$whereClause}";
+            } else {
+                $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night * :multiplier, 2)) {$whereClause}";
+            }
             $params['multiplier'] = $multiplier;
         } elseif ($adjustmentMode === 'offset') {
-            $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night + :offset, 2)) {$whereClause}";
+            if ($saveAsBase) {
+                $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night + :offset, 2)), base_price_per_night = GREATEST(1.00, ROUND(base_price_per_night + :offset, 2)) {$whereClause}";
+            } else {
+                $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night + :offset, 2)) {$whereClause}";
+            }
             $params['offset'] = $adjustmentValue;
         } else {
             throw new RuntimeException('Invalid price adjustment mode.');
@@ -290,6 +304,22 @@ class Room
         $stmt->execute($params);
 
         return $stmt->rowCount();
+    }
+
+    public function getSuiteBaseRates(): array
+    {
+        $stmt = $this->db->query("
+            SELECT room_type, 
+                   MIN(COALESCE(base_price_per_night, price_per_night)) as base_price,
+                   MIN(price_per_night) as current_min_price,
+                   MAX(price_per_night) as current_max_price,
+                   COUNT(*) as total_rooms
+            FROM rooms
+            WHERE room_type IS NOT NULL AND TRIM(room_type) != ''
+            GROUP BY room_type
+            ORDER BY room_type ASC
+        ");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function resetToStandardPrices(?string $roomType = null): int
