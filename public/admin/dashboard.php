@@ -49,6 +49,8 @@ $dashboardChartData = [
 ];
 $dashboardChartJson = json_encode($dashboardChartData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 
+$advAnalytics = $reservationModel->advancedHospitalityAnalytics();
+
 $reviewModel = new Review($db);
 $reviewDist = $reviewModel->overallRatingDistribution();
 $reviewPerType = $reviewModel->averageRatingPerRoomType();
@@ -159,6 +161,21 @@ renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/
         <p class="eyebrow mb-2">RevPAR</p>
         <div class="stat-value"><?php echo e(formatMoney($revpar)); ?></div>
         <p class="muted-copy mb-0">Revenue per available room</p>
+    </article>
+    <article class="stat-tile">
+        <p class="eyebrow mb-2">ALOS (Avg Stay)</p>
+        <div class="stat-value text-gold"><?php echo e($advAnalytics['alos']); ?> <span class="fs-6 font-mono text-light-emphasis">nights</span></div>
+        <p class="muted-copy mb-0">Average stay duration</p>
+    </article>
+    <article class="stat-tile">
+        <p class="eyebrow mb-2">Booking Lead Time</p>
+        <div class="stat-value text-gold"><?php echo e($advAnalytics['lead_time_days']); ?> <span class="fs-6 font-mono text-light-emphasis">days</span></div>
+        <p class="muted-copy mb-0">Advance booking window</p>
+    </article>
+    <article class="stat-tile">
+        <p class="eyebrow mb-2">Repeat Guest Loyalty</p>
+        <div class="stat-value text-gold"><?php echo e($advAnalytics['repeat_guest_rate']); ?>%</div>
+        <p class="muted-copy mb-0">Returning guests (2+ stays)</p>
     </article>
     <article class="stat-tile">
         <p class="eyebrow mb-2">Available Rooms</p>

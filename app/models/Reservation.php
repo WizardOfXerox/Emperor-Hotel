@@ -755,6 +755,82 @@ class Reservation
         ];
     }
 
+    public function advancedHospitalityAnalytics(?string $startDate = null, ?string $endDate = null): array
+    {
+        $where = "WHERE status != 'Cancelled'";
+        $params = [];
+        if ($startDate !== null && $endDate !== null && $startDate !== '' && $endDate !== '') {
+            $where .= " AND DATE(created_at) BETWEEN :start_date AND :end_date";
+            $params['start_date'] = $startDate;
+            $params['end_date'] = $endDate;
+        }
+
+        // 1. ALOS (Average Length of Stay) & Lead Time (Advance Booking Window)
+        $stmt1 = $this->db->prepare("
+            SELECT 
+                COUNT(*) as total_bookings,
+                COALESCE(SUM(DATEDIFF(check_out, check_in)), 0) as total_nights,
+                COALESCE(AVG(DATEDIFF(check_out, check_in)), 0) as avg_length_of_stay,
+                COALESCE(AVG(GREATEST(0, DATEDIFF(check_in, DATE(created_at)))), 0) as avg_lead_time_days
+            FROM reservations
+            {$where}
+        ");
+        $stmt1->execute($params);
+        $data1 = $stmt1->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        // 2. Cancellation & No-Show Loss Rate
+        $cancelWhere = "";
+        $cancelParams = [];
+        if ($startDate !== null && $endDate !== null && $startDate !== '' && $endDate !== '') {
+            $cancelWhere = "WHERE DATE(created_at) BETWEEN :start_date AND :end_date";
+            $cancelParams['start_date'] = $startDate;
+            $cancelParams['end_date'] = $endDate;
+        }
+
+        $stmt2 = $this->db->prepare("
+            SELECT 
+                COUNT(*) as total_all_bookings,
+                SUM(CASE WHEN status = 'Cancelled' THEN 1 ELSE 0 END) as cancelled_count,
+                COALESCE(SUM(CASE WHEN status = 'Cancelled' THEN total_amount ELSE 0 END), 0) as lost_revenue
+            FROM reservations
+            {$cancelWhere}
+        ");
+        $stmt2->execute($cancelParams);
+        $data2 = $stmt2->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        $totalAll = (int)($data2['total_all_bookings'] ?? 0);
+        $cancelled = (int)($data2['cancelled_count'] ?? 0);
+        $cancelRate = $totalAll > 0 ? round(($cancelled / $totalAll) * 100, 1) : 0.0;
+
+        // 3. Repeat Guest Loyalty Ratio
+        $stmt3 = $this->db->query("
+            SELECT 
+                COUNT(*) as total_guests,
+                SUM(CASE WHEN booking_count >= 2 THEN 1 ELSE 0 END) as repeat_guests
+            FROM (
+                SELECT guest_id, COUNT(*) as booking_count 
+                FROM reservations 
+                WHERE status != 'Cancelled' 
+                GROUP BY guest_id
+            ) guest_stats
+        ");
+        $data3 = $stmt3 ? $stmt3->fetch(PDO::FETCH_ASSOC) : [];
+        $totalGuests = (int)($data3['total_guests'] ?? 0);
+        $repeatGuests = (int)($data3['repeat_guests'] ?? 0);
+        $repeatRate = $totalGuests > 0 ? round(($repeatGuests / $totalGuests) * 100, 1) : 0.0;
+
+        return [
+            'alos' => round((float)($data1['avg_length_of_stay'] ?? 0), 1),
+            'lead_time_days' => round((float)($data1['avg_lead_time_days'] ?? 0), 1),
+            'cancellation_rate' => $cancelRate,
+            'cancelled_count' => $cancelled,
+            'lost_revenue' => (float)($data2['lost_revenue'] ?? 0),
+            'repeat_guest_rate' => $repeatRate,
+            'repeat_guests_count' => $repeatGuests,
+            'total_guests_count' => $totalGuests,
+        ];
+    }
+
     public function dashboardSummary(): array
     {
         // SQL: Counts unique guests with reservations created this month.

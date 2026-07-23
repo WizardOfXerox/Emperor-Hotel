@@ -28,6 +28,7 @@ try {
     $occupancyReport = $reservationModel->occupancyReport($startDate, $endDate);
     $revenueReport = $paymentModel->revenueReport($startDate, $endDate);
     $trendReport = $reservationModel->reservationTrendReport($startDate, $endDate);
+    $advAnalytics = $reservationModel->advancedHospitalityAnalytics($startDate, $endDate);
 } catch (Throwable $exception) {
     setFlash('error', $exception->getMessage());
     redirect('reports.php');
@@ -38,8 +39,8 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
 <section class="panel-card report-filter-card p-4 mb-4">
     <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-3">
         <div>
-            <p class="eyebrow mb-1">Reports</p>
-            <h3 class="mb-0">Occupancy, Revenue, and Reservation Trends</h3>
+            <p class="eyebrow mb-1">Reports & Executive Analytics</p>
+            <h3 class="mb-0">Occupancy, Revenue, and Advanced Hospitality Metrics</h3>
         </div>
         <span class="badge-soft"><?php echo e($startDate); ?> to <?php echo e($endDate); ?></span>
     </div>
@@ -78,6 +79,33 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
         <p class="eyebrow mb-2">Reservations Created</p>
         <div class="stat-value"><?php echo e($trendReport['total_reservations']); ?></div>
         <p class="muted-copy mb-0">Total booking records created</p>
+    </article>
+</section>
+
+<!-- ADVANCED HOSPITALITY ANALYTICS SECTION -->
+<section class="stats-grid mb-4">
+    <article class="stat-tile border-gold-subtle" style="border: 1px solid rgba(212, 175, 55, 0.4) !important; background: rgba(212, 175, 55, 0.05);">
+        <p class="eyebrow mb-1 text-gold"><i class="bi bi-clock-history me-1"></i>ALOS (Avg Length of Stay)</p>
+        <div class="stat-value text-gold"><?php echo e($advAnalytics['alos']); ?> <span class="fs-6 font-mono text-light-emphasis">nights</span></div>
+        <p class="muted-copy mb-0">Average stay duration per guest</p>
+    </article>
+
+    <article class="stat-tile border-gold-subtle" style="border: 1px solid rgba(212, 175, 55, 0.4) !important; background: rgba(212, 175, 55, 0.05);">
+        <p class="eyebrow mb-1 text-gold"><i class="bi bi-calendar2-range me-1"></i>Booking Lead Time</p>
+        <div class="stat-value text-gold"><?php echo e($advAnalytics['lead_time_days']); ?> <span class="fs-6 font-mono text-light-emphasis">days</span></div>
+        <p class="muted-copy mb-0">Avg advance reservation window</p>
+    </article>
+
+    <article class="stat-tile border-gold-subtle" style="border: 1px solid rgba(212, 175, 55, 0.4) !important; background: rgba(212, 175, 55, 0.05);">
+        <p class="eyebrow mb-1 text-gold"><i class="bi bi-x-circle me-1"></i>Cancellation Loss Rate</p>
+        <div class="stat-value text-gold"><?php echo e($advAnalytics['cancellation_rate']); ?>%</div>
+        <p class="muted-copy mb-0"><?php echo e(formatMoney($advAnalytics['lost_revenue'])); ?> unearned revenue</p>
+    </article>
+
+    <article class="stat-tile border-gold-subtle" style="border: 1px solid rgba(212, 175, 55, 0.4) !important; background: rgba(212, 175, 55, 0.05);">
+        <p class="eyebrow mb-1 text-gold"><i class="bi bi-heart-fill me-1"></i>Repeat Guest Loyalty</p>
+        <div class="stat-value text-gold"><?php echo e($advAnalytics['repeat_guest_rate']); ?>%</div>
+        <p class="muted-copy mb-0"><?php echo e($advAnalytics['repeat_guests_count']); ?> returning guests (2+ stays)</p>
     </article>
 </section>
 
