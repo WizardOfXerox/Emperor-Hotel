@@ -1437,6 +1437,21 @@ body.light-mode main[style*="background:#070A10"] {
     color: #ffffff;
 }
 
+.room-pill-gold,
+.room-pill-glass {
+    white-space: normal !important;
+    text-align: left;
+    max-width: 100%;
+    line-height: 1.35;
+    display: inline-flex !important;
+    align-items: center;
+}
+
+.room-pill-gold i,
+.room-pill-glass i {
+    flex-shrink: 0;
+}
+
 .room-pill-gold {
     background: rgba(212, 175, 55, 0.15);
     color: #FFDF73;
