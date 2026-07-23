@@ -123,4 +123,23 @@ TC-059,Payment Engine,Standardized Payment Methods & E-Wallet Category,1. Open p
 TC-060,Admin Payments,Process Refund Workflow & Immutable Transaction Log,"1. Open Manage modal on Admin Reservations
 2. Click Process Refund
 3. Enter refunded amount on Admin Payments",Status: Refunded,"Process Refund button opens payments form with prefilled status refund subtracts from confirmed total paid and transaction log operates as immutable audit ledger",Refund processed cleanly balance updated and audit log preserved,PASS
+TC-061,Authentication,Dual-Mode SMTP & Offline OTP Verification,"1. Fill registration form on /public/auth/register.php
+2. Submit form
+3. Verify 6-digit OTP code dispatch
+4. Submit OTP on /public/auth/verify-otp.php","Email: user@emperor.test
+OTP: 6-digit code",OTP email dispatched via SMTP socket or displayed on-screen banner offline; user account verified upon entering code,Account verified (email_verified = 1) and session authenticated,PASS
+TC-062,Reports & Analytics,Executive Advanced Hospitality Metrics (ALOS Lead Time Loss Rate Repeat Loyalty),1. Open Admin Reports (/public/admin/reports.php) and Dashboard (/public/admin/dashboard.php),"Metrics: ALOS Lead Time Cancellation Rate Repeat Loyalty","Stat tiles display calculated Average Stay (nights) Booking Lead Time (days) Cancellation Loss Rate (% and $PHP$) and Repeat Guest Loyalty Ratio (%)",All 4 advanced hospitality metrics calculated dynamically and rendered cleanly,PASS
+TC-063,Admin Inventory,Floor-Based Room Number Range Validation (N00 to N99),"1. Open /public/admin/rooms.php
+2. Select Floor 2 and enter Room #105
+3. Submit form","Floor: 2
+Room #: 105",Server validation rejects creation with error Floor 2 room numbers must be between 200 and 299; UI displays real-time floor range hint,Out-of-range room number rejected with clear floor range validation message,PASS
+TC-064,Admin Inventory,Simplified Suite Pricing Card & Dynamic Baseline Rate Reset,"1. Select Suite on 2-field Suite Pricing card on rooms.php
+2. Enter new rate and submit
+3. Click Reset Standard Prices","Suite: Deluxe Suite
+Rate: ₱6000.00",Suite prices updated; reset query restores prices from base_price_per_night dynamically,Suite baseline price saved and reset query restored baseline rates dynamically,PASS
+TC-065,Public Frontend,Luxury 5-Star Contact Us Page & Concierge SMTP Inquiry Dispatch,"1. Open /public/site/contact.php
+2. Inspect dynamic .env hotel info (SUPPORT_EMAIL SUPPORT_PHONE HOTEL_ADDRESS) without unverified claims
+3. Submit inquiry form","Name: Lord Kelvin
+Inquiry: Suite Reservation",Hotel info renders from .env/config inquiry form submits notice displayed and confirmation email dispatched via SMTP engine,Contact page loaded dynamic info submitted inquiry and dispatched SMTP email,PASS
+
 

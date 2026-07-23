@@ -6,11 +6,11 @@ This document serves as the **official master test suite execution log** for Ant
 
 ## 📊 Summary Execution Matrix
 
-- **Total Test Cases**: 60
-- **Passed**: 60
+- **Total Test Cases**: 65
+- **Passed**: 65
 - **Failed**: 0
-- **Execution Date**: July 23, 2026
-- **System Version**: Emperor Hotel v2.6 (Production Luxury Obsidian & Adaptive Dynamic Grid Edition)
+- **Execution Date**: July 24, 2026
+- **System Version**: Emperor Hotel v2.7 (Production Executive Analytics & Dual-Mode SMTP Edition)
 - **Database Backend**: MySQL / MariaDB via PHP PDO
 
 ---
@@ -79,6 +79,11 @@ This document serves as the **official master test suite execution log** for Ant
 | **TC-058** | Theme & Styling | Light & Dark Mode High-Contrast Theme Adaptation | 1. Toggle theme using header Light/Dark Mode button across room detail cards, nav buttons, calendar modal, and status badges | **Theme:** Light / Dark | Navigation buttons, unavailable status banners, calendar modal, and status badges adapt with high-contrast text and zero illegible white-on-white or dark-on-dark elements | Verified all cards, buttons, badges, and calendar picker modal adapted with 100% legibility | **PASS** |
 | **TC-059** | Payment Engine | Standardized Payment Methods & E-Wallet Category | 1. Open payment forms on Admin Payments (`/public/admin/payments.php`) or User Payment gateway | **Methods:** E-Wallet, Credit Card, Debit Card, Bank Transfer, Cash, Other | GCash and Online Payment replaced with official E-Wallet category across DB schemas, models, dropdowns, and reports | Verified E-Wallet category standardized across DB schemas, models, and analytics | **PASS** |
 | **TC-060** | Admin Payments | Process Refund Workflow & Immutable Transaction Log | 1. Open Manage modal on Admin Reservations<br>2. Click "Process Refund"<br>3. Enter refunded amount on Admin Payments | **Status:** Refunded | Process Refund button opens payments form with prefilled status, refund subtracts from confirmed total paid, and transaction log operates as immutable audit ledger | Verified refund processed cleanly, balance updated, and audit log preserved | **PASS** |
+| **TC-061** | Authentication | Dual-Mode SMTP & Offline OTP Verification | 1. Fill registration form on `/public/auth/register.php`<br>2. Submit form<br>3. Verify 6-digit OTP code dispatch<br>4. Submit OTP on `/public/auth/verify-otp.php` | **Email:** `user@emperor.test`<br>**OTP:** 6-digit code | OTP email dispatched via SMTP socket or displayed on-screen banner offline; user account verified upon entering code | Verified user account verified (`email_verified = 1`) and session authenticated cleanly | **PASS** |
+| **TC-062** | Reports & Analytics | Executive Advanced Hospitality Metrics (ALOS, Lead Time, Loss Rate, Repeat Loyalty) | 1. Open Admin Reports (`/public/admin/reports.php`) and Dashboard (`/public/admin/dashboard.php`) | **Metrics:** ALOS, Lead Time, Cancellation Rate, Repeat Loyalty | Stat tiles display calculated Average Stay (nights), Booking Lead Time (days), Cancellation Loss Rate (% and $PHP$), and Repeat Guest Loyalty Ratio (%) | Verified all 4 advanced hospitality metrics calculated dynamically and rendered cleanly | **PASS** |
+| **TC-063** | Admin Inventory | Floor-Based Room Number Range Validation ($N00$ to $N99$) | 1. Open `/public/admin/rooms.php`<br>2. Select Floor 2 and enter Room #105<br>3. Submit form | **Floor:** 2<br>**Room #:** 105 | Server validation rejects creation with error *"Floor 2 room numbers must be between 200 and 299"*; UI displays real-time floor range hint | Verified out-of-range room number rejected with clear floor range validation message | **PASS** |
+| **TC-064** | Admin Inventory | Simplified Suite Pricing Card & Dynamic Baseline Rate Reset | 1. Select Suite on 2-field Suite Pricing card on `rooms.php`<br>2. Enter new rate and submit<br>3. Click "Reset Standard Prices" | **Suite:** Deluxe Suite<br>**Rate:** ₱6,000.00 | Suite prices updated; reset query restores prices from `base_price_per_night` dynamically | Verified suite baseline price saved and reset query restored baseline rates dynamically | **PASS** |
+| **TC-065** | Public Frontend | Luxury 5-Star Contact Us Page & Concierge SMTP Inquiry Dispatch | 1. Open `/public/site/contact.php`<br>2. Inspect dynamic `.env` hotel info (`SUPPORT_EMAIL`, `SUPPORT_PHONE`, `HOTEL_ADDRESS`) without unverified claims<br>3. Submit inquiry form | **Name:** Lord Kelvin<br>**Inquiry:** Suite Reservation | Hotel info renders from `.env`/config, inquiry form submits, notice displayed, and confirmation email dispatched via SMTP engine | Verified Contact page loaded dynamic info, submitted inquiry, and dispatched SMTP email | **PASS** |
 
 ---
 
