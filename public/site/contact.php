@@ -92,7 +92,7 @@ renderHeader('Contact Us | Emperor Hotel', ['../assets/css/site/home.css', '../a
         <section class="text-center py-4 mb-4">
             <p class="eyebrow mb-2"><i class="bi bi-geo-alt-fill text-warning me-1"></i>Concierge & Guest Relations</p>
             <h1 class="font-serif display-brand fw-bold text-white mb-2">Get in Touch with The Emperor Hotel</h1>
-            <p class="muted-copy mx-auto" style="max-width: 680px;">Whether you require custom suite reservations, private VIP airport transfers, or dining concierge arrangements, our guest relations team is available 24/7.</p>
+            <p class="muted-copy mx-auto" style="max-width: 680px;">Whether you require custom suite reservations, room assistance, or dining concierge arrangements, our guest relations team is available 24/7.</p>
         </section>
 
         <div class="row g-4">
@@ -147,14 +147,6 @@ renderHeader('Contact Us | Emperor Hotel', ['../assets/css/site/home.css', '../a
                             </div>
                         </div>
                     </div>
-
-                    <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-50 mt-3">
-                        <div class="d-flex align-items-center gap-2 text-warning mb-1">
-                            <i class="bi bi-shield-check fs-5"></i>
-                            <span class="fw-bold small">VIP Private Transport Available</span>
-                        </div>
-                        <p class="text-xs text-muted mb-0">Chauffeur-driven luxury sedan transfers can be arranged upon request for all suite guests.</p>
-                    </div>
                 </div>
             </div>
 
@@ -189,7 +181,7 @@ renderHeader('Contact Us | Emperor Hotel', ['../assets/css/site/home.css', '../a
                                     <option value="General Inquiry">General Inquiry</option>
                                     <option value="Suite Reservation">Suite Reservation</option>
                                     <option value="Banquet & Event Booking">Banquet & Event Booking</option>
-                                    <option value="VIP & Chauffeur Services">VIP & Chauffeur Services</option>
+                                    <option value="Special Guest Services">Special Guest Services</option>
                                     <option value="Feedback & Support">Feedback & Support</option>
                                 </select>
                             </div>
