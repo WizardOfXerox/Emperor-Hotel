@@ -212,7 +212,12 @@ body.light-mode .floor-tab-btn.active {
     transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     background: rgba(30, 41, 59, 0.85);
     border: 1px solid rgba(212, 175, 55, 0.3);
+    color: #ffffff;
 }
+
+.room-type-title { color: #ffffff !important; }
+.room-number-tag { color: #FFDF73 !important; }
+.room-price-tag { color: #FBBF24 !important; }
 
 body.light-mode .room-map-card {
     background: #f8f6f0 !important;

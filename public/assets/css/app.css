@@ -1679,4 +1679,29 @@ body.light-mode .auth-card .btn-warning {
     box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4) !important;
 }
 
+/* ===== HOTEL FLOOR MAP DEFAULT & LIGHT MODE TEXT CONTRAST ===== */
+.room-type-title {
+    color: #ffffff !important;
+}
+
+.room-number-tag {
+    color: #FFDF73 !important;
+}
+
+.room-price-tag {
+    color: #FBBF24 !important;
+}
+
+body.light-mode .room-type-title {
+    color: #0f172a !important;
+}
+
+body.light-mode .room-number-tag {
+    color: #b45309 !important;
+}
+
+body.light-mode .room-price-tag {
+    color: #d97706 !important;
+}
+
 
