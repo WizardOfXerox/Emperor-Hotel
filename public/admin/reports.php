@@ -81,6 +81,76 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
     </article>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Visual Analytics Graphs Section -->
+<section class="row g-4 mb-4">
+    <!-- Chart 1: Reservation & Booking Trend -->
+    <div class="col-xl-8">
+        <div class="panel-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p class="eyebrow mb-1">Visual Analytics</p>
+                    <h3 class="mb-0">Booking Demand & Reservation Trend</h3>
+                </div>
+                <span class="badge bg-gold text-dark fw-bold px-3 py-1 rounded-pill"><i class="bi bi-graph-up-arrow me-1"></i>Demand Curve</span>
+            </div>
+            <div style="height: 280px; position: relative;">
+                <canvas id="trendLineChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Payment Method Revenue Share -->
+    <div class="col-xl-4">
+        <div class="panel-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p class="eyebrow mb-1">Financial Distribution</p>
+                    <h3 class="mb-0">Revenue Share by Payment</h3>
+                </div>
+                <span class="badge bg-gold text-dark fw-bold px-3 py-1 rounded-pill"><i class="bi bi-pie-chart me-1"></i>Payment Mix</span>
+            </div>
+            <div style="height: 280px; position: relative;" class="d-flex align-items-center justify-content-center">
+                <canvas id="paymentPieChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 3: Suite Occupancy & Booked Nights -->
+    <div class="col-xl-6">
+        <div class="panel-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p class="eyebrow mb-1">Inventory Performance</p>
+                    <h3 class="mb-0">Booked Room Nights by Suite Type</h3>
+                </div>
+                <span class="badge bg-gold text-dark fw-bold px-3 py-1 rounded-pill"><i class="bi bi-bar-chart-line me-1"></i>Suite Volume</span>
+            </div>
+            <div style="height: 250px; position: relative;">
+                <canvas id="occupancyBarChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 4: Suite Ratings & Guest Satisfaction -->
+    <div class="col-xl-6">
+        <div class="panel-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p class="eyebrow mb-1">Recommendation Engine</p>
+                    <h3 class="mb-0">Guest Rating Score by Suite</h3>
+                </div>
+                <span class="badge bg-gold text-dark fw-bold px-3 py-1 rounded-pill"><i class="bi bi-star-fill me-1"></i>5-Star Analytics</span>
+            </div>
+            <div style="height: 250px; position: relative;">
+                <canvas id="ratingsBarChart"></canvas>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tabular Data Breakdown Section -->
 <section class="row g-4">
     <div class="col-xl-6">
         <div class="panel-card p-4 h-100">
@@ -203,51 +273,151 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
 $reviewModel = new Review($db);
 $ratingsPerType = $reviewModel->averageRatingPerRoomType();
 $ratingDist = $reviewModel->overallRatingDistribution();
+
+// Prepare JSON arrays for Chart.js
+$trendDates = json_encode(array_column($trendReport['rows'], 'reservation_date'));
+$trendActive = json_encode(array_column($trendReport['rows'], 'active_reservations'));
+$trendCancelled = json_encode(array_column($trendReport['rows'], 'cancelled_reservations'));
+
+$roomTypes = json_encode(array_column($occupancyReport['by_room_type'], 'room_type'));
+$bookedNights = json_encode(array_column($occupancyReport['by_room_type'], 'booked_room_nights'));
+
+$paymentMethods = json_encode(array_column($revenueReport['by_payment_method'], 'payment_method'));
+$paymentRevenues = json_encode(array_column($revenueReport['by_payment_method'], 'confirmed_revenue'));
+
+$ratingTypes = json_encode(array_keys($ratingsPerType));
+$ratingScores = json_encode(array_map(fn($item) => (float)$item['avg_rating'], array_values($ratingsPerType)));
 ?>
-<section class="panel-card p-4 mt-4 mb-4">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-        <div>
-            <p class="eyebrow mb-1">Guest Satisfaction & Ratings</p>
-            <h3 class="mb-0">Guest Review Breakdown</h3>
-        </div>
-        <span class="badge bg-gold text-dark fw-bold px-3 py-2 rounded-pill">Recommendation Engine Data</span>
-    </div>
-    <div class="row g-4">
-        <div class="col-md-6">
-            <h5 class="font-serif text-gold mb-3">Average Rating by Suite Type</h5>
-            <div class="table-responsive">
-                <table class="table table-dark-soft align-middle">
-                    <thead>
-                        <tr>
-                            <th>Room Type</th>
-                            <th>Average Rating</th>
-                            <th>Total Reviews</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($ratingsPerType as $type => $data): ?>
-                            <tr>
-                                <td><strong class="text-gold"><?= e($type) ?></strong></td>
-                                <td><span class="text-warning fw-bold">★ <?= number_format((float)$data['avg_rating'], 1) ?></span> / 5.0</td>
-                                <td><?= (int)$data['review_count'] ?> review(s)</td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <h5 class="font-serif text-gold mb-3">Overall Star Rating Distribution</h5>
-            <?php foreach ($ratingDist as $stars => $count): ?>
-                <div class="d-flex align-items-center mb-2">
-                    <span class="text-warning small text-nowrap me-2" style="width: 70px;"><?= $stars ?> Stars</span>
-                    <div class="progress flex-grow-1 bg-dark border border-secondary" style="height: 12px;">
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: <?= array_sum($ratingDist) > 0 ? ($count / array_sum($ratingDist) * 100) : 0 ?>%"></div>
-                    </div>
-                    <span class="text-muted small ms-2" style="width: 40px; text-align: right;"><?= $count ?></span>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = "'Outfit', 'Segoe UI', system-ui, sans-serif";
+
+    // 1. Trend Line Chart
+    const trendCtx = document.getElementById('trendLineChart')?.getContext('2d');
+    if (trendCtx) {
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: <?= $trendDates ?>,
+                datasets: [
+                    {
+                        label: 'Active Reservations',
+                        data: <?= $trendActive ?>,
+                        borderColor: '#fdd700',
+                        backgroundColor: 'rgba(253, 215, 0, 0.15)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.35,
+                        pointBackgroundColor: '#fdd700',
+                    },
+                    {
+                        label: 'Cancelled',
+                        data: <?= $trendCancelled ?>,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.35,
+                        pointBackgroundColor: '#ef4444',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { boxWidth: 12 } }
+                },
+                scales: {
+                    x: { grid: { color: 'rgba(248, 250, 252, 0.05)' } },
+                    y: { grid: { color: 'rgba(248, 250, 252, 0.05)' }, beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+    }
+
+    // 2. Payment Method Doughnut Chart
+    const paymentCtx = document.getElementById('paymentPieChart')?.getContext('2d');
+    if (paymentCtx) {
+        new Chart(paymentCtx, {
+            type: 'doughnut',
+            data: {
+                labels: <?= $paymentMethods ?>,
+                datasets: [{
+                    data: <?= $paymentRevenues ?>,
+                    backgroundColor: ['#fdd700', '#38bdf8', '#22c55e', '#a855f7', '#f97316'],
+                    borderWidth: 2,
+                    borderColor: '#0f172a'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12 } }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+
+    // 3. Occupancy Bar Chart
+    const occupancyCtx = document.getElementById('occupancyBarChart')?.getContext('2d');
+    if (occupancyCtx) {
+        new Chart(occupancyCtx, {
+            type: 'bar',
+            data: {
+                labels: <?= $roomTypes ?>,
+                datasets: [{
+                    label: 'Booked Room Nights',
+                    data: <?= $bookedNights ?>,
+                    backgroundColor: 'rgba(253, 215, 0, 0.75)',
+                    borderColor: '#fdd700',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: 'rgba(248, 250, 252, 0.05)' }, beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+    }
+
+    // 4. Ratings Score Bar Chart
+    const ratingsCtx = document.getElementById('ratingsBarChart')?.getContext('2d');
+    if (ratingsCtx) {
+        new Chart(ratingsCtx, {
+            type: 'bar',
+            data: {
+                labels: <?= $ratingTypes ?>,
+                datasets: [{
+                    label: 'Average Score (out of 5.0)',
+                    data: <?= $ratingScores ?>,
+                    backgroundColor: 'rgba(56, 189, 248, 0.75)',
+                    borderColor: '#38bdf8',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { max: 5.0, min: 0, grid: { color: 'rgba(248, 250, 252, 0.05)' } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    }
+});
+</script>
 <?php renderAdminLayoutEnd(); ?>
