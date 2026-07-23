@@ -64,6 +64,92 @@ class Reservation
         return $statement->fetchAll();
     }
 
+    public function paginatedLogs(array $filters = [], int $page = 1, int $perPage = 10): array
+    {
+        $page = max(1, $page);
+        $perPage = max(1, min(100, $perPage));
+
+        $sql = "SELECT r.*, g.first_name, g.last_name, g.email AS guest_email, g.phone,
+                       rm.room_number, rm.room_type, u.full_name AS user_name
+                FROM reservations r
+                INNER JOIN guests g ON g.guest_id = r.guest_id
+                INNER JOIN rooms rm ON rm.room_id = r.room_id
+                LEFT JOIN users u ON u.user_id = r.user_id
+                WHERE 1=1";
+        $params = [];
+
+        $search = trim((string) ($filters['search'] ?? ''));
+        if ($search !== '') {
+            $sql .= " AND (g.first_name LIKE :search 
+                        OR g.last_name LIKE :search 
+                        OR CONCAT(g.first_name, ' ', g.last_name) LIKE :search
+                        OR g.email LIKE :search
+                        OR rm.room_number LIKE :search
+                        OR rm.room_type LIKE :search
+                        OR CAST(r.reservation_id AS CHAR) LIKE :search)";
+            $params['search'] = '%' . $search . '%';
+        }
+
+        $status = trim((string) ($filters['status'] ?? ''));
+        if ($status !== '' && $status !== 'all') {
+            $sql .= " AND r.status = :status";
+            $params['status'] = $status;
+        }
+
+        $roomType = trim((string) ($filters['room_type'] ?? ''));
+        if ($roomType !== '' && $roomType !== 'all') {
+            $sql .= " AND rm.room_type = :room_type";
+            $params['room_type'] = $roomType;
+        }
+
+        $countSql = "SELECT COUNT(*) FROM reservations r
+                     INNER JOIN guests g ON g.guest_id = r.guest_id
+                     INNER JOIN rooms rm ON rm.room_id = r.room_id
+                     LEFT JOIN users u ON u.user_id = r.user_id
+                     WHERE 1=1";
+        if ($search !== '') {
+            $countSql .= " AND (g.first_name LIKE :search 
+                            OR g.last_name LIKE :search 
+                            OR CONCAT(g.first_name, ' ', g.last_name) LIKE :search
+                            OR g.email LIKE :search
+                            OR rm.room_number LIKE :search
+                            OR rm.room_type LIKE :search
+                            OR CAST(r.reservation_id AS CHAR) LIKE :search)";
+        }
+        if ($status !== '' && $status !== 'all') {
+            $countSql .= " AND r.status = :status";
+        }
+        if ($roomType !== '' && $roomType !== 'all') {
+            $countSql .= " AND rm.room_type = :room_type";
+        }
+
+        $countStmt = $this->db->prepare($countSql);
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
+
+        $totalPages = max(1, (int) ceil($total / $perPage));
+        $page = min($page, $totalPages);
+        $offset = ($page - 1) * $perPage;
+
+        $sql .= " ORDER BY r.created_at DESC LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue(':' . $k, $v);
+        }
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return [
+            'rows' => $stmt->fetchAll(),
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_pages' => $totalPages,
+        ];
+    }
+
     public function find(int $reservationId): ?array
     {
         // SQL: Finds one reservation with guest and room details for editing, receipts, and modal views.

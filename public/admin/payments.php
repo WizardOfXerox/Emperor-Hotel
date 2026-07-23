@@ -87,13 +87,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$payments = $paymentModel->all();
+$allPayments = $paymentModel->all();
+$logSearch = trim((string) ($_GET['log_search'] ?? ''));
+$logStatus = trim((string) ($_GET['log_status'] ?? ''));
+$logMethod = trim((string) ($_GET['log_method'] ?? ''));
+$logPage = (int) ($_GET['page'] ?? 1);
+$logPerPage = (int) ($_GET['per_page'] ?? 10);
+
+$paginatedPaymentData = $paymentModel->paginated([
+    'search' => $logSearch,
+    'status' => $logStatus,
+    'payment_method' => $logMethod,
+], $logPage, $logPerPage);
+
+$payments = $paginatedPaymentData['rows'];
 $reservations = $reservationModel->all();
 $paymentTotals = $paymentModel->totalsByReservation();
 $summaryRows = $paymentModel->summaryByStatus();
 
 $latestReferences = [];
-foreach ($payments as $p) {
+foreach ($allPayments as $p) {
     if (!isset($latestReferences[(int) $p['reservation_id']]) && !empty($p['transaction_reference'])) {
         $latestReferences[(int) $p['reservation_id']] = $p['transaction_reference'];
     }
@@ -227,13 +240,52 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
         </div>
 
         <div class="panel-card p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
                 <div>
                     <p class="eyebrow mb-1">Transactions</p>
                     <h3 class="mb-0">Transaction Report Log</h3>
                 </div>
-                <span class="badge-soft"><?php echo e(count($payments)); ?> transactions</span>
+                <span class="badge-soft"><?php echo e($paginatedPaymentData['total']); ?> transaction(s)</span>
             </div>
+
+            <form method="get" class="row g-2 mb-4 align-items-center">
+                <?php if ($selectedReservationId > 0): ?>
+                    <input type="hidden" name="reservation_id" value="<?php echo e($selectedReservationId); ?>">
+                <?php endif; ?>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-warning"><i class="bi bi-search"></i></span>
+                        <input type="text" name="log_search" class="form-control bg-dark text-light border-secondary" placeholder="Search reference, guest, room #..." value="<?php echo e($logSearch); ?>">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="log_status" class="form-select bg-dark text-light border-secondary" onchange="this.form.submit()">
+                        <option value="all" <?php echo $logStatus === 'all' || $logStatus === '' ? 'selected' : ''; ?>>All Statuses</option>
+                        <?php foreach (Payment::statuses() as $st): ?>
+                            <option value="<?php echo e($st); ?>" <?php echo $logStatus === $st ? 'selected' : ''; ?>><?php echo e($st); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="log_method" class="form-select bg-dark text-light border-secondary" onchange="this.form.submit()">
+                        <option value="all" <?php echo $logMethod === 'all' || $logMethod === '' ? 'selected' : ''; ?>>All Methods</option>
+                        <?php foreach (Payment::methods() as $m): ?>
+                            <option value="<?php echo e($m); ?>" <?php echo $logMethod === $m ? 'selected' : ''; ?>><?php echo e($m); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <select name="per_page" class="form-select bg-dark text-light border-secondary" onchange="this.form.submit()">
+                        <?php foreach ([10, 25, 50, 100] as $limit): ?>
+                            <option value="<?php echo $limit; ?>" <?php echo $logPerPage === $limit ? 'selected' : ''; ?>><?php echo $limit; ?> / pg</option>
+                        <?php endforeach; ?>
+                    </select>
+                    <?php if ($logSearch !== '' || ($logStatus !== '' && $logStatus !== 'all') || ($logMethod !== '' && $logMethod !== 'all')): ?>
+                        <a href="payments.php<?php echo $selectedReservationId > 0 ? '?reservation_id=' . $selectedReservationId : ''; ?>" class="btn btn-outline-light" title="Reset Filters"><i class="bi bi-x-circle"></i></a>
+                    <?php endif; ?>
+                </div>
+            </form>
+
             <div class="table-responsive">
                 <table class="table table-dark-soft align-middle mb-0">
                     <thead>
@@ -250,7 +302,7 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                     <tbody>
                         <?php if (!$payments): ?>
                             <tr>
-                                <td colspan="7" class="text-light-emphasis">No transaction logs yet.</td>
+                                <td colspan="7" class="text-light-emphasis text-center py-4">No transaction logs match the selected filters.</td>
                             </tr>
                         <?php endif; ?>
                         <?php foreach ($payments as $payment): ?>
@@ -294,6 +346,8 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                     </tbody>
                 </table>
             </div>
+
+            <?php renderPaginationControl($paginatedPaymentData['total'], $paginatedPaymentData['page'], $paginatedPaymentData['per_page']); ?>
         </div>
     </div>
 </section>

@@ -315,6 +315,81 @@ HTML;
     echo '</body></html>';
 }
 
+function renderPaginationControl(int $totalItems, int $currentPage, int $perPage, string $baseUrl = '', array $extraParams = []): void
+{
+    if ($totalItems <= 0) {
+        return;
+    }
+
+    $totalPages = max(1, (int) ceil($totalItems / $perPage));
+    $currentPage = max(1, min($currentPage, $totalPages));
+    $startItem = ($currentPage - 1) * $perPage + 1;
+    $endItem = min($totalItems, $currentPage * $perPage);
+
+    $buildUrl = function(int $page) use ($extraParams, $perPage): string {
+        $queryParams = array_merge($_GET, $extraParams, ['page' => $page, 'per_page' => $perPage]);
+        unset($queryParams['action']);
+        return '?' . http_build_query($queryParams);
+    };
+
+    echo '<div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-4 pt-3 border-top border-secondary border-opacity-25 pagination-container">';
+    echo '  <div class="small text-muted mb-0">';
+    echo '      Showing <span class="fw-bold text-light">' . number_format($startItem) . '</span> to <span class="fw-bold text-light">' . number_format($endItem) . '</span> of <span class="fw-bold text-warning">' . number_format($totalItems) . '</span> entries';
+    echo '  </div>';
+
+    if ($totalPages > 1) {
+        echo '  <nav aria-label="Page navigation">';
+        echo '      <ul class="pagination pagination-sm mb-0 flex-wrap gap-1">';
+
+        if ($currentPage > 1) {
+            echo '          <li class="page-item"><a class="page-link bg-dark text-light border-secondary" href="' . e($buildUrl(1)) . '" title="First Page">&laquo;</a></li>';
+            echo '          <li class="page-item"><a class="page-link bg-dark text-light border-secondary" href="' . e($buildUrl($currentPage - 1)) . '" title="Previous Page">&lsaquo; Prev</a></li>';
+        } else {
+            echo '          <li class="page-item disabled"><span class="page-link bg-dark text-muted border-secondary">&laquo;</span></li>';
+            echo '          <li class="page-item disabled"><span class="page-link bg-dark text-muted border-secondary">&lsaquo; Prev</span></li>';
+        }
+
+        $window = 2;
+        $startPage = max(1, $currentPage - $window);
+        $endPage = min($totalPages, $currentPage + $window);
+
+        if ($startPage > 1) {
+            echo '          <li class="page-item"><a class="page-link bg-dark text-light border-secondary" href="' . e($buildUrl(1)) . '">1</a></li>';
+            if ($startPage > 2) {
+                echo '          <li class="page-item disabled"><span class="page-link bg-dark text-muted border-secondary">&hellip;</span></li>';
+            }
+        }
+
+        for ($p = $startPage; $p <= $endPage; $p++) {
+            if ($p === $currentPage) {
+                echo '          <li class="page-item active"><span class="page-link bg-warning text-dark border-warning fw-bold">' . $p . '</span></li>';
+            } else {
+                echo '          <li class="page-item"><a class="page-link bg-dark text-light border-secondary" href="' . e($buildUrl($p)) . '">' . $p . '</a></li>';
+            }
+        }
+
+        if ($endPage < $totalPages) {
+            if ($endPage < $totalPages - 1) {
+                echo '          <li class="page-item disabled"><span class="page-link bg-dark text-muted border-secondary">&hellip;</span></li>';
+            }
+            echo '          <li class="page-item"><a class="page-link bg-dark text-light border-secondary" href="' . e($buildUrl($totalPages)) . '">' . $totalPages . '</a></li>';
+        }
+
+        if ($currentPage < $totalPages) {
+            echo '          <li class="page-item"><a class="page-link bg-dark text-light border-secondary" href="' . e($buildUrl($currentPage + 1)) . '" title="Next Page">Next &rsaquo;</a></li>';
+            echo '          <li class="page-item"><a class="page-link bg-dark text-light border-secondary" href="' . e($buildUrl($totalPages)) . '" title="Last Page">&raquo;</a></li>';
+        } else {
+            echo '          <li class="page-item disabled"><span class="page-link bg-dark text-muted border-secondary">Next &rsaquo;</span></li>';
+            echo '          <li class="page-item disabled"><span class="page-link bg-dark text-muted border-secondary">&raquo;</span></li>';
+        }
+
+        echo '      </ul>';
+        echo '  </nav>';
+    }
+
+    echo '</div>';
+}
+
 function renderSupportWidget(string $scope): void
 {
     $scope = in_array($scope, ['admin', 'customer'], true) ? $scope : 'customer';

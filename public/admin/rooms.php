@@ -408,23 +408,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                 </table>
             </div>
 
-            <?php if ($roomData['total_pages'] > 1): ?>
-                <nav class="mt-4" aria-label="Room pagination">
-                    <ul class="pagination pagination-sm flex-wrap gap-1 mb-0">
-                        <li class="page-item <?php echo $roomData['page'] <= 1 ? 'disabled' : ''; ?>">
-                            <a class="page-link" href="rooms.php<?php echo e($paginationBase . ($paginationBase === '' ? '?' : '&') . 'page=' . max(1, $roomData['page'] - 1)); ?>">Previous</a>
-                        </li>
-                        <?php for ($index = 1; $index <= $roomData['total_pages']; $index++): ?>
-                            <li class="page-item <?php echo $index === $roomData['page'] ? 'active' : ''; ?>">
-                                <a class="page-link" href="rooms.php<?php echo e($paginationBase . ($paginationBase === '' ? '?' : '&') . 'page=' . $index); ?>"><?php echo e((string) $index); ?></a>
-                            </li>
-                        <?php endfor; ?>
-                        <li class="page-item <?php echo $roomData['page'] >= $roomData['total_pages'] ? 'disabled' : ''; ?>">
-                            <a class="page-link" href="rooms.php<?php echo e($paginationBase . ($paginationBase === '' ? '?' : '&') . 'page=' . min($roomData['total_pages'], $roomData['page'] + 1)); ?>">Next</a>
-                        </li>
-                    </ul>
-                </nav>
-            <?php endif; ?>
+            <?php renderPaginationControl($roomData['total'], $roomData['page'], $roomData['per_page']); ?>
         </div>
     </div>
 </section>
