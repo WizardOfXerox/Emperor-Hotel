@@ -114,18 +114,20 @@ if (document.readyState === 'loading') {
 setTimeout(initCalendarApp, 100);
 
 function renderVisualCalendarGrid() {
-    const monthTitle = document.getElementById('calendarMonthTitle');
-    const daysGrid = document.getElementById('calendarDaysGrid');
-    if (!daysGrid) return;
+    const monthTitles = document.querySelectorAll('#calendarMonthTitle, .calendar-month-title');
+    const daysGrids = document.querySelectorAll('#calendarDaysGrid, .calendar-grid-days');
+    if (!daysGrids.length) return;
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    monthTitle.textContent = `${monthNames[calCurrentMonth]} ${calCurrentYear}`;
+    monthTitles.forEach(el => {
+        el.textContent = `${monthNames[calCurrentMonth]} ${calCurrentYear}`;
+    });
 
     const firstDay = new Date(calCurrentYear, calCurrentMonth, 1).getDay();
     const totalDays = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
 
-    const checkInInputVal = document.getElementById('modalCheckInInput')?.value;
-    const checkOutInputVal = document.getElementById('modalCheckOutInput')?.value;
+    const checkInInputVal = (document.getElementById('modalCheckInInput') || document.querySelector('input[name="check_in"]'))?.value;
+    const checkOutInputVal = (document.getElementById('modalCheckOutInput') || document.querySelector('input[name="check_out"]'))?.value;
     const checkInDate = parseLocalDate(checkInInputVal);
     const checkOutDate = parseLocalDate(checkOutInputVal);
     const today = new Date();
@@ -165,32 +167,34 @@ function renderVisualCalendarGrid() {
         `;
     }
 
-    daysGrid.innerHTML = html;
+    daysGrids.forEach(grid => {
+        grid.innerHTML = html;
+    });
 }
 
 function selectCalendarCellDate(dateStr) {
-    const checkInInput = document.getElementById('modalCheckInInput');
-    const checkOutInput = document.getElementById('modalCheckOutInput');
-    if (!checkInInput || !checkOutInput) return;
+    const checkInInputs = document.querySelectorAll('input[name="check_in"], #modalCheckInInput');
+    const checkOutInputs = document.querySelectorAll('input[name="check_out"], #modalCheckOutInput');
+    if (!checkInInputs.length || !checkOutInputs.length) return;
 
     const selected = parseLocalDate(dateStr);
-    const checkIn = parseLocalDate(checkInInput.value);
+    const primaryCheckIn = checkInInputs[0];
+    const checkIn = parseLocalDate(primaryCheckIn.value);
 
-    if (!checkInInput.dataset.selectingState || checkInInput.dataset.selectingState === 'end') {
-        checkInInput.value = formatLocalDate(selected);
-        checkInInput.dataset.selectingState = 'start';
+    if (!primaryCheckIn.dataset.selectingState || primaryCheckIn.dataset.selectingState === 'end') {
         const nextDay = new Date(selected);
         nextDay.setDate(nextDay.getDate() + 1);
-        checkOutInput.value = formatLocalDate(nextDay);
+        checkInInputs.forEach(i => { i.value = formatLocalDate(selected); i.dataset.selectingState = 'start'; });
+        checkOutInputs.forEach(i => { i.value = formatLocalDate(nextDay); });
     } else {
         if (selected <= checkIn) {
-            checkInInput.value = formatLocalDate(selected);
             const nextDay = new Date(selected);
             nextDay.setDate(nextDay.getDate() + 1);
-            checkOutInput.value = formatLocalDate(nextDay);
+            checkInInputs.forEach(i => { i.value = formatLocalDate(selected); });
+            checkOutInputs.forEach(i => { i.value = formatLocalDate(nextDay); });
         } else {
-            checkOutInput.value = formatLocalDate(selected);
-            checkInInput.dataset.selectingState = 'end';
+            checkOutInputs.forEach(i => { i.value = formatLocalDate(selected); });
+            checkInInputs.forEach(i => { i.dataset.selectingState = 'end'; });
             updateStayDurationBadge();
             renderVisualCalendarGrid();
             handleAutoCalendarDateUpdate();
@@ -381,13 +385,13 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
     $checkIn = $checkInVal ?: $today->format('Y-m-d');
     $checkOut = $checkOutVal ?: $today->modify('+1 day')->format('Y-m-d');
 ?>
-<div class="card bg-dark text-light rounded-4 p-4 shadow-lg h-100 my-0" id="inlineCalendarSection" style="max-width: 650px; width: 100%; margin: 0 auto; background: rgba(15, 23, 42, 0.92) !important; backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5) !important;">
+<div class="card inline-calendar-card rounded-4 p-4 shadow-lg h-100 my-0" id="inlineCalendarSection" style="max-width: 650px; width: 100%; margin: 0 auto; backdrop-filter: blur(25px);">
     <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-secondary">
         <div>
-            <h4 class="font-serif fw-bold m-0" style="color: #FFDF73 !important; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);"><i class="bi bi-calendar-range me-2"></i>Select Stay Dates</h4>
-            <p class="text-light opacity-90 text-xs m-0 fw-semibold">Click check-in and check-out dates on the grid below.</p>
+            <h4 class="font-serif fw-bold m-0 calendar-widget-title"><i class="bi bi-calendar-range me-2"></i>Select Stay Dates</h4>
+            <p class="text-muted text-xs m-0 fw-semibold">Click check-in and check-out dates on the grid below.</p>
         </div>
-        <div id="inlineStayDurationBadge" class="badge bg-gold text-dark fs-6 px-3 py-2 fw-bold rounded-pill shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important; color: #070A10 !important; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
+        <div id="inlineStayDurationBadge" class="badge bg-gold text-dark fs-6 px-3 py-2 fw-bold rounded-pill shadow stay-duration-badge" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important; color: #070A10 !important; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
             Select dates below
         </div>
     </div>
@@ -395,12 +399,12 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
     <form action="javascript:void(0);" method="GET" id="inlineCalendarForm" onsubmit="event.preventDefault(); handleInlineCalendarSearch();">
         <div class="row g-2 mb-4 align-items-end">
             <div class="col-12 col-sm-5 col-lg-5">
-                <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
-                <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);">
+                <label class="form-label text-xs text-uppercase tracking-wider fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
+                <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm border-warning fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>">
             </div>
             <div class="col-12 col-sm-5 col-lg-5">
-                <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-right text-warning me-1"></i>Check-Out</label>
-                <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);">
+                <label class="form-label text-xs text-uppercase tracking-wider fw-bold mb-1"><i class="bi bi-box-arrow-right text-warning me-1"></i>Check-Out</label>
+                <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning fw-bold py-2" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>">
             </div>
             <div class="col-12 col-sm-2 col-lg-2 mt-2 mt-sm-0">
                 <button type="submit" class="btn btn-sm w-100 rounded-pill py-2 font-serif fw-bold shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
@@ -411,21 +415,21 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
     </form>
 
     <!-- Visual Interactive 7-Column Calendar Month Grid -->
-    <div id="calendarVisualGrid" class="p-3 rounded-4 border shadow-inner" style="max-width: 520px; width: 100%; margin: 0 auto; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+    <div id="calendarVisualGrid" class="calendar-visual-grid p-3 rounded-4 border shadow-inner" style="max-width: 520px; width: 100%; margin: 0 auto;">
         <div class="d-flex align-items-center justify-content-between mb-3">
-            <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(-1)" style="width: 36px; height: 36px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-left"></i></button>
-            <h5 class="m-0 font-serif fw-bold fs-5 text-center" id="calendarMonthTitle" style="color: #FFDF73; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">July 2026</h5>
-            <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(1)" style="width: 36px; height: 36px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-right"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(-1)" style="width: 36px; height: 36px;"><i class="bi bi-chevron-left"></i></button>
+            <h5 class="m-0 font-serif fw-bold fs-5 text-center calendar-month-title" id="calendarMonthTitle">July 2026</h5>
+            <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(1)" style="width: 36px; height: 36px;"><i class="bi bi-chevron-right"></i></button>
         </div>
         
         <!-- 7-Column Weekday Header -->
         <div class="calendar-grid-header mb-2 text-center font-serif fw-bold text-uppercase text-xs">
             <div style="color: #FBBF24;">Sun</div>
-            <div style="color: #F8FAFC;">Mon</div>
-            <div style="color: #F8FAFC;">Tue</div>
-            <div style="color: #F8FAFC;">Wed</div>
-            <div style="color: #F8FAFC;">Thu</div>
-            <div style="color: #F8FAFC;">Fri</div>
+            <div>Mon</div>
+            <div>Tue</div>
+            <div>Wed</div>
+            <div>Thu</div>
+            <div>Fri</div>
             <div style="color: #FBBF24;">Sat</div>
         </div>
         

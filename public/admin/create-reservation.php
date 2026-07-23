@@ -147,8 +147,7 @@ renderAdminLayoutStart('Create Reservation', 'create-reservation', $currentAdmin
             </div>
 
             <!-- Section 2: Stay Schedule with 7-Column Interactive Calendar -->
-            <div class="panel-card p-4">
-                <?php renderCalendarPickerModal($availabilityCheckIn, $availabilityCheckOut); ?>
+            <div class="panel-card p-4 border-0 p-0 shadow-none bg-transparent">
                 <?php renderInlineCalendarWidget($availabilityCheckIn, $availabilityCheckOut); ?>
             </div>
 
