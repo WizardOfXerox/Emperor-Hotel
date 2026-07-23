@@ -442,7 +442,8 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label" for="create_room_number">Room / Unit Number</label>
-                            <input class="form-control bg-dark text-light border-secondary" id="create_room_number" name="room_number" type="text" placeholder="e.g. 401" required>
+                            <input class="form-control bg-dark text-light border-secondary" id="create_room_number" name="room_number" type="number" min="100" max="199" placeholder="e.g. 101" required>
+                            <small class="text-warning text-xs mt-1 d-block" id="create_room_range_hint"><i class="bi bi-info-circle me-1"></i>Floor 1 valid range: 100 – 199</small>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="create_room_type_select">Suite / Room Type</label>
@@ -462,7 +463,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label" for="create_floor">Floor Number</label>
-                            <input class="form-control bg-dark text-light border-secondary" id="create_floor" name="floor" type="number" min="1" value="1" required>
+                            <input class="form-control bg-dark text-light border-secondary" id="create_floor" name="floor" type="number" min="1" value="1" oninput="updateRoomNumberRangeHint(this, 'create_room_number', 'create_room_range_hint')" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label" for="create_price">Price / Night (PHP)</label>
@@ -541,7 +542,8 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label" for="edit_room_number_<?php echo $roomId; ?>">Room Number</label>
-                                <input class="form-control bg-dark text-light border-secondary" id="edit_room_number_<?php echo $roomId; ?>" name="room_number" type="text" value="<?php echo e($room['room_number']); ?>" required>
+                                <input class="form-control bg-dark text-light border-secondary" id="edit_room_number_<?php echo $roomId; ?>" name="room_number" type="number" min="<?php echo (int)$room['floor'] * 100; ?>" max="<?php echo ((int)$room['floor'] * 100) + 99; ?>" value="<?php echo e($room['room_number']); ?>" required>
+                                <small class="text-warning text-xs mt-1 d-block" id="edit_room_range_hint_<?php echo $roomId; ?>"><i class="bi bi-info-circle me-1"></i>Floor <?php echo (int)$room['floor']; ?> range: <?php echo (int)$room['floor'] * 100; ?> – <?php echo ((int)$room['floor'] * 100) + 99; ?></small>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="edit_room_type_select_<?php echo $roomId; ?>">Suite / Room Type</label>
@@ -564,7 +566,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label class="form-label" for="edit_floor_<?php echo $roomId; ?>">Floor</label>
-                                <input class="form-control bg-dark text-light border-secondary" id="edit_floor_<?php echo $roomId; ?>" name="floor" type="number" min="1" value="<?php echo e($room['floor']); ?>" required>
+                                <input class="form-control bg-dark text-light border-secondary" id="edit_floor_<?php echo $roomId; ?>" name="floor" type="number" min="1" value="<?php echo e($room['floor']); ?>" oninput="updateRoomNumberRangeHint(this, 'edit_room_number_<?php echo $roomId; ?>', 'edit_room_range_hint_<?php echo $roomId; ?>')" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label" for="edit_price_<?php echo $roomId; ?>">Price / Night (PHP)</label>
@@ -773,6 +775,25 @@ function calculateSmartPreview() {
     if (previewBadge) previewBadge.innerText = `${totalCount} room(s) targeted`;
     if (previewText) {
         previewText.innerHTML = `Base rate: <span class="text-light-emphasis">PHP ${baseAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> | Current avg: <strong>PHP ${currentAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> ➔ New avg: <strong class="text-warning">PHP ${newAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>${diffFormatted}`;
+    }
+}
+
+function updateRoomNumberRangeHint(floorInput, roomNumInputId, hintElId) {
+    const floor = parseInt(floorInput.value, 10) || 1;
+    const minRoom = floor * 100;
+    const maxRoom = (floor * 100) + 99;
+    
+    const roomInput = document.getElementById(roomNumInputId);
+    const hintEl = document.getElementById(hintElId);
+
+    if (roomInput) {
+        roomInput.min = minRoom;
+        roomInput.max = maxRoom;
+        roomInput.placeholder = `e.g. ${minRoom + 1}`;
+    }
+
+    if (hintEl) {
+        hintEl.innerHTML = `<i class="bi bi-info-circle me-1"></i>Floor ${floor} valid range: ${minRoom} – ${maxRoom}`;
     }
 }
 

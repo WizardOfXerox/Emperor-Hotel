@@ -541,6 +541,30 @@ class Room
         if ($floor < 1) {
             throw new RuntimeException('Room floor must be at least 1.');
         }
+
+        $roomNumStr = trim((string) ($data['room_number'] ?? ''));
+        if ($roomNumStr === '') {
+            throw new RuntimeException('Room number is required.');
+        }
+
+        if (!ctype_digit($roomNumStr)) {
+            throw new RuntimeException("Room number must be numeric (e.g. 101, 202, 305).");
+        }
+
+        $roomNum = (int) $roomNumStr;
+        $minRoom = $floor * 100;
+        $maxRoom = ($floor * 100) + 99;
+
+        if ($roomNum < $minRoom || $roomNum > $maxRoom) {
+            throw new RuntimeException("Invalid room number '{$roomNumStr}' for Floor {$floor}. Floor {$floor} room numbers must be between {$minRoom} and {$maxRoom}.");
+        }
+
+        $roomId = (int) ($data['room_id'] ?? 0);
+        $stmt = $this->db->prepare("SELECT room_id FROM rooms WHERE room_number = :room_number AND room_id != :room_id LIMIT 1");
+        $stmt->execute(['room_number' => $roomNumStr, 'room_id' => $roomId]);
+        if ($stmt->fetch()) {
+            throw new RuntimeException("Room number '{$roomNumStr}' already exists in hotel inventory.");
+        }
     }
 
     private function buildRoomFilterSql(array $filters): array
