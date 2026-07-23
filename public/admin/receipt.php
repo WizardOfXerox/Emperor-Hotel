@@ -33,7 +33,7 @@ renderHeader('Receipt #' . $reservationId, ['../assets/css/admin/receipt.css'], 
     <div class="receipt-actions no-print">
         <div class="d-flex align-items-center gap-2">
             <a class="btn btn-warning fw-semibold" href="reservations.php"><i class="bi bi-arrow-left me-1"></i>Back to Reservations</a>
-            <a class="btn btn-outline-light fw-semibold" href="payments.php?reservation_id=<?php echo e($reservationId); ?>"><i class="bi bi-plus-circle me-1"></i>Add Payment</a>
+            <a class="btn btn-outline-light fw-semibold" href="payments.php?reservation_id=<?php echo e($reservationId); ?>"><i class="bi bi-credit-card me-1"></i>Payments</a>
         </div>
         <div class="d-flex align-items-center gap-2">
             <button class="btn theme-toggle-btn rounded-circle d-inline-flex align-items-center justify-content-center border-0 p-0" style="width: 38px; height: 38px; background: rgba(253, 215, 0, 0.15);" type="button" onclick="toggleEmperorTheme()" title="Toggle Theme" aria-label="Toggle Theme">

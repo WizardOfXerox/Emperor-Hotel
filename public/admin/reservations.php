@@ -298,7 +298,7 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
                             <h6>Records and Payments</h6>
                             <div class="reservation-modal-actions">
                                 <a class="btn btn-sm btn-outline-light" href="receipt.php?reservation_id=<?php echo e($reservationId); ?>"><i class="bi bi-receipt me-1"></i>Receipt</a>
-                                <a class="btn btn-sm btn-warning fw-semibold" href="payments.php?reservation_id=<?php echo e($reservationId); ?>"><i class="bi bi-plus-circle-fill me-1"></i>Record Payment</a>
+                                <a class="btn btn-sm btn-warning fw-semibold" href="payments.php?reservation_id=<?php echo e($reservationId); ?>"><i class="bi bi-credit-card me-1"></i>Payments</a>
                                 <a class="btn btn-sm btn-outline-danger" href="payments.php?reservation_id=<?php echo e($reservationId); ?>&payment_status=Refunded"><i class="bi bi-arrow-counterclockwise me-1"></i>Process Refund</a>
                             </div>
                         </div>
