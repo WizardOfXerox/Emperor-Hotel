@@ -224,7 +224,7 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                             <th>Status</th>
                             <th>Amount</th>
                             <th>Date</th>
-                            <th>Review</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -234,45 +234,37 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                             </tr>
                         <?php endif; ?>
                         <?php foreach ($payments as $payment): ?>
-                            <?php $isReviewLocked = $payment['payment_status'] !== 'Pending'; ?>
+                            <?php 
+                                $status = $payment['payment_status'];
+                                $statusBadgeClass = match($status) {
+                                    'Confirmed', 'Paid' => 'bg-success text-white',
+                                    'Pending' => 'bg-warning text-dark',
+                                    'Failed', 'Refunded' => 'bg-danger text-white',
+                                    default => 'bg-secondary text-white'
+                                };
+                            ?>
                             <tr>
                                 <td>
-                                    <div>#<?php echo e($payment['reservation_id']); ?> - Room <?php echo e($payment['room_number']); ?></div>
+                                    <div class="fw-bold">#<?php echo e($payment['reservation_id']); ?> - Room <?php echo e($payment['room_number']); ?></div>
                                     <small class="text-light-emphasis">Reservation total: <?php echo e(formatMoney((float) $payment['total_amount'])); ?></small>
-                                    <div><a class="small text-warning" href="receipt.php?reservation_id=<?php echo e($payment['reservation_id']); ?>">View receipt</a></div>
                                 </td>
                                 <td><?php echo e($payment['first_name'] . ' ' . $payment['last_name']); ?></td>
                                 <td>
-                                    <div><?php echo e($payment['payment_method']); ?></div>
+                                    <div class="fw-semibold"><?php echo e($payment['payment_method']); ?></div>
                                     <small class="text-light-emphasis"><?php echo e($payment['transaction_reference'] ?: 'No reference'); ?></small>
                                 </td>
-                                <td><span class="badge-soft"><?php echo e($payment['payment_status']); ?></span></td>
-                                <td><?php echo e(formatMoney((float) $payment['amount'])); ?></td>
+                                <td><span class="badge <?php echo $statusBadgeClass; ?> px-2 py-1 text-xs fw-bold"><?php echo e($status); ?></span></td>
+                                <td class="fw-bold text-warning"><?php echo e(formatMoney((float) $payment['amount'])); ?></td>
                                 <td><?php echo e(date('Y-m-d', strtotime($payment['payment_date']))); ?></td>
                                 <td>
-                                    <?php if ($isReviewLocked): ?>
-                                        <span class="text-light-emphasis small">Locked after <?php echo e(strtolower((string) $payment['payment_status'])); ?></span>
-                                    <?php else: ?>
-                                        <form method="post" class="payment-review-form">
-                                            <input type="hidden" name="action" value="update_status">
-                                            <input type="hidden" name="payment_id" value="<?php echo e($payment['payment_id']); ?>">
-                                            <input
-                                                class="form-control form-control-sm payment-review-amount"
-                                                name="amount"
-                                                type="number"
-                                                min="0.01"
-                                                step="0.01"
-                                                value="<?php echo e(number_format((float) $payment['amount'], 2, '.', '')); ?>"
-                                                aria-label="Transaction amount"
-                                            >
-                                            <select class="form-select form-select-sm" name="payment_status" aria-label="Update transaction status">
-                                                <?php foreach (Payment::statuses() as $status): ?>
-                                                    <option value="<?php echo e($status); ?>" <?php echo $payment['payment_status'] === $status ? 'selected' : ''; ?>><?php echo e($status); ?></option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                            <button class="btn btn-sm btn-outline-light" type="submit">Update</button>
-                                        </form>
-                                    <?php endif; ?>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <a class="btn btn-sm btn-outline-warning text-nowrap px-2 py-1 text-xs" href="receipt.php?reservation_id=<?php echo e($payment['reservation_id']); ?>" title="View Printable Receipt">
+                                            <i class="bi bi-receipt me-1"></i>Receipt
+                                        </a>
+                                        <a class="btn btn-sm btn-outline-light text-nowrap px-2 py-1 text-xs" href="reservations.php?search=<?php echo e($payment['reservation_id']); ?>" title="Manage Reservation & Payments">
+                                            <i class="bi bi-sliders me-1"></i>Manage
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
