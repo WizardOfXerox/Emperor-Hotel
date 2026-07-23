@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 class Payment
 {
-    private const PAYMENT_METHODS = ['Cash', 'Credit Card', 'Debit Card', 'Bank Transfer', 'Online Payment', 'Other'];
+    private const PAYMENT_METHODS = ['Cash', 'Credit Card', 'Debit Card', 'Bank Transfer', 'E-Wallet', 'Other'];
     private const PAYMENT_STATUSES = ['Pending', 'Confirmed', 'Failed', 'Refunded'];
 
     public function __construct(private PDO $db)

@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS payments (
     payment_id INT AUTO_INCREMENT PRIMARY KEY,
     reservation_id INT NOT NULL,
     amount DECIMAL(10,2) NOT NULL,
-    payment_method ENUM('Cash', 'Credit Card', 'Debit Card', 'Bank Transfer', 'Online Payment', 'Other') NOT NULL DEFAULT 'Cash',
+    payment_method ENUM('Cash', 'Credit Card', 'Debit Card', 'Bank Transfer', 'E-Wallet', 'Other') NOT NULL DEFAULT 'Cash',
     payment_status ENUM('Pending', 'Confirmed', 'Paid', 'Failed', 'Refunded') NOT NULL DEFAULT 'Pending',
     transaction_reference VARCHAR(100) DEFAULT NULL,
     payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

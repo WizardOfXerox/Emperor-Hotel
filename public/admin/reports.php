@@ -229,7 +229,7 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
                         <?php endif; ?>
                         <?php foreach ($revenueReport['by_payment_method'] as $row): ?>
                             <tr>
-                                <td><?php echo e($row['payment_method']); ?></td>
+                                <td><?php echo e(!empty($row['payment_method']) ? $row['payment_method'] : 'E-Wallet'); ?></td>
                                 <td><?php echo e($row['payment_count']); ?></td>
                                 <td><?php echo e(formatMoney((float) $row['confirmed_revenue'])); ?></td>
                             </tr>

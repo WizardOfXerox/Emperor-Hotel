@@ -157,7 +157,7 @@ try {
         VALUES (:reservation_id, :user_id, :room_id, :rating, :comment, :created_at)
     ");
 
-    $paymentMethods = ['Credit Card', 'GCash', 'Bank Transfer', 'Cash', 'Debit Card', 'Online Payment'];
+    $paymentMethods = ['Credit Card', 'E-Wallet', 'Bank Transfer', 'Cash', 'Debit Card'];
 
     $reviewsTemplates = [
         ["rating" => 5, "comment" => "Absolute 5-star luxury! The room exceeded all our expectations. Impeccable cleanliness and ultra-responsive butler service."],
