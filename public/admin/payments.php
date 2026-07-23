@@ -200,7 +200,7 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                         <?php endif; ?>
                         <?php foreach ($summaryRows as $summary): ?>
                             <tr>
-                                <td><span class="badge-soft"><?php echo e($summary['payment_status']); ?></span></td>
+                                <td><span class="badge-soft"><?php echo e($summary['payment_status'] ?: 'Confirmed'); ?></span></td>
                                 <td><?php echo e($summary['total_count']); ?></td>
                                 <td><?php echo e(formatMoney((float) $summary['total_amount'])); ?></td>
                             </tr>

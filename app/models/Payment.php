@@ -336,9 +336,9 @@ class Payment
     {
         // SQL: Groups payment logs by review status for the payment status chart.
         $statement = $this->db->query(
-            "SELECT payment_status, COUNT(*) AS total_count, COALESCE(SUM(amount), 0) AS total_amount
+            "SELECT COALESCE(NULLIF(payment_status, ''), 'Confirmed') AS payment_status, COUNT(*) AS total_count, COALESCE(SUM(amount), 0) AS total_amount
              FROM payments
-             GROUP BY payment_status
+             GROUP BY COALESCE(NULLIF(payment_status, ''), 'Confirmed')
              ORDER BY payment_status ASC"
         );
 
