@@ -31,29 +31,33 @@ function renderCalendarPickerModal(string $checkInVal = '', string $checkOutVal 
                     <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);" onchange="handleAutoCalendarDateUpdate()">
                 </div>
                 <div class="col-12 col-sm-6">
-                    <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-right text-warning me-1"></i>Check-Out</label>
-                    <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);" onchange="handleAutoCalendarDateUpdate()">
+                    <label class="form-label text-xs text-uppercase tracking-wider opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
+                    <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm border-warning fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>" onchange="handleAutoCalendarDateUpdate()">
+                </div>
+                <div class="col-12 col-sm-6">
+                    <label class="form-label text-xs text-uppercase tracking-wider opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-right text-warning me-1"></i>Check-Out</label>
+                    <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning fw-bold py-2" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>" onchange="handleAutoCalendarDateUpdate()">
                 </div>
             </div>
         </form>
 
-        <!-- Visual Interactive 7-Column Calendar Month Grid (Matching Reference Design) -->
-        <div id="calendarVisualGrid" class="calendar-visual-grid p-4 shadow-sm" style="max-width: 500px; width: 100%; margin: 0 auto; background: #ffffff !important; border: 1px solid #e2e8f0 !important; border-radius: 24px !important; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;">
+        <!-- Visual Interactive 7-Column Calendar Month Grid -->
+        <div id="calendarVisualGrid" class="calendar-visual-grid p-4 shadow-sm" style="max-width: 500px; width: 100%; margin: 0 auto;">
             <div class="d-flex align-items-center justify-content-between mb-3">
-                <button type="button" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" onclick="shiftCalendarMonth(-1)" style="width: 38px; height: 38px; border: 1px solid #cbd5e1; color: #f59e0b; background: #ffffff;"><i class="bi bi-chevron-left"></i></button>
-                <h5 class="m-0 font-serif fw-bold fs-5 text-center calendar-month-title" id="calendarMonthTitle" style="color: #0f172a !important; font-weight: 800;">July 2026</h5>
-                <button type="button" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center" onclick="shiftCalendarMonth(1)" style="width: 38px; height: 38px; border: 1px solid #cbd5e1; color: #f59e0b; background: #ffffff;"><i class="bi bi-chevron-right"></i></button>
+                <button type="button" class="btn btn-sm calendar-month-nav-btn d-flex align-items-center justify-content-center" onclick="shiftCalendarMonth(-1)"><i class="bi bi-chevron-left"></i></button>
+                <h5 class="m-0 font-serif fw-bold fs-5 text-center calendar-month-title" id="calendarMonthTitle">July 2026</h5>
+                <button type="button" class="btn btn-sm calendar-month-nav-btn d-flex align-items-center justify-content-center" onclick="shiftCalendarMonth(1)"><i class="bi bi-chevron-right"></i></button>
             </div>
             
             <!-- 7-Column Weekday Header -->
-            <div class="calendar-grid-header mb-3 text-center fw-bold text-uppercase text-xs" style="color: #0f172a !important; font-weight: 800 !important;">
-                <div style="color: #0f172a !important;">SUN</div>
-                <div style="color: #0f172a !important;">MON</div>
-                <div style="color: #0f172a !important;">TUE</div>
-                <div style="color: #0f172a !important;">WED</div>
-                <div style="color: #0f172a !important;">THU</div>
-                <div style="color: #0f172a !important;">FRI</div>
-                <div style="color: #0f172a !important;">SAT</div>
+            <div class="calendar-grid-header mb-3 text-center fw-bold text-uppercase text-xs">
+                <div>SUN</div>
+                <div>MON</div>
+                <div>TUE</div>
+                <div>WED</div>
+                <div>THU</div>
+                <div>FRI</div>
+                <div>SAT</div>
             </div>
             
             <!-- Days Grid -->
@@ -279,7 +283,6 @@ function updateStayDurationBadge() {
     if (badge) badge.textContent = text;
     if (inlineBadge) inlineBadge.textContent = text;
 }
-
 function handleInlineCalendarSearch() {
     const checkIn = (document.getElementById('modalCheckInInput') || document.querySelector('input[name="check_in"]'))?.value;
     const checkOut = (document.getElementById('modalCheckOutInput') || document.querySelector('input[name="check_out"]'))?.value;
@@ -300,8 +303,42 @@ function handleInlineCalendarSearch() {
 </script>
 
 <style>
-.calendar-grid-header,
-.calendar-grid-days {
+/* ===== DARK MODE DEFAULT STYLES ===== */
+.inline-calendar-card {
+    background: rgba(15, 23, 42, 0.92) !important;
+    backdrop-filter: blur(25px) !important;
+    border: 1px solid rgba(212, 175, 55, 0.45) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5) !important;
+    color: #f8fafc !important;
+}
+
+.calendar-widget-title {
+    color: #FFDF73 !important;
+    text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3) !important;
+}
+
+.calendar-visual-grid {
+    background: rgba(30, 41, 59, 0.85) !important;
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+    border-radius: 20px !important;
+}
+
+.calendar-month-title {
+    color: #FFDF73 !important;
+    font-weight: 800 !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
+.calendar-month-nav-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    color: #FFDF73 !important;
+    background: transparent !important;
+    border-radius: 50% !important;
+}
+
+.calendar-grid-header {
     display: grid !important;
     grid-template-columns: repeat(7, 1fr) !important;
     gap: 6px !important;
@@ -310,10 +347,22 @@ function handleInlineCalendarSearch() {
 }
 
 .calendar-grid-header div {
-    color: #0f172a !important;
+    color: #F8FAFC !important;
     font-weight: 800 !important;
     font-size: 0.85rem !important;
-    font-family: 'DM Sans', sans-serif !important;
+}
+
+.calendar-grid-header div:first-child,
+.calendar-grid-header div:last-child {
+    color: #FBBF24 !important;
+}
+
+.calendar-grid-days {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 6px !important;
+    max-width: 520px !important;
+    margin: 0 auto !important;
 }
 
 .calendar-day-btn {
@@ -327,40 +376,40 @@ function handleInlineCalendarSearch() {
     border-radius: 10px;
     font-weight: 700;
     font-size: 0.9rem;
-    color: #1e293b !important;
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
+    color: #F8FAFC !important;
+    background: rgba(30, 41, 59, 0.7) !important;
+    border: 1px solid rgba(212, 175, 55, 0.25) !important;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .calendar-day-btn:hover:not(.is-disabled) {
-    background: #fef08a !important;
-    border-color: #f59e0b !important;
-    color: #0f172a !important;
-    transform: scale(1.05);
+    background: rgba(212, 175, 55, 0.3) !important;
+    border-color: #D4AF37 !important;
+    color: #FFDF73 !important;
+    transform: scale(1.06);
 }
 
 .calendar-day-btn.is-selected {
-    background: #fef08a !important;
-    color: #0f172a !important;
-    border: 2px solid #f59e0b !important;
+    background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important;
+    color: #070A10 !important;
+    border: none !important;
     font-weight: 900 !important;
-    box-shadow: 0 0 18px rgba(245, 158, 11, 0.45) !important;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.6) !important;
 }
 
 .calendar-day-btn.in-range {
-    background: #fffbeb !important;
-    border: 1px solid #fde68a !important;
-    color: #92400e !important;
+    background: rgba(212, 175, 55, 0.25) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    color: #FFDF73 !important;
 }
 
 .calendar-day-btn.is-disabled {
-    opacity: 0.35;
+    opacity: 0.3;
     cursor: not-allowed;
-    background: #f1f5f9 !important;
+    background: rgba(15, 23, 42, 0.4) !important;
     border-color: transparent !important;
-    color: #94a3b8 !important;
+    color: #64748b !important;
 }
 
 .calendar-day-empty {
@@ -369,6 +418,97 @@ function handleInlineCalendarSearch() {
     height: 44px;
     margin: 0 auto;
     opacity: 0;
+}
+
+.calendar-input-label {
+    color: #f8fafc !important;
+}
+
+.calendar-date-input {
+    background: rgba(30, 41, 59, 0.85) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+}
+
+/* ===== LIGHT MODE OVERRIDES ===== */
+body.light-mode .inline-calendar-card,
+body.light-mode #inlineCalendarSection,
+body.light-mode #calendarPickerModal .modal-content {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.22) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .calendar-input-label {
+    color: #0f172a !important;
+}
+
+body.light-mode .calendar-date-input {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+body.light-mode .calendar-visual-grid,
+body.light-mode #calendarVisualGrid {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-mode .calendar-widget-title {
+    color: #b45309 !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .calendar-month-title {
+    color: #0f172a !important;
+    text-shadow: none !important;
+}
+
+body.light-mode .calendar-month-nav-btn {
+    border: 1px solid #cbd5e1 !important;
+    color: #f59e0b !important;
+    background: #ffffff !important;
+}
+
+body.light-mode .calendar-grid-header div {
+    color: #0f172a !important;
+}
+
+body.light-mode .calendar-day-btn {
+    background: #f8fafc !important;
+    color: #1e293b !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.light-mode .calendar-day-btn:hover:not(.is-disabled) {
+    background: #fef08a !important;
+    border-color: #f59e0b !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .calendar-day-btn.is-selected {
+    background: #fef08a !important;
+    color: #0f172a !important;
+    border: 2px solid #f59e0b !important;
+    font-weight: 900 !important;
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.45) !important;
+}
+
+body.light-mode .calendar-day-btn.in-range {
+    background: #fffbeb !important;
+    border: 1px solid #fde68a !important;
+    color: #92400e !important;
+}
+
+body.light-mode .calendar-day-btn.is-disabled {
+    background: #f1f5f9 !important;
+    color: #94a3b8 !important;
+    border-color: transparent !important;
+    opacity: 0.35;
 }
 </style>
 <?php
@@ -384,7 +524,7 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
     <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-secondary">
         <div>
             <h4 class="font-serif fw-bold m-0 calendar-widget-title"><i class="bi bi-calendar-range me-2"></i>Select Stay Dates</h4>
-            <p class="text-muted text-xs m-0 fw-semibold">Click check-in and check-out dates on the grid below.</p>
+            <p class="calendar-widget-subtitle text-xs m-0 fw-semibold">Click check-in and check-out dates on the grid below.</p>
         </div>
         <div id="inlineStayDurationBadge" class="badge bg-gold text-dark fs-6 px-3 py-2 fw-bold rounded-pill shadow stay-duration-badge" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important; color: #070A10 !important; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
             Select dates below
@@ -394,12 +534,12 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
     <form action="javascript:void(0);" method="GET" id="inlineCalendarForm" onsubmit="event.preventDefault(); handleInlineCalendarSearch();">
         <div class="row g-2 mb-4 align-items-end">
             <div class="col-12 col-sm-5 col-lg-5">
-                <label class="form-label text-xs text-uppercase tracking-wider fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
-                <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm border-warning fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>">
+                <label class="form-label text-xs text-uppercase tracking-wider fw-bold mb-1 calendar-input-label"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
+                <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm border-warning fw-bold py-2 calendar-date-input" value="<?= e($checkIn) ?>" min="<?= $today->format('Y-m-d') ?>">
             </div>
             <div class="col-12 col-sm-5 col-lg-5">
-                <label class="form-label text-xs text-uppercase tracking-wider fw-bold mb-1"><i class="bi bi-box-arrow-right text-warning me-1"></i>Check-Out</label>
-                <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning fw-bold py-2" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>">
+                <label class="form-label text-xs text-uppercase tracking-wider fw-bold mb-1 calendar-input-label"><i class="bi bi-box-arrow-right text-warning me-1"></i>Check-Out</label>
+                <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning fw-bold py-2 calendar-date-input" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>">
             </div>
             <div class="col-12 col-sm-2 col-lg-2 mt-2 mt-sm-0">
                 <button type="submit" class="btn btn-sm w-100 rounded-pill py-2 font-serif fw-bold shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
@@ -412,20 +552,20 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
     <!-- Visual Interactive 7-Column Calendar Month Grid -->
     <div id="calendarVisualGrid" class="calendar-visual-grid p-3 rounded-4 border shadow-inner" style="max-width: 520px; width: 100%; margin: 0 auto;">
         <div class="d-flex align-items-center justify-content-between mb-3">
-            <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(-1)" style="width: 36px; height: 36px;"><i class="bi bi-chevron-left"></i></button>
+            <button type="button" class="btn btn-sm calendar-month-nav-btn rounded-circle d-flex align-items-center justify-content-center" onclick="shiftCalendarMonth(-1)"><i class="bi bi-chevron-left"></i></button>
             <h5 class="m-0 font-serif fw-bold fs-5 text-center calendar-month-title" id="calendarMonthTitle">July 2026</h5>
-            <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(1)" style="width: 36px; height: 36px;"><i class="bi bi-chevron-right"></i></button>
+            <button type="button" class="btn btn-sm calendar-month-nav-btn rounded-circle d-flex align-items-center justify-content-center" onclick="shiftCalendarMonth(1)"><i class="bi bi-chevron-right"></i></button>
         </div>
         
         <!-- 7-Column Weekday Header -->
         <div class="calendar-grid-header mb-2 text-center font-serif fw-bold text-uppercase text-xs">
-            <div style="color: #FBBF24;">Sun</div>
-            <div>Mon</div>
-            <div>Tue</div>
-            <div>Wed</div>
-            <div>Thu</div>
-            <div>Fri</div>
-            <div style="color: #FBBF24;">Sat</div>
+            <div>SUN</div>
+            <div>MON</div>
+            <div>TUE</div>
+            <div>WED</div>
+            <div>THU</div>
+            <div>FRI</div>
+            <div>SAT</div>
         </div>
         
         <!-- 7-Column Days Grid -->
