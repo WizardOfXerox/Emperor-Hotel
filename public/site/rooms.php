@@ -52,7 +52,7 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
         </div>
 
         <div class="home-nav__auth">
-            <button type="button" class="btn btn-sm btn-outline-warning theme-toggle-btn rounded-pill px-3 py-1 me-2 fw-semibold d-inline-flex align-items-center shadow-sm" onclick="toggleEmperorTheme()"><i class="bi bi-sun-fill me-1"></i> Light Mode</button>
+            <button type="button" class="btn btn-sm btn-outline-warning theme-toggle-btn rounded-circle me-2 d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px; padding: 0;" onclick="toggleEmperorTheme()" title="Switch to Light Mode" aria-label="Switch to Light Mode"><i class="bi bi-sun-fill fs-5"></i></button>
             <?php if ($user): ?>
                 <a class="home-nav__cta home-nav__cta--primary" href="<?= e($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php') ?>">DASHBOARD</a>
                 <a class="home-nav__cta home-nav__cta--secondary" href="../auth/logout.php" title="Log Out"><i class="bi bi-box-arrow-right d-sm-none"></i><span class="d-none d-sm-inline">LOG OUT</span></a>

@@ -46,8 +46,10 @@ function renderHeader(string $title, array $extraStylesheets = [], string $bodyC
         function updateThemeToggleButtons(isLight) {
             document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
                 btn.innerHTML = isLight 
-                    ? '<i class="bi bi-moon-stars-fill me-1 text-primary"></i> Dark Mode' 
-                    : '<i class="bi bi-sun-fill me-1 text-warning"></i> Light Mode';
+                    ? '<i class="bi bi-moon-stars-fill fs-5" style="color: #6366f1;"></i>' 
+                    : '<i class="bi bi-sun-fill fs-5 text-warning"></i>';
+                btn.setAttribute('title', isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode');
+                btn.setAttribute('aria-label', isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode');
                 btn.classList.toggle('btn-outline-dark', isLight);
                 btn.classList.toggle('btn-outline-warning', !isLight);
             });
@@ -196,7 +198,7 @@ function renderSiteLayoutStart(string $title, ?array $user = null, string $siteP
     echo '<a class="btn btn-outline-light btn-sm" href="' . e($sitePrefix . 'home.php') . '">Home</a>';
     echo '<a class="btn btn-outline-warning btn-sm fw-bold font-serif" href="' . e($sitePrefix . 'rooms.php') . '"><i class="bi bi-door-open-fill me-1 text-warning"></i>Rooms</a>';
     echo '<a class="btn btn-outline-light btn-sm" href="' . e($sitePrefix . 'suites.php') . '">Suites</a>';
-    echo '<button type="button" class="btn btn-outline-warning btn-sm fw-bold theme-toggle-btn rounded-pill px-3 py-1 d-flex align-items-center shadow-sm" onclick="toggleEmperorTheme()"><i class="bi bi-sun-fill me-1"></i> Light Mode</button>';
+    echo '<button type="button" class="btn btn-outline-warning btn-sm theme-toggle-btn rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm" style="width: 38px; height: 38px; padding: 0;" onclick="toggleEmperorTheme()" title="Switch to Light Mode" aria-label="Switch to Light Mode"><i class="bi bi-sun-fill fs-5"></i></button>';
 
     if ($user) {
         if ($user['role'] === 'admin') {
