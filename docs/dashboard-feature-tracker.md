@@ -149,11 +149,15 @@ Current unresolved tracker rows:
 | Reservations | Search & Status Filter Toolbar | Done | Real-time Search and Status Filter toolbar on Admin Reservation Records and Booking Logs pages allows filtering by guest name, room #, email, reservation ID, and status | Keep filter performance optimized |
 | Reservations | Strict Check-In Payment Validation | Done | Unconfirmed / unpaid pending reservations hide the Check-In button and throw server-side validation exception requiring confirmation & payment before check-in | Enforce status transition flow |
 | Reservations | Automated Credit Card Payment Confirmation | Done | Online payment gateway transactions automatically set payment status to Paid, auto-confirm reservation status, and mark room status as Reserved | Maintain automated sync |
+| Frontend | Dynamic Grid Layout Switcher & Auto Mode | Done | Room catalog toolbar allows 1-5 columns grid toggle and Auto Responsive layout calculation based on screen size with LocalStorage persistence | Keep responsive breakpoints synchronized |
+| Frontend | Guest View Cleaning Status Rule | Done | Internal housekeeping Cleaning status is mapped to Available for guest view so online reservations for future stay dates are not blocked | Maintain internal admin housekeeping tracking |
+| Frontend | Catalog Anchor Scroll Navigation | Done | Back to Catalog links append #room-card-ID anchor hashes, smoothly scrolling back to the exact room card inspected | Keep room card IDs aligned |
+| Payments | Process Refund & Ledger Audit Trail | Done | Front desk manage modal includes Process Refund action, updating remaining balance due while maintaining an immutable transaction audit log | Keep financial log records immutable |
+| Payments | Standardized E-Wallet Payment Channel | Done | GCash and generic Online Payment updated to official E-Wallet category across DB schemas, payment forms, and financial reports | Maintain payment method consistency |
 
 ## Suggested Next Build Order
 
 1. Build a separate arrivals/departures board if the front desk needs a focused daily operations page.
 2. Add editable guest profile details from the Guests page.
-3. Add refund adjustment handling for payment records.
-4. Add CSV/PDF export for reports and receipts if required.
-5. Add CSRF protection and more inline client-side validation hints.
+3. Add CSV/PDF export for reports and receipts if required.
+4. Add CSRF protection and more inline client-side validation hints.

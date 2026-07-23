@@ -9,20 +9,24 @@ A robust, local-first web application designed for guest self-service booking an
 ## 🚀 Key Features
 
 ### 💻 Guest Portal & Booking Flow
+* **Dynamic Grid Layout Switcher**: Interactive toolbar on the room catalog enabling **Auto Responsive** layout calculation (`5 Cols` for ultra-wide screens ≥1600px, `4 Cols`, `3 Cols`, `2 Cols`, and `1 Col List View`) with `LocalStorage` persistence.
+* **Guest View Housekeeping Rule**: Rooms in internal housekeeping `Cleaning` state are mapped to **`Available`** for online guests so future stay reservations are not blocked, while staff preserve real-time room status tracking on the admin panel.
+* **Smart Back to Catalog Anchor Scroll**: `Back to Catalog` links on room detail pages attach `#room-card-ID` anchor hashes, smoothly scrolling back to the exact room card inspected.
 * **Two-Column Booking Layout**: Side-by-side display of stay details, pricing, and live room availability selection.
 * **Live Room Selection**: Room type cards with real-time status badges, capacity descriptors, and visual filters.
 * **Dynamic Cost Tracker**: Computes room rate, night counts, subtotal, inclusions, and estimated totals on-the-fly.
-* **Simulated Payments**: Custom client checkout paths supporting Cash (generates desk reference) and Card/Online payments.
-* **Booking History**: Consolidated timeline tracking guest stay records and verification states.
+* **Standardized Payment Methods**: Full support for Cash, Credit Card, Debit Card, E-Wallet, Bank Transfer, and Other payment channels.
+* **Booking History & Self-Service Cancellation**: Consolidated timeline tracking guest stay records, verification states, and cancellation.
 
 ### 💼 Administrative Management Hub
 * **Unified Admin Dashboard**:
   * Real-time KPI summaries (active customers, available rooms, pending reservations, monthly revenue).
   * Interactive data visualization powered by **Chart.js** (Occupancy rates, payment types, reservation statuses).
   * Operational watchlist highlighting overdue check-outs, pending actions, and payment failures.
-* **Booking Records Modal Controls**: Clean single-row table controls opening a comprehensive Front Desk action panel (Confirm, Check-In, Extend Stay, Check-Out, Cancel, Receipt generation, Payment collection, Delete).
+* **Booking Records Manage Modal & Refund Workflow**: Clean single-row table controls opening a comprehensive Front Desk action panel (Confirm, Check-In, Extend Stay, Check-Out, Process Refund, Cancel, Receipt generation, Payment collection, Delete).
+* **Process Refund & Financial Ledger**: Built-in refund entry workflow updating remaining balances while preserving immutable payment audit log records.
 * **XML Import/Export System**: Room inventory synchronization using native PHP `DOMDocument` XML parsers.
-* **Reports Generator**: Date-filtered analytics for occupancy percentage, room-type revenue breakdown, and daily booking trends.
+* **Reports Generator**: Date-filtered analytics for occupancy percentage, room-type revenue breakdown, payment method shares (Cash, Card, E-Wallet, Bank Transfer), and daily booking trends.
 
 ### 🤖 Intelligent AI Support Assistant
 * **Local-First Routing Strategy**: Evaluates greetings using word-boundary regex (`\b`) and maps FAQs (Wi-Fi, parking, policies, contacts) using phrase-coverage matching algorithms first.

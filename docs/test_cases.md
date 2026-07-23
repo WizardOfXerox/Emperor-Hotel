@@ -6,10 +6,10 @@ This document contains the official comprehensive test cases specification for t
 
 ## 📊 Summary Execution Matrix
 
-- **Total Test Cases**: 54
-- **Passed**: 54
+- **Total Test Cases**: 60
+- **Passed**: 60
 - **Failed**: 0
-- **System Version**: Emperor Hotel v2.5 (Production Luxury Obsidian Edition)
+- **System Version**: Emperor Hotel v2.6 (Production Luxury Obsidian & Adaptive Dynamic Grid Edition)
 - **Database Backend**: MySQL / MariaDB via PHP PDO
 
 ---
@@ -66,12 +66,18 @@ This document contains the official comprehensive test cases specification for t
 | **TC-046** | Reports & Analytics | Date-filtered room occupancy report | 1. Open Admin Reports (`/public/admin/reports.php`)<br>2. Set date range and click "Run Report" | **Start:** `2026-07-01`<br>**End:** `2026-07-31` | Displays booked room nights, available room nights, and occupancy rate by suite type | Occupancy rates calculated accurately for selected date range | **PASS** |
 | **TC-047** | Reports & Analytics | Revenue report by room type & payment method | 1. Inspect Revenue tables on `reports.php` | **Period:** July 2026 | Displays confirmed revenue breakdown by suite category and payment method | Confirmed revenue totals calculated and grouped accurately | **PASS** |
 | **TC-048** | Reports & Analytics | Booking demand trend line chart (Chart.js) | 1. Inspect Visual Analytics section on `reports.php` | **Chart ID:** `#trendLineChart` | Interactive Chart.js line chart renders daily active vs cancelled reservation trends | Line chart rendered with glowing gold trend lines and hover tooltips | **PASS** |
-| **TC-049** | Reports & Analytics | Payment method revenue share doughnut chart | 1. Inspect Financial Distribution section on `reports.php` | **Chart ID:** `#paymentPieChart` | Chart.js doughnut chart renders percentage share of Cash, Card, GCash, and Bank Transfer | Doughnut chart rendered cleanly with custom color legend | **PASS** |
+| **TC-049** | Reports & Analytics | Payment method revenue share doughnut chart | 1. Inspect Financial Distribution section on `reports.php` | **Chart ID:** `#paymentPieChart` | Chart.js doughnut chart renders percentage share of Cash, Card, E-Wallet, and Bank Transfer | Doughnut chart rendered cleanly with custom color legend | **PASS** |
 | **TC-050** | Reports & Analytics | Booked room nights suite volume bar chart | 1. Inspect Inventory Performance section on `reports.php` | **Chart ID:** `#occupancyBarChart` | Chart.js bar chart renders booked room nights per suite category | Bar chart rendered with gold gradient bars and scale ticks | **PASS** |
 | **TC-051** | Reports & Analytics | Recommendation Engine guest rating score bar chart | 1. Inspect Recommendation Engine section on `reports.php` | **Chart ID:** `#ratingsBarChart` | Chart.js horizontal bar chart renders average guest rating scores out of 5.0 per suite | Horizontal bar chart rendered with average ratings per suite type | **PASS** |
 | **TC-052** | AI Assistant | Database-aware customer support chat widget | 1. Open AI support widget on customer frontend<br>2. Ask "What are the room prices?" | **Query:** Room prices | Pattern matcher queries live database and returns structured HTML price table | Live room prices queried from DB and formatted as HTML table | **PASS** |
 | **TC-053** | AI Assistant | Admin AI analytics & real-time context injection | 1. Open AI support widget on Admin Panel<br>2. Ask "What is our revenue this month?" | **Query:** Monthly revenue | AI compiles live database sales metrics and returns exact confirmed revenue total | Live admin analytics compiled and returned with context breakdown | **PASS** |
 | **TC-054** | System Notifications | Auto-dismiss flash alert banners (3-second timer) | 1. Perform any action triggering flash alert banner (e.g. login, update room)<br>2. Wait 3 seconds | **Timer:** 3000ms | Alert banner automatically fades out and removes from DOM after 3 seconds; manual X button closes instantly | Alert banner faded out after 3 seconds and removed cleanly from DOM | **PASS** |
+| **TC-055** | Public Frontend | Dynamic Grid Layout Switcher & Auto Responsiveness | 1. Open room catalog (`/public/site/rooms.php`)<br>2. Click layout options (`Auto`, `5 Cols`, `4 Cols`, `3 Cols`, `2 Cols`, `1 Col List`) | **Options:** `auto`, `5`, `4`, `3`, `2`, `1` | Grid dynamically re-arranges room cards per row, updates badge label, and persists selection in LocalStorage | Dynamic grid re-arranged per row with LocalStorage persistence | **PASS** |
+| **TC-056** | Public Frontend | Guest View Online Booking for Cleaning Status Rooms | 1. Open room detail for room in housekeeping Cleaning status (`/public/site/room-detail.php?id=3`) | **Status:** `Cleaning` | System maps Cleaning status to Available for guest view, displays green Available badge, and enables Reserve CTA button | Cleaning status mapped to Available for guest view with active Reserve CTA button | **PASS** |
+| **TC-057** | Public Frontend | Smart Back to Catalog Anchor Scroll (`#room-card-ID`) | 1. Inspect room detail page<br>2. Click "Back to Catalog" button | **Target:** `#room-card-3` | Page navigates to `rooms.php` with stay date parameters and smooth scrolls directly to `#room-card-3` | Navigated to catalog and scrolled directly to target room card anchor | **PASS** |
+| **TC-058** | Theme & Styling | Light & Dark Mode High-Contrast Theme Adaptation | 1. Toggle theme using header Light/Dark Mode button across room detail cards, nav buttons, calendar modal, and status badges | **Theme:** Light / Dark | Navigation buttons, unavailable status banners, calendar modal, and status badges adapt with high-contrast text and zero illegible white-on-white or dark-on-dark elements | All cards, buttons, badges, and calendar picker modal adapted with 100% legibility | **PASS** |
+| **TC-059** | Payment Engine | Standardized Payment Methods & E-Wallet Category | 1. Open payment forms on Admin Payments (`/public/admin/payments.php`) or User Payment gateway | **Methods:** E-Wallet, Credit Card, Debit Card, Bank Transfer, Cash, Other | GCash and Online Payment replaced with official E-Wallet category across DB schemas, models, dropdowns, and reports | E-Wallet category standardized across DB schemas, models, and analytics | **PASS** |
+| **TC-060** | Admin Payments | Process Refund Workflow & Immutable Transaction Log | 1. Open Manage modal on Admin Reservations<br>2. Click "Process Refund"<br>3. Enter refunded amount on Admin Payments | **Status:** Refunded | Process Refund button opens payments form with prefilled status, refund subtracts from confirmed total paid, and transaction log operates as immutable audit ledger | Refund processed cleanly, balance updated, and audit log preserved | **PASS** |
 
 ---
 
