@@ -116,7 +116,7 @@ renderAdminLayoutStart('Guests', 'guests', $currentAdmin, ['../assets/css/admin/
                                         <small class="text-light-emphasis"><?php echo e(formatMoney($pendingPaid)); ?> pending • <?php echo e(formatMoney($balanceDue)); ?> balance</small>
                                     </td>
                                     <td class="text-end">
-                                        <a class="btn btn-sm btn-outline-light" href="receipt.php?reservation_id=<?php echo e($reservation['reservation_id']); ?>">Receipt</a>
+                                        <a class="btn btn-sm btn-outline-warning fw-semibold" href="receipt.php?reservation_id=<?php echo e($reservation['reservation_id']); ?>"><i class="bi bi-receipt me-1"></i>Receipt</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

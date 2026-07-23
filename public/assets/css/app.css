@@ -2844,5 +2844,23 @@ body.light-mode .modal-footer .btn-outline-light:hover {
     background: #E2E8F0 !important;
 }
 
+body.light-mode .btn-outline-light {
+    color: #334155 !important;
+    border-color: #CBD5E1 !important;
+    background: #FFFFFF !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-mode .btn-outline-light:hover {
+    color: #0F172A !important;
+    background: #F1F5F9 !important;
+    border-color: #94A3B8 !important;
+}
+
+body.light-mode .btn-outline-light i {
+    color: #475569 !important;
+}
+
+
 
 
