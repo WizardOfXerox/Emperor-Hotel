@@ -127,28 +127,41 @@ renderAdminLayoutStart('Create Reservation', 'create-reservation', $currentAdmin
             <input type="hidden" name="action" value="create">
             <input type="hidden" name="guest_id" value="<?php echo e($prefillGuest['guest_id'] ?? ''); ?>">
 
-            <!-- Section 1: Guest Details -->
-            <div class="panel-card p-4">
-                <h4 class="h6 mb-3 text-warning"><i class="bi bi-person-circle me-2"></i>Guest Details</h4>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label" for="full_name">Full Name</label>
-                        <input class="form-control" id="full_name" name="full_name" type="text" value="<?php echo e(trim((string) (($prefillGuest['first_name'] ?? '') . ' ' . ($prefillGuest['last_name'] ?? '')))); ?>" placeholder="e.g. John Doe" required>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label" for="phone">Phone Number</label>
-                        <input class="form-control" id="phone" name="phone" type="tel" value="<?php echo e($prefillGuest['phone'] ?? ''); ?>" placeholder="+63 912 345 6789">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label" for="email">Email Address</label>
-                        <input class="form-control" id="email" name="email" type="email" value="<?php echo e($prefillGuest['email'] ?? ''); ?>" placeholder="guest@example.com">
+            <!-- Combined Row: Guest Details (Left) + Stay Schedule Calendar (Right) -->
+            <div class="row g-4 align-items-stretch mb-2">
+                <!-- Left Column: Guest Details -->
+                <div class="col-lg-5">
+                    <div class="panel-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <h4 class="h6 mb-3 text-warning font-serif fw-bold"><i class="bi bi-person-circle me-2"></i>Guest Details</h4>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small text-muted" for="full_name">Full Name</label>
+                                    <input class="form-control" id="full_name" name="full_name" type="text" value="<?php echo e(trim((string) (($prefillGuest['first_name'] ?? '') . ' ' . ($prefillGuest['last_name'] ?? '')))); ?>" placeholder="e.g. John Doe" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small text-muted" for="phone">Phone Number</label>
+                                    <input class="form-control" id="phone" name="phone" type="tel" value="<?php echo e($prefillGuest['phone'] ?? ''); ?>" placeholder="+63 912 345 6789">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small text-muted" for="email">Email Address</label>
+                                    <input class="form-control" id="email" name="email" type="email" value="<?php echo e($prefillGuest['email'] ?? ''); ?>" placeholder="guest@example.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-3 mt-4" style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.2);">
+                            <small class="text-muted d-block"><i class="bi bi-info-circle text-warning me-1"></i> <strong>Admin Quick Tip:</strong> Guest details are automatically linked or registered to guest records upon submission.</small>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Section 2: Stay Schedule with 7-Column Interactive Calendar -->
-            <div class="panel-card p-4 border-0 p-0 shadow-none bg-transparent">
-                <?php renderInlineCalendarWidget($availabilityCheckIn, $availabilityCheckOut); ?>
+                <!-- Right Column: Stay Schedule Calendar -->
+                <div class="col-lg-7">
+                    <div class="panel-card p-0 border-0 shadow-none bg-transparent h-100">
+                        <?php renderInlineCalendarWidget($availabilityCheckIn, $availabilityCheckOut); ?>
+                    </div>
+                </div>
             </div>
 
             <!-- Section 3: Room Selection -->
