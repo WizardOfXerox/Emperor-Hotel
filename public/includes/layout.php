@@ -42,7 +42,10 @@ function renderFlashBlock(): void
             default => 'info',
         };
 
-        echo '<div class="alert alert-' . e($type) . ' mb-4">' . e($message['message']) . '</div>';
+        echo '<div class="alert alert-' . e($type) . ' alert-dismissible fade show mb-4 shadow-sm" role="alert">' 
+            . e($message['message']) 
+            . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+            . '</div>';
     }
 }
 
@@ -124,6 +127,23 @@ function renderAdminLayoutEnd(): void
     echo '<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>';
     echo '<script src="../assets/js/support-widget.js" defer></script>';
     echo '<script src="../assets/js/admin-notifications.js" defer></script>';
+    echo <<<'HTML'
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => {
+        document.querySelectorAll(".alert").forEach((alertEl) => {
+            alertEl.classList.remove("show");
+            alertEl.classList.add("fade");
+            setTimeout(() => {
+                if (alertEl && alertEl.parentNode) {
+                    alertEl.parentNode.removeChild(alertEl);
+                }
+            }, 400);
+        });
+    }, 3000);
+});
+</script>
+HTML;
     echo '</body></html>';
 }
 
@@ -170,6 +190,23 @@ function renderSiteLayoutEnd(): void
     renderSupportWidget('customer');
     echo '<script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>';
     echo '<script src="../assets/js/support-widget.js" defer></script>';
+    echo <<<'HTML'
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => {
+        document.querySelectorAll(".alert").forEach((alertEl) => {
+            alertEl.classList.remove("show");
+            alertEl.classList.add("fade");
+            setTimeout(() => {
+                if (alertEl && alertEl.parentNode) {
+                    alertEl.parentNode.removeChild(alertEl);
+                }
+            }, 400);
+        });
+    }, 3000);
+});
+</script>
+HTML;
     echo '</body></html>';
 }
 
