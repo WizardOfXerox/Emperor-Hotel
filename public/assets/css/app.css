@@ -563,6 +563,12 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
         rgba(15, 23, 42, 0.9);
 }
 
+.panel-card .cost-tracker {
+    border: none;
+    background: transparent;
+    padding: 0;
+}
+
 .cost-tracker__head {
     display: flex;
     align-items: flex-start;

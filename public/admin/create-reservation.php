@@ -6,6 +6,7 @@ require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/room_catalog.php';
 require_once __DIR__ . '/../includes/room_selection.php';
+require_once __DIR__ . '/../includes/calendar_picker.php';
 
 requireAuth('../auth/login.php');
 requireRole('admin', '../user/dashboard.php');
@@ -149,18 +150,42 @@ renderAdminLayoutStart('Create Reservation', 'create-reservation', $currentAdmin
                 </div>
             </div>
 
-            <!-- Section 2: Stay Schedule -->
+            <!-- Section 2: Stay Schedule with 7-Column Interactive Calendar -->
             <div class="panel-card p-4">
-                <h4 class="h6 mb-3 text-warning"><i class="bi bi-calendar-range me-2"></i>Stay Schedule</h4>
-                <div class="row g-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+                    <h4 class="h6 mb-0 text-warning"><i class="bi bi-calendar-range me-2"></i>Stay Schedule</h4>
+                    <span id="inlineStayDurationBadge" class="badge-soft text-warning"><i class="bi bi-calendar-check me-1"></i>Select stay dates on calendar grid</span>
+                </div>
+                <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label class="form-label" for="check_in">Check In Date</label>
-                        <input class="form-control" id="check_in" name="check_in" type="date" value="<?php echo e($availabilityCheckIn); ?>" required>
+                        <label class="form-label" for="modalCheckInInput">Check In Date</label>
+                        <input class="form-control" id="modalCheckInInput" name="check_in" type="date" value="<?php echo e($availabilityCheckIn); ?>" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" for="check_out">Check Out Date</label>
-                        <input class="form-control" id="check_out" name="check_out" type="date" value="<?php echo e($availabilityCheckOut); ?>" required>
+                        <label class="form-label" for="modalCheckOutInput">Check Out Date</label>
+                        <input class="form-control" id="modalCheckOutInput" name="check_out" type="date" value="<?php echo e($availabilityCheckOut); ?>" required>
                     </div>
+                </div>
+
+                <!-- 7-Column Interactive Visual Calendar Grid -->
+                <div id="calendarVisualGrid" class="p-3 rounded-4 border shadow-sm" style="max-width: 520px; width: 100%; margin: 0 auto; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(-1)" style="width: 34px; height: 34px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-left"></i></button>
+                        <h5 class="m-0 font-serif fw-bold fs-6 text-center" id="calendarMonthTitle" style="color: #FFDF73;">July 2026</h5>
+                        <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(1)" style="width: 34px; height: 34px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-right"></i></button>
+                    </div>
+                    
+                    <div class="calendar-grid-header mb-2 text-center font-serif fw-bold text-uppercase text-xs">
+                        <div style="color: #FBBF24;">Sun</div>
+                        <div style="color: #F8FAFC;">Mon</div>
+                        <div style="color: #F8FAFC;">Tue</div>
+                        <div style="color: #F8FAFC;">Wed</div>
+                        <div style="color: #F8FAFC;">Thu</div>
+                        <div style="color: #F8FAFC;">Fri</div>
+                        <div style="color: #FBBF24;">Sat</div>
+                    </div>
+                    
+                    <div class="calendar-grid-days text-center" id="calendarDaysGrid"></div>
                 </div>
             </div>
 
@@ -197,7 +222,7 @@ renderAdminLayoutStart('Create Reservation', 'create-reservation', $currentAdmin
                 
                 <?php renderReservationCostTracker(); ?>
 
-                <div class="row g-3 mt-1">
+                <div class="row g-3 mt-3">
                     <div class="col-md-12">
                         <label class="form-label" for="payment_method">Payment Mode</label>
                         <select class="form-select" id="payment_method" name="payment_method" data-reservation-payment-method>
