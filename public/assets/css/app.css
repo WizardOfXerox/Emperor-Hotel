@@ -899,37 +899,203 @@ body.light-mode .form-select:focus {
     box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.15) !important;
 }
 
+body.light-mode .table,
+body.light-mode .table-responsive,
+body.light-mode .admin-page--dashboard .table-responsive,
+body.light-mode .admin-page--dashboard .table,
+body.light-mode .admin-page--dashboard .table-dark-soft,
 body.light-mode .table-dark-soft {
-    --bs-table-bg: #ffffff;
-    --bs-table-color: #0f172a;
-    --bs-table-border-color: rgba(15, 23, 42, 0.08);
+    background: #ffffff !important;
+    --bs-table-bg: #ffffff !important;
+    --bs-table-color: #0f172a !important;
+    --bs-table-border-color: rgba(180, 140, 60, 0.18) !important;
+    color: #0f172a !important;
+    border-color: rgba(180, 140, 60, 0.18) !important;
 }
 
-body.light-mode .table-dark-soft th {
+body.light-mode .table th,
+body.light-mode .table td,
+body.light-mode .admin-page--dashboard .table-dark-soft > :not(caption) > * > * {
+    color: #0f172a !important;
+    background-color: transparent !important;
+    border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode .table th {
     background-color: #f8f6f0 !important;
     color: #334155 !important;
 }
 
+body.light-mode .room-picker,
+body.light-mode .room-picker__toolbar,
+body.light-mode .room-picker__viewport,
+body.light-mode .room-choice-categories,
+body.light-mode .room-choice-category,
+body.light-mode .room-choice-category__head,
+body.light-mode .room-choice-grid,
+body.light-mode .room-inclusion-preview,
+body.light-mode .room-row-matrix-wrapper,
+body.light-mode .room-matrix-container,
+body.light-mode .rooms-availability-card,
+body.light-mode .floor-map-wrapper,
+body.light-mode .user-booking-room-panel {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: rgba(180, 140, 60, 0.18) !important;
+}
+
+body.light-mode .room-choice-card,
+body.light-mode .room-block,
+body.light-mode .floor-room-tile {
+    background: #f8f6f0 !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .room-choice-card strong,
+body.light-mode .room-choice-card span,
+body.light-mode .room-choice-card div,
+body.light-mode .room-choice-card__room-number,
+body.light-mode .room-block strong,
+body.light-mode .room-block div,
+body.light-mode .room-block span {
+    color: #0f172a !important;
+}
+
+body.light-mode .room-choice-card small,
+body.light-mode .room-block small {
+    color: #475569 !important;
+}
+
+body.light-mode .room-choice-card:hover,
+body.light-mode .room-choice-card.is-selected,
+body.light-mode .room-choice-card:has(.room-choice-input:checked),
+body.light-mode .room-block:hover {
+    background: #fffbeb !important;
+    border-color: #d97706 !important;
+    box-shadow: 0 4px 15px rgba(217, 119, 6, 0.12) !important;
+}
+
+body.light-mode .room-choice-category__head h4 {
+    color: #b45309 !important;
+}
+
+body.light-mode .room-inclusion-preview,
+body.light-mode #inclusionsPreviewCard,
+body.light-mode .inclusions-box,
+body.light-mode .room-inclusions-preview {
+    background: #fffbeb !important;
+    border: 1px solid #fde68a !important;
+    color: #78350f !important;
+}
+
+body.light-mode .room-inclusion-preview h4,
+body.light-mode .room-inclusion-preview p,
+body.light-mode .room-inclusion-preview div,
+body.light-mode .room-inclusion-preview li,
+body.light-mode #inclusionsPreviewCard h4,
+body.light-mode #inclusionsPreviewCard p,
+body.light-mode #inclusionsPreviewCard div,
+body.light-mode #inclusionsPreviewCard li {
+    color: #78350f !important;
+}
+
+body.light-mode .cost-tracker,
+body.light-mode .cost-tracker__grid,
+body.light-mode .cost-tracker__item,
+body.light-mode .cost-tracker__total,
+body.light-mode #paymentsCostTracker,
+body.light-mode .payment-balance-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.18) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .cost-tracker__item {
+    background: #f8f6f0 !important;
+    border: 1px solid rgba(180, 140, 60, 0.12) !important;
+}
+
+body.light-mode .cost-tracker__total {
+    background: #fffbeb !important;
+    border: 1px solid #fde68a !important;
+}
+
+body.light-mode .cost-tracker__item div,
+body.light-mode .cost-tracker__item span,
+body.light-mode .cost-tracker__item strong {
+    color: #0f172a !important;
+}
+
+body.light-mode .cost-tracker__total strong {
+    color: #b45309 !important;
+}
+
+body.light-mode .reservation-action-modal .modal-content,
 body.light-mode .modal-content {
     background: #ffffff !important;
     color: #0f172a !important;
-    border: 1px solid rgba(15, 23, 42, 0.15) !important;
-    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15) !important;
+    border: 1px solid rgba(180, 140, 60, 0.25) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+}
+
+body.light-mode .reservation-modal-summary > div,
+body.light-mode .reservation-modal-section,
+body.light-mode .availability-filter-card {
+    background: #f8f6f0 !important;
+    border: 1px solid rgba(180, 140, 60, 0.18) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .reservation-modal-summary span {
+    color: #475569 !important;
+}
+
+body.light-mode .reservation-modal-summary strong {
+    color: #0f172a !important;
+}
+
+body.light-mode .reservation-modal-section h6 {
+    color: #b45309 !important;
+}
+
+body.light-mode .calendar-card,
+body.light-mode .calendar-dropdown,
+body.light-mode #homeCalendarPopup,
+body.light-mode .home-calendar-popup,
+body.light-mode .calendar-popover,
+body.light-mode .in-place-calendar-container,
+body.light-mode .calendar-picker-popup {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.22) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .calendar-grid-header div,
+body.light-mode .calendar-header button,
+body.light-mode .calendar-header span,
+body.light-mode .calendar-title {
+    color: #0f172a !important;
 }
 
 body.light-mode .modal-header {
-    border-bottom-color: rgba(15, 23, 42, 0.1) !important;
+    border-bottom-color: rgba(180, 140, 60, 0.18) !important;
 }
 
 body.light-mode .modal-footer {
-    border-top-color: rgba(15, 23, 42, 0.1) !important;
+    border-top-color: rgba(180, 140, 60, 0.18) !important;
+}
+
+body.light-mode .btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(20%) !important;
 }
 
 body.light-mode .dropdown-menu-dark {
     background-color: #ffffff !important;
     color: #0f172a !important;
-    border-color: rgba(15, 23, 42, 0.15) !important;
-    box-shadow: 0 15px 40px rgba(15, 23, 42, 0.12) !important;
+    border-color: rgba(180, 140, 60, 0.2) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1) !important;
 }
 
 body.light-mode .dropdown-menu-dark .dropdown-header {
@@ -946,7 +1112,7 @@ body.light-mode .dropdown-menu-dark .dropdown-item:hover {
 }
 
 body.light-mode .calendar-day-btn {
-    background: #f1f5f9 !important;
+    background: #f8f6f0 !important;
     color: #0f172a !important;
     border-color: #cbd5e1 !important;
 }
@@ -978,4 +1144,5 @@ body.light-mode .theme-toggle-btn:hover {
     color: #78350f !important;
     border-color: #d97706 !important;
 }
+
 
