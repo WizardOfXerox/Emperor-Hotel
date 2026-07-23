@@ -10,9 +10,11 @@ function renderRoomShowcaseSection(): void
     $catalog = roomCatalog();
     $roomStats = [];
     $roomDataUnavailable = false;
+    $db = null;
 
     try {
-        $roomModel = new Room(Database::connect());
+        $db = Database::connect();
+        $roomModel = new Room($db);
         $roomStats = $roomModel->typeSummary();
     } catch (Throwable) {
         $roomDataUnavailable = true;
