@@ -105,8 +105,8 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
                     <div>
                         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
                             <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-gold text-dark font-serif fw-bold px-2 py-1 text-xs">Floor <?= e($mostBookedRoom['floor']) ?></span>
-                                <span class="badge bg-dark text-warning border border-warning font-serif fw-bold px-2 py-1 text-xs">Room #<?= e($mostBookedRoom['room_number']) ?></span>
+                                <span class="badge font-serif fw-bold px-2 py-1 text-xs floor-badge">Floor <?= e($mostBookedRoom['floor']) ?></span>
+                                <span class="badge font-serif fw-bold px-2 py-1 text-xs room-number-badge">Room #<?= e($mostBookedRoom['room_number']) ?></span>
                                 <span class="badge bg-success text-white font-serif fw-bold px-2 py-1 text-xs"><i class="bi bi-fire me-1"></i><?= (int)$mostBookedRoom['booking_count'] ?> Total Bookings</span>
                             </div>
                             <div>
@@ -158,15 +158,15 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
                                     <img src="<?= e($heroImg) ?>" alt="<?= e($rmType) ?>" class="w-100 h-100 object-fit-cover">
                                     
                                     <div class="position-absolute top-0 start-0 p-2">
-                                        <span class="badge bg-gold text-dark font-serif fw-bold px-2 py-1 text-xs">Floor <?= e($rm['floor']) ?></span>
+                                        <span class="badge font-serif fw-bold px-2 py-1 text-xs floor-badge">Floor <?= e($rm['floor']) ?></span>
                                     </div>
 
                                     <div class="position-absolute top-0 end-0 p-2 d-flex flex-column align-items-end gap-1">
-                                        <span class="badge bg-dark bg-opacity-75 text-warning font-serif fw-bold px-2 py-1 border border-warning text-xs">Room #<?= e($rm['room_number']) ?></span>
+                                        <span class="badge font-serif fw-bold px-2 py-1 text-xs room-number-badge">Room #<?= e($rm['room_number']) ?></span>
                                         <?php if ($isAvail): ?>
-                                            <span class="badge bg-success text-white font-serif fw-bold px-2 py-1 text-xs shadow"><i class="bi bi-check-circle-fill me-1"></i>Available</span>
+                                            <span class="badge status-badge-available font-serif fw-bold px-2 py-1 text-xs shadow"><i class="bi bi-check-circle-fill me-1"></i>Available</span>
                                         <?php else: ?>
-                                            <span class="badge bg-danger text-white font-serif fw-bold px-2 py-1 text-xs shadow"><i class="bi bi-calendar-x-fill me-1"></i>Reserved</span>
+                                            <span class="badge status-badge-reserved font-serif fw-bold px-2 py-1 text-xs shadow"><i class="bi bi-calendar-x-fill me-1"></i>Reserved</span>
                                         <?php endif; ?>
                                     </div>
                                 </div>

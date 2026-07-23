@@ -2203,10 +2203,98 @@ body.light-mode .calendar-visual-grid .calendar-grid-header {
     color: #64748b !important;
 }
 
-body.light-mode .calendar-visual-grid .calendar-day-btn:not(.is-selected):not(.is-in-range) {
+/* ===== ROOM NAV BUTTONS (PREV / NEXT / BACK TO CATALOG) ===== */
+.room-nav-btn {
+    background: rgba(30, 41, 59, 0.85) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    color: #f8fafc !important;
+}
+
+.room-nav-btn:hover {
+    background: rgba(212, 175, 55, 0.25) !important;
+    border-color: #FFDF73 !important;
+    color: #FFDF73 !important;
+}
+
+.room-nav-btn-text {
+    color: #f8fafc !important;
+    font-weight: 600 !important;
+}
+
+body.light-mode .room-nav-btn {
     background: #ffffff !important;
+    border: 1.5px solid rgba(180, 140, 60, 0.4) !important;
     color: #0f172a !important;
-    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.light-mode .room-nav-btn-text {
+    color: #0f172a !important;
+}
+
+body.light-mode .room-nav-btn:hover {
+    background: #fffbeb !important;
+    border-color: #d97706 !important;
+    color: #b45309 !important;
+}
+
+/* ===== HIGH-CONTRAST FLOOR BADGE ===== */
+.floor-badge {
+    background: linear-gradient(135deg, #d4af37 0%, #ffdf73 50%, #aa7c11 100%) !important;
+    color: #070a10 !important;
+    font-weight: 800 !important;
+    border: none !important;
+}
+
+body.light-mode .floor-badge {
+    background: #fffbeb !important;
+    color: #b45309 !important;
+    border: 1.5px solid #fde68a !important;
+    font-weight: 800 !important;
+}
+
+/* ===== VIVID HIGH-CONTRAST ROOM STATUS BADGES ===== */
+.status-badge-available {
+    background: #059669 !important;
+    color: #ffffff !important;
+    border: 1px solid #10b981 !important;
+    font-weight: 700 !important;
+}
+
+.status-badge-reserved {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border: 1px solid #3b82f6 !important;
+    font-weight: 700 !important;
+}
+
+.status-badge-occupied {
+    background: #d97706 !important;
+    color: #ffffff !important;
+    border: 1px solid #f59e0b !important;
+    font-weight: 700 !important;
+}
+
+.status-badge-cleaning {
+    background: #7c3aed !important;
+    color: #ffffff !important;
+    border: 1px solid #a855f7 !important;
+    font-weight: 700 !important;
+}
+
+/* Room Number Tag (#101, #102) */
+.room-number-badge {
+    background: #0f172a !important;
+    color: #FFDF73 !important;
+    border: 1.5px solid #d4af37 !important;
+    font-weight: 800 !important;
+}
+
+body.light-mode .room-number-badge {
+    background: #ffffff !important;
+    color: #b45309 !important;
+    border: 1.5px solid #f59e0b !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
 }
 
 

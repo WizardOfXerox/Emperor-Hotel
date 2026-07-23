@@ -169,18 +169,18 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
         <!-- Navigation & Room Switcher Controls -->
         <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3 p-3 rounded-4 room-detail-nav-bar shadow-sm">
             <div class="d-flex flex-wrap align-items-center gap-2">
-                <a href="rooms.php#suite-catalog" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold shadow text-uppercase tracking-wider" style="background: rgba(30, 41, 59, 0.9); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.45);">
-                    <i class="bi bi-arrow-left me-1"></i>Back to Catalog
+                <a href="rooms.php#suite-catalog" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-bold shadow text-uppercase tracking-wider room-nav-btn">
+                    <i class="bi bi-arrow-left me-1 text-warning"></i><span class="room-nav-btn-text">Back to Catalog</span>
                 </a>
 
                 <?php if ($prevRoom): ?>
-                    <a href="room-detail.php?id=<?= (int)$prevRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold shadow-sm" style="border: 1px solid rgba(212, 175, 55, 0.3);" title="Go to Room #<?= e($prevRoom['room_number']) ?>">
-                        <i class="bi bi-chevron-left me-1" style="color: #FFDF73;"></i>Prev: Room #<?= e($prevRoom['room_number']) ?>
+                    <a href="room-detail.php?id=<?= (int)$prevRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold shadow-sm room-nav-btn" title="Go to Room #<?= e($prevRoom['room_number']) ?>">
+                        <i class="bi bi-chevron-left me-1 text-warning"></i><span class="room-nav-btn-text">Prev: Room #<?= e($prevRoom['room_number']) ?></span>
                     </a>
                 <?php endif; ?>
                 <?php if ($nextRoom): ?>
-                    <a href="room-detail.php?id=<?= (int)$nextRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold shadow-sm" style="border: 1px solid rgba(212, 175, 55, 0.3);" title="Go to Room #<?= e($nextRoom['room_number']) ?>">
-                        Next: Room #<?= e($nextRoom['room_number']) ?><i class="bi bi-chevron-right ms-1" style="color: #FFDF73;"></i>
+                    <a href="room-detail.php?id=<?= (int)$nextRoom['room_id'] ?><?= $dateParams ?>" class="btn btn-sm rounded-pill px-3 py-2 font-serif fw-semibold shadow-sm room-nav-btn" title="Go to Room #<?= e($nextRoom['room_number']) ?>">
+                        <span class="room-nav-btn-text">Next: Room #<?= e($nextRoom['room_number']) ?></span><i class="bi bi-chevron-right ms-1 text-warning"></i>
                     </a>
                 <?php endif; ?>
             </div>
@@ -242,7 +242,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                 <div class="card rounded-4 p-4 shadow-lg h-100 d-flex flex-column justify-content-between border room-detail-card">
                     <div>
                         <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-secondary">
-                            <span class="badge px-3 py-1 rounded-pill font-serif fw-bold" style="background: rgba(212, 175, 55, 0.2); border: 1px solid rgba(212, 175, 55, 0.5); color: #FFDF73;">
+                            <span class="badge px-3 py-1 rounded-pill font-serif fw-bold floor-badge">
                                 <i class="bi bi-layers me-1"></i>Floor <?= e($room['floor']) ?>
                             </span>
                             <div style="color: #FBBF24;" class="fw-bold fs-6">
@@ -514,12 +514,12 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                         $isSelf = (int)$otherRoom['room_id'] === (int)$room['room_id'];
                         $otherTypeCatalog = $catalog[$otherRoom['room_type']] ?? null;
                         $otherImg = $otherTypeCatalog['hero'] ?? '../assets/images/rooms/hero.jpg';
-                        $otherBadgeStyle = match ($otherRoom['status']) {
-                            'Available' => 'background: rgba(16, 185, 129, 0.35); border: 1px solid #10B981; color: #A7F3D0;',
-                            'Reserved' => 'background: rgba(59, 130, 246, 0.35); border: 1px solid #3B82F6; color: #BFDBFE;',
-                            'Occupied' => 'background: rgba(245, 158, 11, 0.35); border: 1px solid #F59E0B; color: #FDE68A;',
-                            'Cleaning' => 'background: rgba(168, 85, 247, 0.35); border: 1px solid #A855F7; color: #DDD6FE;',
-                            default => 'background: rgba(148, 163, 184, 0.3); color: #F1F5F9;',
+                        $otherBadgeClass = match ($otherRoom['status']) {
+                            'Available' => 'status-badge-available',
+                            'Reserved' => 'status-badge-reserved',
+                            'Occupied' => 'status-badge-occupied',
+                            'Cleaning' => 'status-badge-cleaning',
+                            default => 'status-badge-reserved',
                         };
                     ?>
                         <a href="room-detail.php?id=<?= (int)$otherRoom['room_id'] ?><?= $dateParams ?>" 
@@ -530,10 +530,10 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                             <div class="position-relative overflow-hidden" style="height: 140px;">
                                 <img src="<?= e($otherImg) ?>" alt="Room #<?= e($otherRoom['room_number']) ?>" class="w-100 h-100 object-fit-cover transition-transform">
                                 <div class="position-absolute top-0 start-0 p-2">
-                                    <span class="badge text-xs px-2 py-1 rounded-pill fw-bold" style="<?= $otherBadgeStyle ?>"><?= $otherRoom['status'] ?></span>
+                                    <span class="badge text-xs px-2 py-1 rounded-pill fw-bold <?= $otherBadgeClass ?>"><?= $otherRoom['status'] ?></span>
                                 </div>
                                 <div class="position-absolute top-0 end-0 p-2">
-                                    <span class="badge bg-dark bg-opacity-75 text-warning font-serif fw-bold px-2 py-1 border border-warning text-xs">#<?= e($otherRoom['room_number']) ?></span>
+                                    <span class="badge font-serif fw-bold px-2 py-1 text-xs room-number-badge">#<?= e($otherRoom['room_number']) ?></span>
                                 </div>
                             </div>
 
