@@ -31,9 +31,16 @@ renderHeader('Receipt #' . $reservationId, ['../assets/css/admin/receipt.css'], 
 ?>
 <main class="receipt-shell">
     <div class="receipt-actions no-print">
-        <a class="btn btn-outline-light" href="reservations.php"><i class="bi bi-arrow-left me-1"></i>Back to Reservations</a>
-        <a class="btn btn-warning" href="payments.php?reservation_id=<?php echo e($reservationId); ?>">Add Payment</a>
-        <button class="btn btn-light" type="button" onclick="window.print()">Print Receipt</button>
+        <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-warning fw-semibold" href="reservations.php"><i class="bi bi-arrow-left me-1"></i>Back to Reservations</a>
+            <a class="btn btn-outline-light fw-semibold" href="payments.php?reservation_id=<?php echo e($reservationId); ?>"><i class="bi bi-plus-circle me-1"></i>Add Payment</a>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn theme-toggle-btn rounded-circle d-inline-flex align-items-center justify-content-center border-0 p-0" style="width: 38px; height: 38px; background: rgba(253, 215, 0, 0.15);" type="button" onclick="toggleEmperorTheme()" title="Toggle Theme" aria-label="Toggle Theme">
+                <i class="bi bi-sun-fill fs-5 text-warning"></i>
+            </button>
+            <button class="btn btn-light fw-semibold" type="button" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print Receipt</button>
+        </div>
     </div>
 
     <section class="receipt-paper">
