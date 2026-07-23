@@ -14,9 +14,13 @@ $paymentModel = new Payment($db);
 $reservationModel = new Reservation($db);
 $selectedReservationId = (int) ($_GET['reservation_id'] ?? ($_POST['reservation_id'] ?? 0));
 $selectedPaymentMethod = (string) ($_GET['payment_method'] ?? ($_POST['payment_method'] ?? ''));
+$selectedPaymentStatus = (string) ($_GET['payment_status'] ?? ($_POST['payment_status'] ?? 'Confirmed'));
 
 if (!in_array($selectedPaymentMethod, Payment::methods(), true)) {
     $selectedPaymentMethod = '';
+}
+if (!in_array($selectedPaymentStatus, Payment::statuses(), true)) {
+    $selectedPaymentStatus = 'Confirmed';
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -156,11 +160,11 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                 <div>
                     <label class="form-label" for="payment_status">Status / Review Decision</label>
                     <select class="form-select" id="payment_status" name="payment_status" <?php echo !$reservations ? 'disabled' : ''; ?>>
-                        <?php foreach (Payment::statuses() as $status): ?>
-                            <option value="<?php echo e($status); ?>" <?php echo $status === 'Confirmed' ? 'selected' : ''; ?>><?php echo e($status); ?></option>
-                        <?php endforeach; ?>
+                        <option value="Confirmed" <?php echo $selectedPaymentStatus === 'Confirmed' ? 'selected' : ''; ?>>Confirmed (Payment Accepted)</option>
+                        <option value="Pending" <?php echo $selectedPaymentStatus === 'Pending' ? 'selected' : ''; ?>>Pending (Needs Review)</option>
+                        <option value="Refunded" <?php echo $selectedPaymentStatus === 'Refunded' ? 'selected' : ''; ?>>Refunded (Process Refund)</option>
                     </select>
-                    <div class="form-text">Use Confirmed for accepted walk-in cash/card payments. Use Pending for transactions that still need admin review.</div>
+                    <div class="form-text">Use Confirmed for accepted payments. Use Pending for admin review. Use Refunded to record a guest refund.</div>
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" id="is_simulated" name="is_simulated" type="checkbox" value="1" <?php echo !$reservations ? 'disabled' : ''; ?>>
