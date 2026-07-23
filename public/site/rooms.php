@@ -22,6 +22,20 @@ $checkOut = trim((string) ($_GET['check_out'] ?? ''));
 if ($checkIn === '') $checkIn = (new DateTimeImmutable('today'))->format('Y-m-d');
 if ($checkOut === '') $checkOut = (new DateTimeImmutable('today'))->modify('+1 day')->format('Y-m-d');
 
+// Fetch Most Booked Room from database
+$mostBookedStmt = $db->query("
+    SELECT r.*, COUNT(res.reservation_id) AS booking_count,
+           COALESCE(AVG(rev.rating), 5.0) AS avg_rating,
+           COUNT(rev.review_id) AS review_count
+    FROM rooms r
+    LEFT JOIN reservations res ON r.room_id = res.room_id
+    LEFT JOIN room_reviews rev ON r.room_id = rev.room_id
+    GROUP BY r.room_id
+    ORDER BY booking_count DESC, avg_rating DESC
+    LIMIT 1
+");
+$mostBookedRoom = $mostBookedStmt->fetch(PDO::FETCH_ASSOC);
+
 renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'], '');
 ?>
 
@@ -68,6 +82,56 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
             </span>
         </div>
     </div>
+
+    <!-- ⭐ MOST BOOKED SUITE SHOWCASE SECTION -->
+    <?php if ($mostBookedRoom): 
+        $mbType = $mostBookedRoom['room_type'];
+        $mbInfo = $catalog[$mbType] ?? null;
+        $mbHeroImg = $mbInfo['hero'] ?? '../assets/images/rooms/hero.jpg';
+        $mbDetailUrl = 'room-detail.php?id=' . (int)$mostBookedRoom['room_id'] . '&check_in=' . urlencode($checkIn) . '&check_out=' . urlencode($checkOut);
+        $mbRating = number_format((float)($mostBookedRoom['avg_rating'] ?: 5.0), 1);
+    ?>
+        <div class="card rounded-4 overflow-hidden border shadow-xl mb-4 most-booked-showcase-card">
+            <div class="row g-0 align-items-center">
+                <div class="col-12 col-md-5 col-lg-4 position-relative overflow-hidden" style="min-height: 220px;">
+                    <img src="<?= e($mbHeroImg) ?>" alt="Most Booked Suite" class="w-100 h-100 object-fit-cover" style="min-height: 220px;">
+                    <div class="position-absolute top-0 start-0 p-3">
+                        <span class="badge bg-warning text-dark font-serif fw-bold px-3 py-2 shadow rounded-pill text-xs">
+                            <i class="bi bi-trophy-fill me-1 text-dark"></i>MOST BOOKED SUITE
+                        </span>
+                    </div>
+                </div>
+                <div class="col-12 col-md-7 col-lg-8 p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-gold text-dark font-serif fw-bold px-2 py-1 text-xs">Floor <?= e($mostBookedRoom['floor']) ?></span>
+                                <span class="badge bg-dark text-warning border border-warning font-serif fw-bold px-2 py-1 text-xs">Room #<?= e($mostBookedRoom['room_number']) ?></span>
+                                <span class="badge bg-success text-white font-serif fw-bold px-2 py-1 text-xs"><i class="bi bi-fire me-1"></i><?= (int)$mostBookedRoom['booking_count'] ?> Total Bookings</span>
+                            </div>
+                            <div>
+                                <span class="text-warning fw-bold text-xs"><i class="bi bi-star-fill me-1"></i><?= $mbRating ?> / 5.0 Rating</span>
+                            </div>
+                        </div>
+
+                        <h4 class="font-serif fw-bold mb-1 most-booked-title"><?= e($mbType) ?> — Room #<?= e($mostBookedRoom['room_number']) ?></h4>
+                        <p class="text-xs opacity-75 mb-3"><?= e($mbInfo['tagline'] ?? 'Our most requested guest suite featuring premier amenities and city skyline views.') ?></p>
+
+                        <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+                            <span class="fs-4 fw-bold text-warning font-serif">₱<?= number_format((float)$mostBookedRoom['price_per_night']) ?> <small class="fs-6 opacity-75 font-sans fw-normal">/ night</small></span>
+                            <span class="badge rounded-pill text-xs px-3 py-2 room-pill-gold"><i class="bi bi-people-fill me-1"></i>Up to <?= (int)$mostBookedRoom['max_capacity'] ?> Guests</span>
+                            <span class="badge rounded-pill text-xs px-3 py-2 room-pill-glass"><i class="bi bi-eye-fill me-1"></i><?= e($mostBookedRoom['view_type']) ?></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between border-top border-secondary pt-3 mt-2">
+                        <small class="text-muted text-xs"><i class="bi bi-check-circle-fill text-success me-1"></i> Top Guest Choice with <?= (int)$mostBookedRoom['review_count'] ?> Verified Reviews</small>
+                        <a href="<?= e($mbDetailUrl) ?>" class="btn btn-warning rounded-pill px-4 py-2 font-serif fw-bold btn-sm shadow"><i class="bi bi-eye-fill me-1"></i>View Most Booked Suite</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <!-- Main Grid + Right Sidebar Layout -->
     <div class="row g-4">

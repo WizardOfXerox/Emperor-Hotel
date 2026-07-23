@@ -1911,4 +1911,65 @@ body.light-mode .inspector-status-select {
     border: 1px solid #cbd5e1 !important;
 }
 
+/* ===== LIGHT MODE LOG OUT BUTTON CONTRAST FIXES ===== */
+body.light-mode .sidebar .btn-outline-light,
+body.light-mode .sidebar a[href*="logout.php"],
+body.light-mode .sidebar .btn[href*="logout.php"],
+body.light-mode .btn-outline-light[href*="logout.php"] {
+    color: #dc2626 !important;
+    background: #fef2f2 !important;
+    border: 1.5px solid #fca5a5 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.08) !important;
+}
+
+body.light-mode .sidebar .btn-outline-light:hover,
+body.light-mode .sidebar a[href*="logout.php"]:hover,
+body.light-mode .sidebar .btn[href*="logout.php"]:hover,
+body.light-mode .btn-outline-light[href*="logout.php"]:hover {
+    color: #ffffff !important;
+    background: #dc2626 !important;
+    border-color: #dc2626 !important;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35) !important;
+}
+
+body.light-mode .home-nav__cta--secondary,
+body.light-mode a[href*="logout.php"].home-nav__cta--secondary {
+    color: #0f172a !important;
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-mode .home-nav__cta--secondary:hover,
+body.light-mode a[href*="logout.php"].home-nav__cta--secondary:hover {
+    color: #ffffff !important;
+    background: #dc2626 !important;
+    border-color: #dc2626 !important;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35) !important;
+}
+
+/* ===== MOST BOOKED SUITE SHOWCASE CARD ===== */
+.most-booked-showcase-card {
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    color: #f8fafc;
+}
+
+.most-booked-title {
+    color: #FFDF73 !important;
+}
+
+body.light-mode .most-booked-showcase-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.25) !important;
+    color: #0f172a !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-mode .most-booked-title {
+    color: #0f172a !important;
+}
+
 
