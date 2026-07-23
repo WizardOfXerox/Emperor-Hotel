@@ -52,12 +52,13 @@ class Payment
             throw new RuntimeException('Payment amount must be greater than zero.');
         }
 
-        $isSimulated = (bool) ($data['is_simulated'] ?? false);
         $paymentMethod = (string) ($data['payment_method'] ?? 'Cash');
-        $paymentStatus = (string) ($data['payment_status'] ?? ($isSimulated ? 'Pending' : 'Confirmed'));
+        $onlineMethods = ['Credit Card', 'Debit Card', 'E-Wallet', 'Bank Transfer', 'Online Payment'];
 
-        if ($isSimulated) {
-            $paymentStatus = 'Pending';
+        if (in_array($paymentMethod, $onlineMethods, true)) {
+            $paymentStatus = 'Confirmed';
+        } else {
+            $paymentStatus = (string) ($data['payment_status'] ?? 'Confirmed');
         }
 
         $transactionReference = self::generatedReference($reservationId, $isSimulated);

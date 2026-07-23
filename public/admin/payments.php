@@ -79,7 +79,7 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
         <div class="panel-card p-4 h-100">
             <p class="eyebrow mb-1">Payment Entry</p>
             <h3 class="mb-2">Record Guest Payment</h3>
-            <p class="muted-copy">Select a reservation to log a Cash, Credit Card, GCash, or Bank payment and update the reservation balance.</p>
+            <p class="muted-copy">Select a reservation to log a Cash, Credit Card, E-Wallet, or Bank payment and update the reservation balance.</p>
 
             <?php if (!$reservations): ?>
                 <div class="alert alert-warning">Create a reservation before recording a payment.</div>
