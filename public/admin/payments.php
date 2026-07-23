@@ -313,27 +313,35 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
 
     if (searchInput && reservationSelect) {
         searchInput.addEventListener("input", function () {
-            const query = this.value.toLowerCase().trim();
+            const query = this.value.toLowerCase().replace(/[^a-z0-9]/g, '');
             const options = Array.from(reservationSelect.options);
             let firstMatch = null;
 
             options.forEach((opt, idx) => {
                 if (idx === 0) return;
-                const txt = opt.textContent.toLowerCase();
-                const matches = txt.includes(query);
+                const txt = opt.textContent.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const matches = query === '' || txt.includes(query);
                 opt.style.display = matches ? "" : "none";
                 if (matches && !firstMatch) firstMatch = opt;
             });
 
-            if (query.length > 0 && firstMatch) {
-                reservationSelect.value = firstMatch.value;
-            } else if (query.length === 0) {
+            if (query.length > 0) {
+                if (firstMatch) {
+                    reservationSelect.value = firstMatch.value;
+                }
+            } else {
                 options.forEach((opt) => (opt.style.display = ""));
             }
 
-            reservationSelect.dispatchEvent(new Event("change"));
+            updateTracker();
         });
+
+        // Sync search input placeholder/value if preselected
+        if (reservationSelect.value && reservationSelect.selectedOptions[0]) {
+            searchInput.value = reservationSelect.selectedOptions[0].textContent.trim();
+        }
     }
+
     const methodInput = form.querySelector("#payment_method");
     const statusInput = form.querySelector("#payment_status");
     const confirmBtn = form.querySelector("[data-payment-btn-confirm]");
@@ -367,7 +375,7 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
     const updateTracker = () => {
         const option = reservationSelect && reservationSelect.value ? reservationSelect.selectedOptions[0] : null;
 
-        if (!option) {
+        if (!option || !option.value) {
             text("[data-payment-status]", "Choose reservation");
             text("[data-payment-guest]", "Choose a reservation");
             text("[data-payment-room]", "Choose a room");
@@ -432,20 +440,11 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
             if (amountInput) {
                 amountInput.dataset.autofilled = "true";
             }
+            if (searchInput && reservationSelect.selectedOptions[0] && reservationSelect.value) {
+                searchInput.value = reservationSelect.selectedOptions[0].textContent.trim();
+            }
 
             updateTracker();
-        });
-    }
-
-    if (simulatedInput) {
-        simulatedInput.addEventListener("change", () => {
-            if (simulatedInput.checked) {
-                if (statusInput) {
-                    statusInput.value = "Pending";
-                }
-            } else if (statusInput && statusInput.value === "Pending") {
-                statusInput.value = "Confirmed";
-            }
         });
     }
 
