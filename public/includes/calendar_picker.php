@@ -64,6 +64,16 @@ function renderCalendarPickerModal(string $checkInVal = '', string $checkOutVal 
   </div>
 </div>
 
+<?php
+    renderCalendarPickerAssets();
+}
+
+function renderCalendarPickerAssets(): void
+{
+    static $rendered = false;
+    if ($rendered) return;
+    $rendered = true;
+?>
 <script>
 let calCurrentYear = 2026;
 let calCurrentMonth = 6; // 0-indexed: 6 = July
@@ -84,7 +94,7 @@ function formatLocalDate(d) {
 }
 
 function initCalendarApp() {
-    const checkInVal = document.getElementById('modalCheckInInput')?.value;
+    const checkInVal = (document.getElementById('modalCheckInInput') || document.querySelector('input[name="check_in"]'))?.value;
     if (checkInVal) {
         const d = parseLocalDate(checkInVal);
         if (d && !isNaN(d)) {
@@ -95,13 +105,17 @@ function initCalendarApp() {
     renderVisualCalendarGrid();
     updateStayDurationBadge();
 
-    document.getElementById('modalCheckInInput')?.addEventListener('change', () => {
-        updateStayDurationBadge();
-        renderVisualCalendarGrid();
+    document.querySelectorAll('#modalCheckInInput, input[name="check_in"]').forEach(el => {
+        el.addEventListener('change', () => {
+            updateStayDurationBadge();
+            renderVisualCalendarGrid();
+        });
     });
-    document.getElementById('modalCheckOutInput')?.addEventListener('change', () => {
-        updateStayDurationBadge();
-        renderVisualCalendarGrid();
+    document.querySelectorAll('#modalCheckOutInput, input[name="check_out"]').forEach(el => {
+        el.addEventListener('change', () => {
+            updateStayDurationBadge();
+            renderVisualCalendarGrid();
+        });
     });
 }
 
@@ -112,6 +126,7 @@ if (document.readyState === 'loading') {
 }
 
 setTimeout(initCalendarApp, 100);
+setTimeout(initCalendarApp, 500);
 
 function renderVisualCalendarGrid() {
     const monthTitles = document.querySelectorAll('#calendarMonthTitle, .calendar-month-title');
@@ -289,8 +304,8 @@ function handleInlineCalendarSearch() {
 .calendar-grid-days {
     display: grid !important;
     grid-template-columns: repeat(7, 1fr) !important;
-    gap: 8px !important;
-    max-width: 480px !important;
+    gap: 6px !important;
+    max-width: 520px !important;
     margin: 0 auto !important;
 }
 
@@ -309,9 +324,9 @@ function handleInlineCalendarSearch() {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
+    border-radius: 10px;
     font-weight: 700;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     color: #1e293b !important;
     background: #f8fafc !important;
     border: 1px solid #e2e8f0 !important;
@@ -356,7 +371,6 @@ function handleInlineCalendarSearch() {
     opacity: 0;
 }
 </style>
-
 <?php
 }
 
@@ -419,5 +433,6 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
     </div>
 </div>
 <?php
+    renderCalendarPickerAssets();
 }
 
