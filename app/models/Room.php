@@ -131,10 +131,12 @@ class Room
         $maxCapacity = max(1, (int) ($data['max_capacity'] ?? 2));
         $viewType = trim((string) ($data['view_type'] ?? 'City View'));
 
+        $imageUrl = isset($data['image_url']) ? trim((string) $data['image_url']) : null;
+
         // SQL: Inserts a new room record after validating type, status, floor, and price.
         $statement = $this->db->prepare(
-            'INSERT INTO rooms (room_number, room_type, floor, price_per_night, status, bed_type, max_capacity, view_type)
-             VALUES (:room_number, :room_type, :floor, :price_per_night, :status, :bed_type, :max_capacity, :view_type)'
+            'INSERT INTO rooms (room_number, room_type, floor, price_per_night, status, bed_type, max_capacity, view_type, image_url)
+             VALUES (:room_number, :room_type, :floor, :price_per_night, :status, :bed_type, :max_capacity, :view_type, :image_url)'
         );
 
         return $statement->execute([
@@ -146,6 +148,7 @@ class Room
             'bed_type' => $bedType,
             'max_capacity' => $maxCapacity,
             'view_type' => $viewType,
+            'image_url' => $imageUrl !== '' ? $imageUrl : null,
         ]);
     }
 
@@ -167,6 +170,7 @@ class Room
         $bedType = trim((string) ($data['bed_type'] ?? 'King Bed'));
         $maxCapacity = max(1, (int) ($data['max_capacity'] ?? 2));
         $viewType = trim((string) ($data['view_type'] ?? 'City View'));
+        $imageUrl = isset($data['image_url']) ? trim((string) $data['image_url']) : null;
 
         // SQL: Updates all editable room fields for one room record.
         $statement = $this->db->prepare(
@@ -178,7 +182,8 @@ class Room
                  status = :status,
                  bed_type = :bed_type,
                  max_capacity = :max_capacity,
-                 view_type = :view_type
+                 view_type = :view_type,
+                 image_url = :image_url
              WHERE room_id = :room_id'
         );
 
@@ -191,6 +196,7 @@ class Room
             'bed_type' => $bedType,
             'max_capacity' => $maxCapacity,
             'view_type' => $viewType,
+            'image_url' => $imageUrl !== '' ? $imageUrl : null,
             'room_id' => $roomId,
         ]);
     }

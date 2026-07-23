@@ -129,7 +129,29 @@ function getRoomCatalogData(array|string|int $roomOrType): array
         $baseTypeCatalog = $catalog[$type] ?? $catalog['Imperial Deluxe'];
         $override = $perRoom[$roomNum] ?? ($perRoom[$roomId] ?? []);
 
-        return array_merge($baseTypeCatalog, array_filter($override));
+        $merged = array_merge($baseTypeCatalog, array_filter($override));
+
+        if (!empty($roomOrType['image_url'])) {
+            $rawImg = trim((string)$roomOrType['image_url']);
+            $images = [];
+            if (str_starts_with($rawImg, '[')) {
+                $decoded = json_decode($rawImg, true);
+                if (is_array($decoded)) {
+                    $images = array_filter(array_map('trim', $decoded));
+                }
+            }
+            if (empty($images)) {
+                $images = array_filter(array_map('trim', explode(',', $rawImg)));
+            }
+
+            if (!empty($images)) {
+                $images = array_values($images);
+                $merged['hero'] = $images[0];
+                $merged['carousel'] = array_slice($images, 1);
+            }
+        }
+
+        return $merged;
     }
 
     $strKey = (string)$roomOrType;

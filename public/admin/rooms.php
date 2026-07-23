@@ -12,7 +12,7 @@ requireRole('admin', '../user/dashboard.php');
 
 function roomFiltersQuery(array $params = []): string
 {
-    $allowedKeys = ['search', 'room_type', 'status', 'floor', 'sort', 'direction', 'page', 'per_page', 'edit'];
+    $allowedKeys = ['search', 'room_type', 'status', 'floor', 'sort', 'direction', 'page', 'per_page'];
     $query = [];
 
     foreach ($allowedKeys as $key) {
@@ -21,20 +21,71 @@ function roomFiltersQuery(array $params = []): string
         }
     }
 
-    foreach (['page', 'edit'] as $stripKey) {
-        unset($query[$stripKey]);
-    }
+    unset($query['page']);
 
     return $query ? '?' . http_build_query($query) : '';
+}
+
+function processRoomImageUploads(?array $existingRoom = null): ?string
+{
+    $imagePaths = [];
+
+    // Keep existing images unless user asked to clear them
+    if ($existingRoom && !empty($existingRoom['image_url']) && empty($_POST['clear_custom_images'])) {
+        $rawImg = trim((string)$existingRoom['image_url']);
+        if (str_starts_with($rawImg, '[')) {
+            $decoded = json_decode($rawImg, true);
+            if (is_array($decoded)) {
+                $imagePaths = array_values(array_filter(array_map('trim', $decoded)));
+            }
+        }
+        if (empty($imagePaths)) {
+            $imagePaths = array_values(array_filter(array_map('trim', explode(',', $rawImg))));
+        }
+    }
+
+    // Process new uploaded files
+    if (isset($_FILES['room_images']) && is_array($_FILES['room_images']['name'])) {
+        $targetDir = __DIR__ . '/../assets/images/rooms/uploads/';
+        if (!file_exists($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        $count = count($_FILES['room_images']['name']);
+        for ($i = 0; $i < $count; $i++) {
+            if (($_FILES['room_images']['error'][$i] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+                $tmpName = $_FILES['room_images']['tmp_name'][$i];
+                $name = basename($_FILES['room_images']['name'][$i]);
+                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'], true)) {
+                    $newFileName = 'room_' . time() . '_' . uniqid() . '.' . $ext;
+                    $destination = $targetDir . $newFileName;
+                    if (move_uploaded_file($tmpName, $destination)) {
+                        $imagePaths[] = '../assets/images/rooms/uploads/' . $newFileName;
+                    }
+                }
+            }
+        }
+    }
+
+    // Process custom image URL text input if provided
+    if (!empty($_POST['custom_image_url'])) {
+        $urls = array_filter(array_map('trim', explode(',', (string)$_POST['custom_image_url'])));
+        foreach ($urls as $url) {
+            if (!in_array($url, $imagePaths, true)) {
+                $imagePaths[] = $url;
+            }
+        }
+    }
+
+    return !empty($imagePaths) ? json_encode(array_values(array_unique($imagePaths))) : null;
 }
 
 $db = Database::connect();
 $currentAdmin = currentUser();
 $roomModel = new Room($db);
-$editRoom = null;
 $roomTypes = Room::types();
 $roomStatuses = Room::statuses();
-$roomData = null;
 
 if (isset($_GET['export']) && $_GET['export'] === 'xml') {
     header('Content-Type: application/xml; charset=UTF-8');
@@ -73,8 +124,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($action === 'create') {
-            $roomModel->create($_POST);
-            setFlash('success', 'Room record created.');
+            $data = $_POST;
+            $data['image_url'] = processRoomImageUploads(null);
+            $roomModel->create($data);
+            setFlash('success', 'Room #' . e($data['room_number']) . ' created successfully.');
             redirect('rooms.php' . $querySuffix);
         }
 
@@ -89,8 +142,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($action === 'update') {
-            $roomModel->update((int) ($_POST['room_id'] ?? 0), $_POST);
-            setFlash('success', 'Room record updated.');
+            $roomId = (int) ($_POST['room_id'] ?? 0);
+            $existing = $roomModel->find($roomId);
+            if (!$existing) {
+                throw new RuntimeException('Room not found.');
+            }
+            $data = $_POST;
+            $data['image_url'] = processRoomImageUploads($existing);
+            $roomModel->update($roomId, $data);
+            setFlash('success', 'Room #' . e($data['room_number']) . ' updated successfully.');
             redirect('rooms.php' . $querySuffix);
         }
 
@@ -114,10 +174,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setFlash('error', $exception->getMessage());
         redirect('rooms.php' . $querySuffix);
     }
-}
-
-if (isset($_GET['edit'])) {
-    $editRoom = $roomModel->find((int) $_GET['edit']);
 }
 
 $roomData = $roomModel->paginated($filters, $page, $perPage);
@@ -163,7 +219,10 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
         <div class="d-flex flex-wrap gap-2">
             <span class="badge-soft"><?php echo e($filterActiveCount); ?> active filter(s)</span>
             <a class="btn btn-outline-light btn-sm" href="rooms.php">Clear Filters</a>
-            <a class="btn btn-warning btn-sm fw-semibold" href="rooms.php?export=xml">Export XML</a>
+            <a class="btn btn-outline-warning btn-sm fw-semibold" href="rooms.php?export=xml">Export XML</a>
+            <button class="btn btn-warning btn-sm fw-semibold" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+                <i class="bi bi-plus-circle me-1"></i>New Room
+            </button>
         </div>
     </div>
     <form method="get" class="row g-3">
@@ -223,55 +282,6 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
 
 <section class="row g-4">
     <div class="col-xl-4">
-        <div class="panel-card p-4 mb-4">
-            <p class="eyebrow mb-1"><?php echo $editRoom ? 'Update room' : 'Create room'; ?></p>
-            <h3 class="mb-2"><?php echo $editRoom ? 'Edit Room' : 'New Room'; ?></h3>
-            <div class="p-2.5 rounded-3 mb-3 text-xs font-serif border" style="background: rgba(212, 175, 55, 0.08); border-color: rgba(212, 175, 55, 0.25) !important;">
-                <i class="bi bi-info-circle-fill text-warning me-1"></i>
-                <strong>Catalog Policy:</strong> Manage Room Number, Suite Type, Floor, Nightly Rate, and Status here. Room photos and media assets are resolved automatically from the system catalog.
-            </div>
-            <form method="post" class="d-grid gap-3">
-                <input type="hidden" name="action" value="<?php echo $editRoom ? 'update' : 'create'; ?>">
-                <?php if ($editRoom): ?>
-                    <input type="hidden" name="room_id" value="<?php echo e($editRoom['room_id']); ?>">
-                <?php endif; ?>
-                <div>
-                    <label class="form-label" for="room_number">Room Number</label>
-                    <input class="form-control" id="room_number" name="room_number" type="text" value="<?php echo e($editRoom['room_number'] ?? ''); ?>" required>
-                </div>
-                <div>
-                    <label class="form-label" for="room_type">Room Type</label>
-                    <select class="form-select" id="room_type" name="room_type">
-                        <?php foreach ($roomTypes as $type): ?>
-                            <option value="<?php echo e($type); ?>" <?php echo (($editRoom['room_type'] ?? '') === $type) ? 'selected' : ''; ?>><?php echo e($type); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="row g-3">
-                    <div class="col-6">
-                        <label class="form-label" for="floor">Floor</label>
-                        <input class="form-control" id="floor" name="floor" type="number" value="<?php echo e($editRoom['floor'] ?? 1); ?>" required>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label" for="price_per_night">Price / Night</label>
-                        <input class="form-control" id="price_per_night" name="price_per_night" type="number" min="0.01" step="0.01" value="<?php echo e($editRoom['price_per_night'] ?? '0.00'); ?>" required>
-                    </div>
-                </div>
-                <div>
-                    <label class="form-label" for="status">Status</label>
-                    <select class="form-select" id="status" name="status">
-                        <?php foreach ($roomStatuses as $status): ?>
-                            <option value="<?php echo e($status); ?>" <?php echo (($editRoom['status'] ?? 'Available') === $status) ? 'selected' : ''; ?>><?php echo e($status); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <button class="btn btn-warning fw-semibold" type="submit"><?php echo $editRoom ? 'Save Room' : 'Create Room'; ?></button>
-                <?php if ($editRoom): ?>
-                    <a class="btn btn-outline-light" href="rooms.php<?php echo e($paginationBase); ?>">Cancel Edit</a>
-                <?php endif; ?>
-            </form>
-        </div>
-
         <div class="panel-card p-4 mb-4">
             <p class="eyebrow mb-1">Room Rates</p>
             <h3 class="mb-2">Bulk Update Prices</h3>
@@ -333,6 +343,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
             </div>
         </div>
     </div>
+
     <div class="col-xl-8">
         <div class="panel-card p-4 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -361,18 +372,34 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                             </tr>
                         <?php endif; ?>
                         <?php foreach ($rooms as $room): ?>
+                            <?php
+                                $catalogData = getRoomCatalogData($room);
+                                $customImgCount = !empty($room['image_url']) ? 1 : 0;
+                            ?>
                             <tr>
-                                <td><?php echo e($room['room_number']); ?></td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="<?php echo e($catalogData['hero']); ?>" class="rounded-2 object-fit-cover border border-secondary" style="width: 42px; height: 32px;" alt="Room">
+                                        <strong>#<?php echo e($room['room_number']); ?></strong>
+                                    </div>
+                                </td>
                                 <td><?php echo e($room['room_type']); ?></td>
                                 <td><?php echo e($room['floor']); ?></td>
                                 <td><?php echo e(formatMoney((float) $room['price_per_night'])); ?></td>
                                 <td><span class="badge-soft"><?php echo e($room['status']); ?></span></td>
                                 <td class="text-end">
-                                    <a class="btn btn-sm btn-outline-light" href="rooms.php<?php echo e($paginationBase . ($paginationBase === '' ? '?' : '&') . 'edit=' . urlencode((string) $room['room_id'])); ?>">Edit</a>
+                                    <button
+                                        class="btn btn-sm btn-warning fw-semibold"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editRoomModal_<?php echo e($room['room_id']); ?>"
+                                    >
+                                        <i class="bi bi-pencil-square me-1"></i>Edit
+                                    </button>
                                     <form method="post" class="d-inline">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="room_id" value="<?php echo e($room['room_id']); ?>">
-                                        <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                                        <button class="btn btn-sm btn-outline-danger" type="submit" onclick="return confirm('Delete Room #<?php echo e($room['room_number']); ?>?')">Delete</button>
                                     </form>
                                 </td>
                             </tr>
@@ -401,4 +428,213 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
         </div>
     </div>
 </section>
+
+<!-- CREATE ROOM MODAL -->
+<div class="modal fade" id="createRoomModal" tabindex="-1" aria-labelledby="createRoomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark text-light border-secondary">
+            <form method="post" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="create">
+                <div class="modal-header border-secondary">
+                    <div>
+                        <p class="eyebrow mb-1">Create Room</p>
+                        <h5 class="modal-title" id="createRoomModalLabel">New Room Record</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-grid gap-3">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="create_room_number">Room Number</label>
+                            <input class="form-control bg-dark text-light border-secondary" id="create_room_number" name="room_number" type="text" placeholder="e.g. 105" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="create_room_type">Room Type</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="create_room_type" name="room_type">
+                                <?php foreach ($roomTypes as $type): ?>
+                                    <option value="<?php echo e($type); ?>"><?php echo e($type); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" for="create_floor">Floor</label>
+                            <input class="form-control bg-dark text-light border-secondary" id="create_floor" name="floor" type="number" min="1" value="1" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="create_price">Price / Night (PHP)</label>
+                            <input class="form-control bg-dark text-light border-secondary" id="create_price" name="price_per_night" type="number" min="0.01" step="0.01" placeholder="4500.00" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="create_status">Status</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="create_status" name="status">
+                                <?php foreach ($roomStatuses as $status): ?>
+                                    <option value="<?php echo e($status); ?>"><?php echo e($status); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" for="create_bed_type">Bed Configuration</label>
+                            <input class="form-control bg-dark text-light border-secondary" id="create_bed_type" name="bed_type" type="text" value="King Bed">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="create_max_capacity">Max Capacity</label>
+                            <input class="form-control bg-dark text-light border-secondary" id="create_max_capacity" name="max_capacity" type="number" min="1" value="2">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="create_view_type">View Type</label>
+                            <input class="form-control bg-dark text-light border-secondary" id="create_view_type" name="view_type" type="text" value="City Skyline View">
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-3 border border-secondary" style="background: rgba(15, 23, 42, 0.6);">
+                        <label class="form-label font-serif fw-bold text-warning mb-1"><i class="bi bi-image me-1"></i>Room Custom Image(s)</label>
+                        <p class="text-xs text-light-emphasis mb-2">Upload custom room photos. Uploading 1 image sets a static photo (disables carousel controls); uploading 2+ images creates an image gallery.</p>
+                        <input class="form-control bg-dark text-light border-secondary mb-2" name="room_images[]" type="file" accept="image/*" multiple>
+                        <input class="form-control bg-dark text-light border-secondary" name="custom_image_url" type="text" placeholder="Or enter image URL(s), comma-separated...">
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning fw-semibold"><i class="bi bi-plus-circle me-1"></i>Create Room</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT ROOM MODALS FOR EACH ROOM -->
+<?php foreach ($rooms as $room): ?>
+    <?php
+        $roomId = (int) $room['room_id'];
+        $catalogData = getRoomCatalogData($room);
+        $customImages = [];
+        if (!empty($room['image_url'])) {
+            $rawImg = trim((string)$room['image_url']);
+            if (str_starts_with($rawImg, '[')) {
+                $decoded = json_decode($rawImg, true);
+                if (is_array($decoded)) $customImages = array_filter(array_map('trim', $decoded));
+            }
+            if (empty($customImages)) {
+                $customImages = array_filter(array_map('trim', explode(',', $rawImg)));
+            }
+        }
+    ?>
+    <div class="modal fade" id="editRoomModal_<?php echo $roomId; ?>" tabindex="-1" aria-labelledby="editRoomModalLabel_<?php echo $roomId; ?>" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark text-light border-secondary">
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="update">
+                    <input type="hidden" name="room_id" value="<?php echo $roomId; ?>">
+                    <div class="modal-header border-secondary">
+                        <div>
+                            <p class="eyebrow mb-1">Room #<?php echo e($room['room_number']); ?></p>
+                            <h5 class="modal-title" id="editRoomModalLabel_<?php echo $roomId; ?>">Edit Room Record</h5>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body d-grid gap-3">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="edit_room_number_<?php echo $roomId; ?>">Room Number</label>
+                                <input class="form-control bg-dark text-light border-secondary" id="edit_room_number_<?php echo $roomId; ?>" name="room_number" type="text" value="<?php echo e($room['room_number']); ?>" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="edit_room_type_<?php echo $roomId; ?>">Room Type</label>
+                                <select class="form-select bg-dark text-light border-secondary" id="edit_room_type_<?php echo $roomId; ?>" name="room_type">
+                                    <?php foreach ($roomTypes as $type): ?>
+                                        <option value="<?php echo e($type); ?>" <?php echo $room['room_type'] === $type ? 'selected' : ''; ?>><?php echo e($type); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label" for="edit_floor_<?php echo $roomId; ?>">Floor</label>
+                                <input class="form-control bg-dark text-light border-secondary" id="edit_floor_<?php echo $roomId; ?>" name="floor" type="number" min="1" value="<?php echo e($room['floor']); ?>" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="edit_price_<?php echo $roomId; ?>">Price / Night (PHP)</label>
+                                <input class="form-control bg-dark text-light border-secondary" id="edit_price_<?php echo $roomId; ?>" name="price_per_night" type="number" min="0.01" step="0.01" value="<?php echo e(number_format((float)$room['price_per_night'], 2, '.', '')); ?>" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="edit_status_<?php echo $roomId; ?>">Status</label>
+                                <select class="form-select bg-dark text-light border-secondary" id="edit_status_<?php echo $roomId; ?>" name="status">
+                                    <?php foreach ($roomStatuses as $status): ?>
+                                        <option value="<?php echo e($status); ?>" <?php echo $room['status'] === $status ? 'selected' : ''; ?>><?php echo e($status); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label" for="edit_bed_type_<?php echo $roomId; ?>">Bed Configuration</label>
+                                <input class="form-control bg-dark text-light border-secondary" id="edit_bed_type_<?php echo $roomId; ?>" name="bed_type" type="text" value="<?php echo e($room['bed_type'] ?? 'King Bed'); ?>">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="edit_max_capacity_<?php echo $roomId; ?>">Max Capacity</label>
+                                <input class="form-control bg-dark text-light border-secondary" id="edit_max_capacity_<?php echo $roomId; ?>" name="max_capacity" type="number" min="1" value="<?php echo e($room['max_capacity'] ?? 2); ?>">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="edit_view_type_<?php echo $roomId; ?>">View Type</label>
+                                <input class="form-control bg-dark text-light border-secondary" id="edit_view_type_<?php echo $roomId; ?>" name="view_type" type="text" value="<?php echo e($room['view_type'] ?? 'City View'); ?>">
+                            </div>
+                        </div>
+
+                        <!-- ROOM IMAGES & MEDIA SECTION -->
+                        <div class="p-3 rounded-3 border border-secondary" style="background: rgba(15, 23, 42, 0.6);">
+                            <label class="form-label font-serif fw-bold text-warning mb-1"><i class="bi bi-images me-1"></i>Room Image Gallery & Media</label>
+                            <p class="text-xs text-light-emphasis mb-3">Upload custom photos for Room #<?php echo e($room['room_number']); ?>. If only 1 image exists, carousel controls are automatically hidden on public views.</p>
+                            
+                            <?php if (!empty($customImages)): ?>
+                                <div class="mb-3">
+                                    <span class="d-block text-xs font-serif text-warning fw-bold mb-2">Current Custom Photos (<?php echo count($customImages); ?>):</span>
+                                    <div class="d-flex flex-wrap gap-2 mb-2">
+                                        <?php foreach ($customImages as $idx => $imgSrc): ?>
+                                            <div class="position-relative">
+                                                <img src="<?php echo e($imgSrc); ?>" class="rounded-2 border border-warning object-fit-cover" style="width: 80px; height: 60px;" alt="Photo <?php echo $idx+1; ?>">
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <div class="form-check text-xs">
+                                        <input class="form-check-input" type="checkbox" name="clear_custom_images" value="1" id="clear_img_<?php echo $roomId; ?>">
+                                        <label class="form-check-label text-danger fw-semibold" for="clear_img_<?php echo $roomId; ?>">
+                                            <i class="bi bi-trash me-1"></i>Clear custom images &amp; revert to suite defaults
+                                        </label>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <div class="mb-3 p-2 rounded border border-secondary text-xs text-light-emphasis">
+                                    <i class="bi bi-info-circle me-1 text-warning"></i>Currently using default suite photos from system catalog.
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="mb-2">
+                                <label class="form-label text-xs fw-semibold" for="upload_img_<?php echo $roomId; ?>">Upload New Photo(s)</label>
+                                <input class="form-control bg-dark text-light border-secondary" id="upload_img_<?php echo $roomId; ?>" name="room_images[]" type="file" accept="image/*" multiple>
+                            </div>
+                            <div>
+                                <label class="form-label text-xs fw-semibold" for="custom_url_<?php echo $roomId; ?>">Or Add Image URL(s)</label>
+                                <input class="form-control bg-dark text-light border-secondary" id="custom_url_<?php echo $roomId; ?>" name="custom_image_url" type="text" placeholder="e.g. ../assets/images/rooms/... (comma separated)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning fw-semibold"><i class="bi bi-check-circle me-1"></i>Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<?php endforeach; ?>
+
+<script>
+document.querySelectorAll(".modal").forEach((modal) => {
+    document.body.appendChild(modal);
+});
+</script>
+
 <?php renderAdminLayoutEnd(); ?>

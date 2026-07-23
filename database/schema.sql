@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS rooms (
     bed_type VARCHAR(50) DEFAULT 'King Bed',
     max_capacity INT NOT NULL DEFAULT 2,
     view_type VARCHAR(100) DEFAULT 'City View',
+    image_url TEXT DEFAULT NULL,
     status ENUM('Available', 'Reserved', 'Occupied', 'Cleaning', 'Maintenance') NOT NULL DEFAULT 'Available',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
