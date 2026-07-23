@@ -2861,6 +2861,26 @@ body.light-mode .btn-outline-light i {
     color: #475569 !important;
 }
 
+/* Light Mode Form Control & Disabled Input Contrast Fixes */
+body.light-mode .form-control,
+body.light-mode .form-select {
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    border-color: #CBD5E1 !important;
+}
+
+body.light-mode .form-control:disabled,
+body.light-mode .form-select:disabled,
+body.light-mode input:disabled,
+body.light-mode select:disabled {
+    background-color: #F1F5F9 !important;
+    color: #64748B !important;
+    border-color: #CBD5E1 !important;
+    opacity: 1 !important;
+    -webkit-text-fill-color: #64748B !important;
+}
+
+
 
 
 
