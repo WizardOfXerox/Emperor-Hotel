@@ -1972,4 +1972,133 @@ body.light-mode .most-booked-title {
     color: #0f172a !important;
 }
 
+/* ===== SITE ROOM-DETAIL DARK/LIGHT MODE STYLING ===== */
+
+/* Dark Mode Defaults (body:not(.light-mode)) */
+body:not(.light-mode) .room-detail-main .card,
+body:not(.light-mode) .room-detail-card,
+body:not(.light-mode) .room-detail-sidebar,
+body:not(.light-mode) .room-detail-section-card {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    color: #f8fafc !important;
+}
+
+body:not(.light-mode) .room-detail-nav-bar {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    color: #f8fafc !important;
+}
+
+body:not(.light-mode) .room-detail-specs-box {
+    background: rgba(30, 41, 59, 0.85) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    color: #f8fafc !important;
+}
+
+body:not(.light-mode) .room-detail-specs-box small,
+body:not(.light-mode) .room-detail-specs-box span {
+    color: #f8fafc !important;
+}
+
+body:not(.light-mode) .room-detail-specs-box small.text-light {
+    color: rgba(226, 232, 240, 0.75) !important;
+}
+
+body:not(.light-mode) .room-stay-dates-banner {
+    background: rgba(30, 41, 59, 0.9) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+    color: #f8fafc !important;
+}
+
+body:not(.light-mode) .room-detail-main .text-light,
+body:not(.light-mode) .room-detail-main .text-muted,
+body:not(.light-mode) .room-detail-main p,
+body:not(.light-mode) .room-detail-main li {
+    color: rgba(226, 232, 240, 0.85) !important;
+}
+
+/* Accordion in Dark Mode */
+body:not(.light-mode) .room-detail-sidebar .accordion-button {
+    background: rgba(30, 41, 59, 0.9) !important;
+    color: #FFDF73 !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+body:not(.light-mode) .room-detail-sidebar .accordion-button:not(.collapsed) {
+    background: rgba(212, 175, 55, 0.2) !important;
+    color: #FFDF73 !important;
+}
+
+body:not(.light-mode) .room-detail-sidebar .accordion-body {
+    background: rgba(15, 23, 42, 0.7) !important;
+}
+
+body:not(.light-mode) .room-detail-sidebar .list-group-item:not(.fw-bold) {
+    background: rgba(30, 41, 59, 0.7) !important;
+    color: #f8fafc !important;
+}
+
+/* Light Mode Overrides (body.light-mode) */
+body.light-mode .room-detail-main .card,
+body.light-mode .room-detail-card,
+body.light-mode .room-detail-sidebar,
+body.light-mode .room-detail-section-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.25) !important;
+    color: #0f172a !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-mode .room-detail-nav-bar {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.3) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .room-detail-specs-box {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .room-detail-specs-box small,
+body.light-mode .room-detail-specs-box span {
+    color: #0f172a !important;
+}
+
+body.light-mode .room-detail-specs-box small.text-light {
+    color: #64748b !important;
+}
+
+body.light-mode .room-stay-dates-banner {
+    background: #fffbeb !important;
+    border: 1px solid #fde68a !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .room-detail-main .text-light,
+body.light-mode .room-detail-main .text-muted,
+body.light-mode .room-detail-main p,
+body.light-mode .room-detail-main li {
+    color: #334155 !important;
+}
+
+body.light-mode .room-detail-sidebar .accordion-button {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+body.light-mode .room-detail-sidebar .accordion-button:not(.collapsed) {
+    background: #fffbeb !important;
+    color: #b45309 !important;
+}
+
+body.light-mode .room-detail-sidebar .list-group-item:not(.fw-bold) {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
 
