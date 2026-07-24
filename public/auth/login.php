@@ -28,6 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('login.php');
     }
 
+    if (isset($user['email_verified']) && (int)$user['email_verified'] === 0) {
+        $_SESSION['pending_otp_user_id'] = (int)$user['user_id'];
+        setFlash('warning', 'Please complete 2FA verification to access your account.');
+        redirect('verify-otp.php');
+    }
+
     loginUser($user);
     setFlash('success', 'Welcome back, ' . $user['full_name'] . '!');
     $target = $_SESSION['redirect_after_login'] ?? ($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php');
