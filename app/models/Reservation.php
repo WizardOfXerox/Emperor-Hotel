@@ -285,6 +285,10 @@ class Reservation
             return false;
         }
 
+        if ($existing['status'] === 'Checked-in') {
+            throw new RuntimeException('Cannot delete an active Checked-in reservation. Please process Check-Out first.');
+        }
+
         // SQL: Deletes one reservation by primary key. Payment logs cascade through the database relationship.
         $statement = $this->db->prepare('DELETE FROM reservations WHERE reservation_id = :reservation_id');
         $deleted = $statement->execute(['reservation_id' => $reservationId]);

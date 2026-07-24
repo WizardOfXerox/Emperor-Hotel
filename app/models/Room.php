@@ -193,6 +193,14 @@ class Room
         $viewType = trim((string) ($data['view_type'] ?? 'City View'));
         $imageUrl = isset($data['image_url']) ? trim((string) $data['image_url']) : null;
 
+        if ($data['status'] === 'Maintenance') {
+            $checkedInStmt = $this->db->prepare("SELECT COUNT(*) FROM reservations WHERE room_id = :room_id AND status = 'Checked-in'");
+            $checkedInStmt->execute(['room_id' => $roomId]);
+            if (((int) $checkedInStmt->fetchColumn()) > 0) {
+                throw new RuntimeException('Cannot set Room #' . trim($data['room_number']) . ' to Maintenance while a guest is currently Checked-In.');
+            }
+        }
+
         // SQL: Updates all editable room fields for one room record.
         $statement = $this->db->prepare(
             'UPDATE rooms
