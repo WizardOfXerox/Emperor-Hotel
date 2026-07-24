@@ -177,13 +177,25 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
     </div>
 </section>
 
-<!-- Tabular Data Breakdown Section -->
+<!-- Tabular Data Breakdown Section (Converted to Interactive Visual Graphs & Table Toggle) -->
 <section class="row g-4">
+    <!-- Card 1: Room Nights by Type -->
     <div class="col-xl-6">
         <div class="panel-card p-4 h-100">
-            <p class="eyebrow mb-1">Occupancy</p>
-            <h3 class="mb-3">Room Nights by Type</h3>
-            <div class="table-responsive">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p class="eyebrow mb-1">Occupancy</p>
+                    <h3 class="mb-0">Room Nights by Type</h3>
+                </div>
+                <div class="btn-group btn-group-sm rounded-pill overflow-hidden border border-secondary border-opacity-25" role="group">
+                    <button type="button" class="btn btn-warning view-toggle-btn active fw-bold px-3 py-1" onclick="toggleReportView(this, 'graph')"><i class="bi bi-bar-chart-fill me-1"></i>Graph</button>
+                    <button type="button" class="btn btn-outline-secondary view-toggle-btn px-3 py-1" onclick="toggleReportView(this, 'table')"><i class="bi bi-table me-1"></i>Table</button>
+                </div>
+            </div>
+            <div class="report-graph-view" style="height: 250px; position: relative;">
+                <canvas id="roomNightsChart"></canvas>
+            </div>
+            <div class="report-table-view table-responsive" style="display: none;">
                 <table class="table table-dark-soft align-middle mb-0">
                     <thead>
                         <tr>
@@ -209,11 +221,24 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
             </div>
         </div>
     </div>
+
+    <!-- Card 2: Confirmed Revenue by Room Type -->
     <div class="col-xl-6">
         <div class="panel-card p-4 h-100">
-            <p class="eyebrow mb-1">Revenue</p>
-            <h3 class="mb-3">Confirmed Revenue by Room Type</h3>
-            <div class="table-responsive">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p class="eyebrow mb-1">Revenue</p>
+                    <h3 class="mb-0">Confirmed Revenue by Room Type</h3>
+                </div>
+                <div class="btn-group btn-group-sm rounded-pill overflow-hidden border border-secondary border-opacity-25" role="group">
+                    <button type="button" class="btn btn-warning view-toggle-btn active fw-bold px-3 py-1" onclick="toggleReportView(this, 'graph')"><i class="bi bi-pie-chart-fill me-1"></i>Graph</button>
+                    <button type="button" class="btn btn-outline-secondary view-toggle-btn px-3 py-1" onclick="toggleReportView(this, 'table')"><i class="bi bi-table me-1"></i>Table</button>
+                </div>
+            </div>
+            <div class="report-graph-view" style="height: 250px; position: relative;">
+                <canvas id="revenueRoomTypeChart"></canvas>
+            </div>
+            <div class="report-table-view table-responsive" style="display: none;">
                 <table class="table table-dark-soft align-middle mb-0">
                     <thead>
                         <tr>
@@ -235,11 +260,24 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
             </div>
         </div>
     </div>
+
+    <!-- Card 3: Revenue by Method -->
     <div class="col-xl-5">
         <div class="panel-card p-4 h-100">
-            <p class="eyebrow mb-1">Payment Methods</p>
-            <h3 class="mb-3">Revenue by Method</h3>
-            <div class="table-responsive">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p class="eyebrow mb-1">Payment Methods</p>
+                    <h3 class="mb-0">Revenue by Method</h3>
+                </div>
+                <div class="btn-group btn-group-sm rounded-pill overflow-hidden border border-secondary border-opacity-25" role="group">
+                    <button type="button" class="btn btn-warning view-toggle-btn active fw-bold px-3 py-1" onclick="toggleReportView(this, 'graph')"><i class="bi bi-bar-chart-steps me-1"></i>Graph</button>
+                    <button type="button" class="btn btn-outline-secondary view-toggle-btn px-3 py-1" onclick="toggleReportView(this, 'table')"><i class="bi bi-table me-1"></i>Table</button>
+                </div>
+            </div>
+            <div class="report-graph-view" style="height: 250px; position: relative;">
+                <canvas id="revenueMethodChart"></canvas>
+            </div>
+            <div class="report-table-view table-responsive" style="display: none;">
                 <table class="table table-dark-soft align-middle mb-0">
                     <thead>
                         <tr>
@@ -266,11 +304,24 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
             </div>
         </div>
     </div>
+
+    <!-- Card 4: Daily Booking Records -->
     <div class="col-xl-7">
         <div class="panel-card p-4 h-100">
-            <p class="eyebrow mb-1">Reservation Trend</p>
-            <h3 class="mb-3">Daily Booking Records</h3>
-            <div class="table-responsive report-trend-table">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p class="eyebrow mb-1">Reservation Trend</p>
+                    <h3 class="mb-0">Daily Booking Records</h3>
+                </div>
+                <div class="btn-group btn-group-sm rounded-pill overflow-hidden border border-secondary border-opacity-25" role="group">
+                    <button type="button" class="btn btn-warning view-toggle-btn active fw-bold px-3 py-1" onclick="toggleReportView(this, 'graph')"><i class="bi bi-graph-up me-1"></i>Graph</button>
+                    <button type="button" class="btn btn-outline-secondary view-toggle-btn px-3 py-1" onclick="toggleReportView(this, 'table')"><i class="bi bi-table me-1"></i>Table</button>
+                </div>
+            </div>
+            <div class="report-graph-view" style="height: 250px; position: relative;">
+                <canvas id="dailyBookingBarChart"></canvas>
+            </div>
+            <div class="report-table-view table-responsive report-trend-table" style="display: none;">
                 <table class="table table-dark-soft align-middle mb-0">
                     <thead>
                         <tr>
@@ -318,8 +369,40 @@ $paymentRevenues = json_encode(array_column($revenueReport['by_payment_method'],
 
 $ratingTypes = json_encode(array_keys($ratingsPerType));
 $ratingScores = json_encode(array_map(fn($item) => (float)$item['avg_rating'], array_values($ratingsPerType)));
+
+// Additional JSON arrays for lower breakdown charts
+$roomNightsTypes = json_encode(array_column($occupancyReport['by_room_type'], 'room_type'));
+$roomNightsBooked = json_encode(array_column($occupancyReport['by_room_type'], 'booked_room_nights'));
+$roomNightsAvailable = json_encode(array_column($occupancyReport['by_room_type'], 'available_room_nights'));
+
+$revenueTypeNames = json_encode(array_column($revenueReport['by_room_type'], 'room_type'));
+$revenueTypeValues = json_encode(array_map(fn($item) => (float)$item['confirmed_revenue'], $revenueReport['by_room_type']));
+
+$paymentMethodNames = json_encode(array_map(fn($item) => !empty($item['payment_method']) ? $item['payment_method'] : 'E-Wallet', $revenueReport['by_payment_method']));
+$paymentMethodRevenues = json_encode(array_map(fn($item) => (float)$item['confirmed_revenue'], $revenueReport['by_payment_method']));
 ?>
 <script>
+function toggleReportView(btn, mode) {
+    const card = btn.closest('.panel-card');
+    if (!card) return;
+    card.querySelectorAll('.view-toggle-btn').forEach(b => {
+        b.classList.remove('active', 'btn-warning', 'fw-bold');
+        b.classList.add('btn-outline-secondary');
+    });
+    btn.classList.add('active', 'btn-warning', 'fw-bold');
+    btn.classList.remove('btn-outline-secondary');
+    
+    const graphView = card.querySelector('.report-graph-view');
+    const tableView = card.querySelector('.report-table-view');
+    if (mode === 'graph') {
+        if (graphView) graphView.style.display = 'block';
+        if (tableView) tableView.style.display = 'none';
+    } else {
+        if (graphView) graphView.style.display = 'none';
+        if (tableView) tableView.style.display = 'block';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const isLightMode = document.documentElement.classList.contains('light-mode');
     Chart.defaults.color = isLightMode ? '#334155' : '#94a3b8';
@@ -383,7 +466,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         drawPillBadge(ctx, text, x, y, bgColor, textColor);
                     } else if (chart.config.type === 'bar') {
                         if (chart.options.indexAxis === 'y') {
-                            const text = typeof value === 'number' ? value.toFixed(1) + ' ★' : String(value);
+                            const text = typeof value === 'number' && value >= 1000 
+                                ? '₱' + Math.round(value / 1000) + 'k' 
+                                : (typeof value === 'number' && value < 6 ? value.toFixed(1) + ' ★' : String(value));
                             const x = Math.min(element.x + 24, chartArea.right - 18);
                             const y = element.y;
                             drawPillBadge(ctx, text, x, y, isLight ? '#0284c7' : '#38bdf8', '#020617');
@@ -564,6 +649,144 @@ document.addEventListener('DOMContentLoaded', () => {
                 scales: {
                     x: { max: 5.0, min: 0, grid: { color: 'rgba(248, 250, 252, 0.05)' } },
                     y: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 5. Room Nights by Type Chart (Occupancy Breakdown)
+    const roomNightsCtx = document.getElementById('roomNightsChart')?.getContext('2d');
+    if (roomNightsCtx) {
+        new Chart(roomNightsCtx, {
+            type: 'bar',
+            plugins: [emperorValuePlugin],
+            data: {
+                labels: <?= $roomNightsTypes ?>,
+                datasets: [
+                    {
+                        label: 'Booked Nights',
+                        data: <?= $roomNightsBooked ?>,
+                        backgroundColor: 'rgba(253, 215, 0, 0.85)',
+                        borderColor: '#fdd700',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Available Nights',
+                        data: <?= $roomNightsAvailable ?>,
+                        backgroundColor: isLightMode ? 'rgba(100, 116, 139, 0.3)' : 'rgba(248, 250, 252, 0.15)',
+                        borderColor: 'rgba(248, 250, 252, 0.2)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 22 } },
+                plugins: {
+                    legend: { position: 'top', labels: { boxWidth: 12 } }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: 'rgba(248, 250, 252, 0.05)' }, beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // 6. Confirmed Revenue by Room Type Chart
+    const revenueTypeCtx = document.getElementById('revenueRoomTypeChart')?.getContext('2d');
+    if (revenueTypeCtx) {
+        new Chart(revenueTypeCtx, {
+            type: 'doughnut',
+            plugins: [emperorDoughnutPlugin],
+            data: {
+                labels: <?= $revenueTypeNames ?>,
+                datasets: [{
+                    data: <?= $revenueTypeValues ?>,
+                    backgroundColor: ['#38bdf8', '#fdd700', '#a855f7'],
+                    borderWidth: 2,
+                    borderColor: '#0f172a'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12 } }
+                },
+                cutout: '60%'
+            }
+        });
+    }
+
+    // 7. Revenue by Payment Method Chart
+    const revenueMethodCtx = document.getElementById('revenueMethodChart')?.getContext('2d');
+    if (revenueMethodCtx) {
+        new Chart(revenueMethodCtx, {
+            type: 'bar',
+            plugins: [emperorValuePlugin],
+            data: {
+                labels: <?= $paymentMethodNames ?>,
+                datasets: [{
+                    label: 'Revenue (PHP)',
+                    data: <?= $paymentMethodRevenues ?>,
+                    backgroundColor: ['#fdd700', '#38bdf8', '#22c55e', '#a855f7', '#f97316'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                layout: { padding: { right: 50 } },
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(248, 250, 252, 0.05)' }, beginAtZero: true },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 8. Daily Booking Records Chart
+    const dailyBookingCtx = document.getElementById('dailyBookingBarChart')?.getContext('2d');
+    if (dailyBookingCtx) {
+        new Chart(dailyBookingCtx, {
+            type: 'bar',
+            plugins: [emperorValuePlugin],
+            data: {
+                labels: <?= $trendDates ?>,
+                datasets: [
+                    {
+                        label: 'Active',
+                        data: <?= $trendActive ?>,
+                        backgroundColor: 'rgba(253, 215, 0, 0.85)',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Cancelled',
+                        data: <?= $trendCancelled ?>,
+                        backgroundColor: 'rgba(239, 68, 68, 0.85)',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 22 } },
+                plugins: {
+                    legend: { position: 'top', labels: { boxWidth: 12 } }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { maxRotation: 0, minRotation: 0, autoSkip: true, maxTicksLimit: 12 }
+                    },
+                    y: { grid: { color: 'rgba(248, 250, 252, 0.05)' }, beginAtZero: true, stacked: false }
                 }
             }
         });
