@@ -108,7 +108,7 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
     </article>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../assets/vendor/chartjs/chart.umd.min.js"></script>
 
 <!-- Visual Analytics Graphs Section -->
 <section class="row g-4 mb-4">
