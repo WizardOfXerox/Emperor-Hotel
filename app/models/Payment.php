@@ -235,6 +235,13 @@ class Payment
             throw new RuntimeException('Only pending transactions can be reviewed. Confirmed, failed, and refunded transactions are locked.');
         }
 
+        if ($paymentStatus === 'Refunded') {
+            $totals = $this->totalsForReservation((int) $payment['reservation_id']);
+            if ((float) ($totals['confirmed_amount'] ?? 0) <= 0) {
+                throw new RuntimeException('Cannot process a refund for an unconfirmed payment. Money must be confirmed/paid before a refund can be issued.');
+            }
+        }
+
         $this->assertPaymentWillNotOverpay((int) $payment['reservation_id'], $amount, $paymentStatus, $paymentId);
 
         // SQL: Reviews a pending transaction by updating its amount and status.

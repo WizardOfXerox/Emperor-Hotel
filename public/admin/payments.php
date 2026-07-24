@@ -40,6 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $reservationId = (int) ($_POST['reservation_id'] ?? 0);
         $paymentStatus = (string) ($_POST['payment_status'] ?? 'Confirmed');
 
+        if ($paymentStatus === 'Refunded') {
+            $totals = $paymentModel->totalsForReservation($reservationId);
+            if ((float) ($totals['confirmed_amount'] ?? 0) <= 0) {
+                throw new RuntimeException('Cannot process a refund when no confirmed payment has been made yet.');
+            }
+        }
+
         $pendingStmt = $db->prepare("SELECT payment_id, amount FROM payments WHERE reservation_id = :res_id AND payment_status = 'Pending' ORDER BY payment_id DESC LIMIT 1");
         $pendingStmt->execute(['res_id' => $reservationId]);
         $pendingPayment = $pendingStmt->fetch(PDO::FETCH_ASSOC);
@@ -448,12 +455,13 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
 
         const isConfirmedOrPaid = (status === "Confirmed" || status === "Checked-in" || status === "Checked-out");
         const isCancelled = (status === "Cancelled");
+        const confirmedAmount = Number(option.dataset.confirmed || 0);
 
         if (confirmBtn) {
             confirmBtn.disabled = isConfirmedOrPaid || isCancelled || (balance <= 0 && pending <= 0);
         }
         if (refundBtn) {
-            refundBtn.disabled = isCancelled;
+            refundBtn.disabled = isCancelled || confirmedAmount <= 0;
         }
     };
 
