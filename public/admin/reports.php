@@ -42,7 +42,6 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
             <p class="eyebrow mb-1">Reports & Executive Analytics</p>
             <h3 class="mb-0">Occupancy, Revenue, and Advanced Hospitality Metrics</h3>
         </div>
-        <span class="badge-soft"><?php echo e($startDate); ?> to <?php echo e($endDate); ?></span>
     </div>
     <form method="get" class="row g-3 align-items-end">
         <div class="col-md-5">
@@ -54,7 +53,7 @@ renderAdminLayoutStart('Reports', 'reports', $currentAdmin, ['../assets/css/admi
             <input class="form-control" id="end_date" name="end_date" type="date" value="<?php echo e($endDate); ?>" required>
         </div>
         <div class="col-md-2 d-grid">
-            <button class="btn btn-warning fw-semibold" type="submit">Run Report</button>
+            <button class="btn btn-warning fw-semibold" type="submit">Show Report</button>
         </div>
     </form>
 </section>
