@@ -337,7 +337,13 @@ class Room
 
     public function delete(int $roomId): bool
     {
-        // SQL: Deletes one room by primary key. The database blocks deletion if restricted reservations still use it.
+        $activeStmt = $this->db->prepare("SELECT COUNT(*) FROM reservations WHERE room_id = :room_id AND status NOT IN ('Cancelled', 'Checked-out')");
+        $activeStmt->execute(['room_id' => $roomId]);
+        if (((int) $activeStmt->fetchColumn()) > 0) {
+            throw new RuntimeException('Cannot delete room #' . $roomId . ' because it currently has active or upcoming reservations.');
+        }
+
+        // SQL: Deletes one room by primary key.
         $statement = $this->db->prepare('DELETE FROM rooms WHERE room_id = :room_id');
 
         return $statement->execute(['room_id' => $roomId]);

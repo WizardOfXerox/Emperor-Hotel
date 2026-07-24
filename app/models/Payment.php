@@ -283,7 +283,7 @@ class Payment
         $refundCheck->execute(['res_id' => $reservationId]);
         $hasRefund = ((int) $refundCheck->fetchColumn()) > 0;
 
-        if ($hasRefund) {
+        if ($hasRefund && in_array($reservation['status'], ['Pending', 'Confirmed'], true)) {
             $updateReservation = $this->db->prepare(
                 "UPDATE reservations SET status = 'Cancelled' WHERE reservation_id = :reservation_id"
             );
