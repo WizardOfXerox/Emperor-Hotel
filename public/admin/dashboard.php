@@ -416,37 +416,52 @@ renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/
 </section>
 <script src="../assets/vendor/chartjs/chart.umd.min.js"></script>
 <script>
-const dashboardChartData = <?php echo $dashboardChartJson ?: '{}'; ?>;
+const dashboardChartData = <?php echo json_encode($dashboardChartData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+const chartColors = ['#fdd700', '#38bdf8', '#22c55e', '#f97316', '#ef4444', '#a855f7'];
 
-Chart.defaults.color = 'rgba(248, 250, 252, 0.78)';
-Chart.defaults.borderColor = 'rgba(248, 250, 252, 0.12)';
-Chart.defaults.font.family = "'DM Sans', sans-serif";
+const moneyFormatter = (val) => 'PHP ' + Number(val).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const hasValues = (values) => values.some((value) => Number(value) > 0);
+const isLightMode = document.documentElement.classList.contains('light-mode');
 
-const chartColors = [
-    '#fdd700',
-    '#38bdf8',
-    '#22c55e',
-    '#fb923c',
-    '#f43f5e',
-    '#a78bfa',
-];
-
-const moneyFormatter = (value) => {
-    return 'PHP ' + Number(value || 0).toLocaleString('en-PH', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-};
-
-const hasValues = (values) => values.some((value) => Number(value) > 0);const isLightMode = document.documentElement.classList.contains('light-mode');
 Chart.defaults.color = isLightMode ? '#334155' : '#94a3b8';
 Chart.defaults.borderColor = isLightMode ? 'rgba(15, 23, 42, 0.08)' : 'rgba(248, 250, 252, 0.08)';
+Chart.defaults.font.family = "'Outfit', 'Segoe UI', system-ui, sans-serif";
 
-const emperorValuePlugin = {
-    id: 'emperorValueLabels',
+const drawPillBadge = (ctx, text, x, y, bgColor, textColor) => {
+    ctx.save();
+    ctx.font = '700 10px "Outfit", "Segoe UI", system-ui, sans-serif';
+    const metrics = ctx.measureText(text);
+    const textWidth = metrics.width;
+    const textHeight = 11;
+    const px = 5;
+    const py = 2;
+    const rectX = x - textWidth / 2 - px;
+    const rectY = y - textHeight / 2 - py;
+    const rectW = textWidth + px * 2;
+    const rectH = textHeight + py * 2;
+    const radius = 4;
+
+    ctx.fillStyle = bgColor;
+    ctx.beginPath();
+    if (ctx.roundRect) {
+        ctx.roundRect(rectX, rectY, rectW, rectH, radius);
+    } else {
+        ctx.rect(rectX, rectY, rectW, rectH);
+    }
+    ctx.fill();
+
+    ctx.fillStyle = textColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x, y);
+    ctx.restore();
+};
+
+const comboChartValuePlugin = {
+    id: 'comboChartValueLabels',
     afterDatasetsDraw(chart) {
-        const { ctx } = chart;
-        const isLight = document.documentElement.classList.contains('light-mode');
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return;
 
         chart.data.datasets.forEach((dataset, datasetIndex) => {
             const meta = chart.getDatasetMeta(datasetIndex);
@@ -456,100 +471,77 @@ const emperorValuePlugin = {
                 const value = dataset.data[index];
                 if (value === null || value === undefined || value === 0) return;
 
-                ctx.save();
-                ctx.font = '700 11px "Outfit", "Segoe UI", system-ui, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-
-                if (chart.config.type === 'line' || dataset.type === 'line') {
-                    const text = typeof value === 'number' && value > 1000 ? '₱' + Math.round(value).toLocaleString() : String(value);
+                if (dataset.type === 'line' || chart.config.type === 'line') {
+                    const text = typeof value === 'number' && value >= 1000 
+                        ? '₱' + Math.round(value / 1000) + 'k' 
+                        : String(value);
                     const x = element.x;
-                    const y = element.y - 12;
-                    ctx.fillStyle = dataset.borderColor || (isLight ? '#0284c7' : '#38bdf8');
-                    ctx.shadowColor = isLight ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)';
-                    ctx.shadowBlur = 4;
-                    ctx.fillText(text, x, y);
-                } else if (chart.config.type === 'bar' || dataset.type === 'bar') {
-                    const text = typeof value === 'number' ? value.toLocaleString() : String(value);
+                    const y = Math.max(chartArea.top + 12, element.y - 15);
+                    drawPillBadge(ctx, text, x, y, isLightMode ? '#0284c7' : '#38bdf8', '#020617');
+                } else if (dataset.type === 'bar' || chart.config.type === 'bar') {
+                    const text = String(value);
                     const x = element.x;
-                    const y = Math.max(element.y - 12, chart.chartArea.top + 10);
-                    ctx.fillStyle = isLight ? '#b45309' : '#fdd700';
-                    ctx.shadowColor = isLight ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
-                    ctx.shadowBlur = 3;
-                    ctx.fillText(text, x, y);
+                    const y = Math.min(element.y + 14, chartArea.bottom - 12);
+                    drawPillBadge(ctx, text, x, y, isLightMode ? '#b45309' : '#fdd700', '#020617');
                 }
-                ctx.restore();
             });
         });
     }
 };
 
-const emperorDoughnutPlugin = {
-    id: 'emperorDoughnutLabels',
-    afterDatasetsDraw(chart) {
-        if (chart.config.type !== 'doughnut' && chart.config.type !== 'pie') return;
-        const { ctx } = chart;
-        const dataset = chart.data.datasets[0];
-        if (!dataset || !dataset.data) return;
-
-        const total = dataset.data.reduce((a, b) => a + Number(b || 0), 0);
-        const meta = chart.getDatasetMeta(0);
-        if (meta.hidden) return;
-
-        meta.data.forEach((element, index) => {
-            const value = Number(dataset.data[index] || 0);
-            if (!value || total <= 0) return;
-
-            const percent = Math.round((value / total) * 100);
-            if (percent < 4) return;
-
-            const position = element.tooltipPosition();
-            ctx.save();
-            ctx.font = '700 11px "Outfit", "Segoe UI", system-ui, sans-serif';
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-            ctx.shadowBlur = 5;
-
-            ctx.fillText(value + ' (' + percent + '%)', position.x, position.y);
-            ctx.restore();
-        });
-    }
-};
-
-const renderDoughnutChart = (canvasId, chartData, label) => {
+const renderStatusChart = (canvasId, chartData, label) => {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 
+    const total = chartData.values.reduce((a, b) => a + Number(b || 0), 0);
+
     new Chart(canvas, {
-        type: 'doughnut',
-        plugins: [emperorDoughnutPlugin],
+        type: 'bar',
+        plugins: [{
+            id: 'statusValueLabels',
+            afterDatasetsDraw(chart) {
+                const { ctx, chartArea } = chart;
+                if (!chartArea) return;
+                const meta = chart.getDatasetMeta(0);
+                if (meta.hidden) return;
+
+                meta.data.forEach((element, index) => {
+                    const val = Number(chartData.values[index] || 0);
+                    const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                    const text = val + ' (' + pct + '%)';
+                    
+                    const x = Math.min(element.x + 28, chartArea.right - 22);
+                    const y = element.y;
+                    
+                    const barColor = chartColors[index % chartColors.length];
+                    const textColor = barColor === '#fdd700' || barColor === '#38bdf8' || barColor === '#22c55e' ? '#020617' : '#ffffff';
+                    drawPillBadge(ctx, text, x, y, barColor, textColor);
+                });
+            }
+        }],
         data: {
             labels: chartData.labels,
             datasets: [{
                 label,
-                data: hasValues(chartData.values) ? chartData.values : chartData.values.map(() => 0),
-                backgroundColor: chartColors,
-                borderColor: isLightMode ? '#ffffff' : 'rgba(2, 6, 23, 0.92)',
-                borderWidth: 2,
-            }],
+                data: chartData.values,
+                backgroundColor: chartColors.slice(0, chartData.labels.length),
+                borderRadius: 6,
+                borderWidth: 1,
+            }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '62%',
+            indexAxis: 'y',
+            layout: { padding: { right: 65 } },
             plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        boxWidth: 12,
-                        padding: 14,
-                        color: isLightMode ? '#334155' : '#94a3b8',
-                    },
-                },
+                legend: { display: false }
             },
-        },
+            scales: {
+                x: { grid: { color: isLightMode ? 'rgba(0, 0, 0, 0.05)' : 'rgba(248, 250, 252, 0.05)' }, beginAtZero: true },
+                y: { grid: { display: false } }
+            }
+        }
     });
 };
 
@@ -557,7 +549,7 @@ const monthlyCanvas = document.getElementById('monthlyPerformanceChart');
 
 if (monthlyCanvas) {
     new Chart(monthlyCanvas, {
-        plugins: [emperorValuePlugin],
+        plugins: [comboChartValuePlugin],
         data: {
             labels: dashboardChartData.monthly.labels,
             datasets: [
@@ -586,6 +578,7 @@ if (monthlyCanvas) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: { padding: { top: 32, right: 15 } },
             interaction: {
                 mode: 'index',
                 intersect: false,
@@ -637,8 +630,8 @@ if (monthlyCanvas) {
     });
 }
 
-renderDoughnutChart('reservationStatusChart', dashboardChartData.reservations, 'Reservations');
-renderDoughnutChart('roomStatusChart', dashboardChartData.rooms, 'Rooms');
-renderDoughnutChart('paymentStatusChart', dashboardChartData.payments, 'Payments');
+renderStatusChart('reservationStatusChart', dashboardChartData.reservations, 'Reservations');
+renderStatusChart('roomStatusChart', dashboardChartData.rooms, 'Rooms');
+renderStatusChart('paymentStatusChart', dashboardChartData.payments, 'Payments');
 </script>
 <?php renderAdminLayoutEnd(); ?>
