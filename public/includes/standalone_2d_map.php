@@ -95,8 +95,8 @@ function renderStandalone2DMap(PDO $db, string $mode = 'public', string $checkIn
             <div class="tab-pane fade <?= $floorNum === 1 ? 'show active' : '' ?>" id="aurora-pane-floor-<?= $floorNum ?>" role="tabpanel">
                 
                 <!-- Interactive SVG Architectural Blueprint Canvas -->
-                <div class="blueprint-canvas-container position-relative rounded-4 p-2 p-lg-3 border border-secondary border-opacity-30 overflow-hidden" style="background: #0f141d;">
-                    <svg viewBox="0 0 1000 560" class="w-100 h-auto aurora-svg-blueprint" xmlns="http://www.w3.org/2000/svg">
+                <div class="blueprint-canvas-container position-relative rounded-4 p-2 p-lg-3 border border-secondary border-opacity-30 overflow-auto" style="background: #0f141d; max-height: calc(100vh - 220px);">
+                    <svg viewBox="0 0 1000 440" class="w-100 h-auto aurora-svg-blueprint" xmlns="http://www.w3.org/2000/svg" style="min-width: 650px;">
                         <defs>
                             <!-- Neon Glow Filters -->
                             <filter id="glowGreen_<?= $floorNum ?>" x="-20%" y="-20%" width="140%" height="140%">
@@ -119,52 +119,51 @@ function renderStandalone2DMap(PDO $db, string $mode = 'public', string $checkIn
                         </defs>
 
                         <!-- Outer Blueprint Frame -->
-                        <rect x="15" y="15" width="970" height="530" rx="12" fill="#0d111a" stroke="rgba(212, 175, 55, 0.4)" stroke-width="2"/>
-                        <rect x="22" y="22" width="956" height="516" rx="8" fill="url(#blueprintGridFine_<?= $floorNum ?>)" stroke="rgba(212, 175, 55, 0.15)" stroke-width="1" stroke-dasharray="4 4"/>
+                        <rect x="12" y="10" width="976" height="420" rx="12" fill="#0d111a" stroke="rgba(212, 175, 55, 0.4)" stroke-width="2"/>
+                        <rect x="18" y="16" width="964" height="408" rx="8" fill="url(#blueprintGridFine_<?= $floorNum ?>)" stroke="rgba(212, 175, 55, 0.15)" stroke-width="1" stroke-dasharray="4 4"/>
 
                         <!-- Left Side Elevator / Stairwell Core -->
                         <g class="building-core-left" stroke="rgba(212, 175, 55, 0.35)" stroke-width="1" fill="none">
                             <!-- Stairwell -->
-                            <rect x="40" y="40" width="85" height="150" rx="4" fill="rgba(15, 23, 42, 0.5)"/>
-                            <line x1="40" y1="65" x2="125" y2="65"/><line x1="40" y1="90" x2="125" y2="90"/>
-                            <line x1="40" y1="115" x2="125" y2="115"/><line x1="40" y1="140" x2="125" y2="140"/>
-                            <line x1="40" y1="165" x2="125" y2="165"/>
-                            <line x1="82" y1="40" x2="82" y2="190" stroke-dasharray="3 3"/>
+                            <rect x="35" y="30" width="85" height="120" rx="4" fill="rgba(15, 23, 42, 0.5)"/>
+                            <line x1="35" y1="50" x2="120" y2="50"/><line x1="35" y1="70" x2="120" y2="70"/>
+                            <line x1="35" y1="90" x2="120" y2="90"/><line x1="35" y1="110" x2="120" y2="110"/>
+                            <line x1="35" y1="130" x2="120" y2="130"/>
+                            <line x1="77" y1="30" x2="77" y2="150" stroke-dasharray="3 3"/>
 
                             <!-- Entrance Arc -->
-                            <path d="M 40 260 Q 20 280 40 300" stroke="#FFDF73" stroke-width="1.5" stroke-dasharray="4 3"/>
-                            <text x="32" y="285" fill="#FFDF73" font-size="9" font-family="serif" font-weight="bold" transform="rotate(-90 32 285)" text-anchor="middle">ENTRANCE</text>
+                            <path d="M 35 200 Q 18 220 35 240" stroke="#FFDF73" stroke-width="1.5" stroke-dasharray="4 3"/>
+                            <text x="27" y="225" fill="#FFDF73" font-size="8" font-family="serif" font-weight="bold" transform="rotate(-90 27 225)" text-anchor="middle">ENTRANCE</text>
 
                             <!-- Elevators -->
-                            <rect x="40" y="330" width="85" height="75" rx="4" fill="rgba(15, 23, 42, 0.5)"/>
-                            <rect x="40" y="420" width="85" height="75" rx="4" fill="rgba(15, 23, 42, 0.5)"/>
-                            <text x="82" y="373" text-anchor="middle" fill="#FFDF73" font-size="14" font-family="serif">ELEVATOR</text>
-                            <text x="82" y="463" text-anchor="middle" fill="#FFDF73" font-size="14" font-family="serif">ELEVATOR</text>
+                            <rect x="35" y="270" width="85" height="60" rx="4" fill="rgba(15, 23, 42, 0.5)"/>
+                            <rect x="35" y="340" width="85" height="60" rx="4" fill="rgba(15, 23, 42, 0.5)"/>
+                            <text x="77" y="305" text-anchor="middle" fill="#FFDF73" font-size="12" font-family="serif">ELEVATOR</text>
+                            <text x="77" y="375" text-anchor="middle" fill="#FFDF73" font-size="12" font-family="serif">ELEVATOR</text>
                         </g>
 
                         <!-- Central Corridor -->
                         <g class="building-corridor">
-                            <rect x="140" y="260" width="675" height="40" fill="rgba(212, 175, 55, 0.03)" stroke="rgba(212, 175, 55, 0.3)" stroke-width="1"/>
-                            <text x="475" y="284" text-anchor="middle" fill="rgba(212, 175, 55, 0.6)" font-size="11" font-weight="bold" font-family="serif" letter-spacing="4">CORRIDOR</text>
+                            <rect x="135" y="204" width="680" height="32" fill="rgba(212, 175, 55, 0.03)" stroke="rgba(212, 175, 55, 0.3)" stroke-width="1"/>
+                            <text x="475" y="224" text-anchor="middle" fill="rgba(212, 175, 55, 0.6)" font-size="10" font-weight="bold" font-family="serif" letter-spacing="4">CORRIDOR</text>
                         </g>
 
                         <!-- Right Side Lounge Area -->
                         <g class="building-lounge" stroke="rgba(212, 175, 55, 0.35)" stroke-width="1" fill="none">
-                            <rect x="830" y="40" width="135" height="485" rx="6" fill="rgba(15, 23, 42, 0.4)"/>
-                            <!-- Lounge Sofas & Coffee Tables -->
-                            <rect x="850" y="80" width="70" height="30" rx="4"/>
-                            <circle cx="885" cy="140" r="16"/>
-                            <rect x="850" y="180" width="70" height="30" rx="4"/>
+                            <rect x="830" y="30" width="135" height="380" rx="6" fill="rgba(15, 23, 42, 0.4)"/>
+                            <rect x="850" y="60" width="70" height="24" rx="4"/>
+                            <circle cx="885" cy="110" r="14"/>
+                            <rect x="850" y="140" width="70" height="24" rx="4"/>
 
-                            <rect x="850" y="340" width="70" height="30" rx="4"/>
-                            <circle cx="885" cy="400" r="16"/>
-                            <rect x="850" y="440" width="70" height="30" rx="4"/>
-                            <text x="897" y="280" text-anchor="middle" fill="#FFDF73" font-size="11" font-family="serif" font-weight="bold" transform="rotate(90 897 280)" letter-spacing="2">EXECUTIVE LOUNGE</text>
+                            <rect x="850" y="270" width="70" height="24" rx="4"/>
+                            <circle cx="885" cy="320" r="14"/>
+                            <rect x="850" y="350" width="70" height="24" rx="4"/>
+                            <text x="897" y="220" text-anchor="middle" fill="#FFDF73" font-size="10" font-family="serif" font-weight="bold" transform="rotate(90 897 220)" letter-spacing="2">EXECUTIVE LOUNGE</text>
                         </g>
 
                         <!-- North & South Wing Floor Direction Markers -->
-                        <text x="475" y="32" text-anchor="middle" fill="rgba(212, 175, 55, 0.5)" font-size="10" font-family="serif" letter-spacing="3">NORTH SUITES</text>
-                        <text x="475" y="528" text-anchor="middle" fill="rgba(212, 175, 55, 0.5)" font-size="10" font-family="serif" letter-spacing="3">SOUTH SUITES</text>
+                        <text x="475" y="22" text-anchor="middle" fill="rgba(212, 175, 55, 0.5)" font-size="9" font-family="serif" letter-spacing="3">NORTH SUITES</text>
+                        <text x="475" y="420" text-anchor="middle" fill="rgba(212, 175, 55, 0.5)" font-size="9" font-family="serif" letter-spacing="3">SOUTH SUITES</text>
 
                         <!-- Render Architectural Room Vectors -->
                         <?php
@@ -172,7 +171,7 @@ function renderStandalone2DMap(PDO $db, string $mode = 'public', string $checkIn
                         $southWing = array_slice($floorRooms, 6, 6);
 
                         // X offsets for 6 room columns
-                        $xCoords = [140, 255, 370, 485, 600, 715];
+                        $xCoords = [135, 250, 365, 480, 595, 710];
 
                         $renderArchitecturalRoom = function($room, $x, $y, $isNorth = true) use ($mode, $floorNum) {
                             $status = $room['status'];
@@ -202,7 +201,7 @@ function renderStandalone2DMap(PDO $db, string $mode = 'public', string $checkIn
                                onclick="onStandaloneMapRoomClick(<?= (int)$room['room_id'] ?>, '<?= e($room['room_number']) ?>', '<?= e($room['room_type']) ?>', '<?= number_format((float)$room['price_per_night'], 2) ?>', '<?= $status ?>', '<?= e($mode) ?>')">
                                 
                                 <!-- Room Outer Perimeter Rect -->
-                                <rect x="<?= $x ?>" y="<?= $y ?>" width="105" height="210" rx="4" 
+                                <rect x="<?= $x ?>" y="<?= $y ?>" width="105" height="160" rx="4" 
                                       fill="<?= $st['fill'] ?>" 
                                       stroke="<?= $st['stroke'] ?>" 
                                       stroke-width="1.5" 
@@ -212,50 +211,50 @@ function renderStandalone2DMap(PDO $db, string $mode = 'public', string $checkIn
                                 <!-- Inner Architectural Wireframes -->
                                 <g stroke="<?= $st['stroke'] ?>" stroke-width="0.8" opacity="0.6" fill="none">
                                     <?php if ($isNorth): ?>
-                                        <rect x="<?= $x + 22 ?>" y="<?= $y + 12 ?>" width="61" height="6" rx="1"/>
-                                        <rect x="<?= $x + 22 ?>" y="<?= $y + 20 ?>" width="61" height="65" rx="3"/>
-                                        <rect x="<?= $x + 27 ?>" y="<?= $y + 24 ?>" width="22" height="14" rx="2"/>
-                                        <rect x="<?= $x + 56 ?>" y="<?= $y + 24 ?>" width="22" height="14" rx="2"/>
-                                        <line x1="<?= $x + 30 ?>" y1="<?= $y + 115 ?>" x2="<?= $x + 75 ?>" y2="<?= $y + 115 ?>" stroke-width="2"/>
-                                        <line x1="<?= $x ?>" y1="<?= $y + 140 ?>" x2="<?= $x + 105 ?>" y2="<?= $y + 140 ?>"/>
-                                        <circle cx="<?= $x + 22 ?>" cy="<?= $y + 175 ?>" r="10"/>
-                                        <rect x="<?= $x + 65 ?>" y="<?= $y + 160 ?>" width="25" height="30" rx="3"/>
-                                        <path d="M <?= $x + 20 ?> <?= $y + 210 ?> A 25 25 0 0 1 <?= $x + 45 ?> <?= $y + 185 ?>" stroke-dasharray="2 2"/>
+                                        <rect x="<?= $x + 22 ?>" y="<?= $y + 10 ?>" width="61" height="5" rx="1"/>
+                                        <rect x="<?= $x + 22 ?>" y="<?= $y + 16 ?>" width="61" height="50" rx="3"/>
+                                        <rect x="<?= $x + 27 ?>" y="<?= $y + 20 ?>" width="22" height="12" rx="2"/>
+                                        <rect x="<?= $x + 56 ?>" y="<?= $y + 20 ?>" width="22" height="12" rx="2"/>
+                                        <line x1="<?= $x + 30 ?>" y1="<?= $y + 90 ?>" x2="<?= $x + 75 ?>" y2="<?= $y + 90 ?>" stroke-width="2"/>
+                                        <line x1="<?= $x ?>" y1="<?= $y + 110 ?>" x2="<?= $x + 105 ?>" y2="<?= $y + 110 ?>"/>
+                                        <circle cx="<?= $x + 22 ?>" cy="<?= $y + 135 ?>" r="8"/>
+                                        <rect x="<?= $x + 65 ?>" y="<?= $y + 122 ?>" width="22" height="24" rx="3"/>
+                                        <path d="M <?= $x + 20 ?> <?= $y + 160 ?> A 20 20 0 0 1 <?= $x + 40 ?> <?= $y + 140 ?>" stroke-dasharray="2 2"/>
                                     <?php else: ?>
-                                        <line x1="<?= $x ?>" y1="<?= $y + 70 ?>" x2="<?= $x + 105 ?>" y2="<?= $y + 70 ?>"/>
-                                        <circle cx="<?= $x + 22 ?>" cy="<?= $y + 35 ?>" r="10"/>
-                                        <rect x="<?= $x + 65 ?>" y="<?= $y + 20 ?>" width="25" height="30" rx="3"/>
-                                        <rect x="<?= $x + 22 ?>" y="<?= $y + 192 ?>" width="61" height="6" rx="1"/>
-                                        <rect x="<?= $x + 22 ?>" y="<?= $y + 125 ?>" width="61" height="65" rx="3"/>
-                                        <rect x="<?= $x + 27 ?>" y="<?= $y + 170 ?>" width="22" height="14" rx="2"/>
-                                        <rect x="<?= $x + 56 ?>" y="<?= $y + 170 ?>" width="22" height="14" rx="2"/>
-                                        <line x1="<?= $x + 30 ?>" y1="<?= $y + 95 ?>" x2="<?= $x + 75 ?>" y2="<?= $y + 95 ?>" stroke-width="2"/>
-                                        <path d="M <?= $x + 20 ?> <?= $y ?>" A 25 25 0 0 0 <?= $x + 45 ?> <?= $y + 25 ?>" stroke-dasharray="2 2"/>
+                                        <line x1="<?= $x ?>" y1="<?= $y + 50 ?>" x2="<?= $x + 105 ?>" y2="<?= $y + 50 ?>"/>
+                                        <circle cx="<?= $x + 22 ?>" cy="<?= $y + 25 ?>" r="8"/>
+                                        <rect x="<?= $x + 65 ?>" y="<?= $y + 14 ?>" width="22" height="24" rx="3"/>
+                                        <rect x="<?= $x + 22 ?>" y="<?= $y + 145 ?>" width="61" height="5" rx="1"/>
+                                        <rect x="<?= $x + 22 ?>" y="<?= $y + 94 ?>" width="61" height="50" rx="3"/>
+                                        <rect x="<?= $x + 27 ?>" y="<?= $y + 128 ?>" width="22" height="12" rx="2"/>
+                                        <rect x="<?= $x + 56 ?>" y="<?= $y + 128 ?>" width="22" height="12" rx="2"/>
+                                        <line x1="<?= $x + 30 ?>" y1="<?= $y + 70 ?>" x2="<?= $x + 75 ?>" y2="<?= $y + 70 ?>" stroke-width="2"/>
+                                        <path d="M <?= $x + 20 ?> <?= $y ?>" A 20 20 0 0 0 <?= $x + 40 ?> <?= $y + 20 ?>" stroke-dasharray="2 2"/>
                                     <?php endif; ?>
                                 </g>
 
                                 <!-- Status Badge Pill -->
-                                <?php $badgeY = $isNorth ? $y + 22 : $y + 168; ?>
-                                <rect x="<?= $x + 15 ?>" y="<?= $badgeY ?>" width="75" height="18" rx="9" fill="<?= $st['badgeBg'] ?>" stroke="<?= $st['stroke'] ?>" stroke-width="0.8"/>
-                                <text x="<?= $x + 52.5 ?>" y="<?= $badgeY + 12 ?>" text-anchor="middle" fill="<?= $st['badgeText'] ?>" font-size="8" font-weight="bold" font-family="sans-serif" letter-spacing="1"><?= strtoupper($status) ?></text>
+                                <?php $badgeY = $isNorth ? $y + 16 : $y + 128; ?>
+                                <rect x="<?= $x + 15 ?>" y="<?= $badgeY ?>" width="75" height="16" rx="8" fill="<?= $st['badgeBg'] ?>" stroke="<?= $st['stroke'] ?>" stroke-width="0.8"/>
+                                <text x="<?= $x + 52.5 ?>" y="<?= $badgeY + 11 ?>" text-anchor="middle" fill="<?= $st['badgeText'] ?>" font-size="8" font-weight="bold" font-family="sans-serif" letter-spacing="1"><?= strtoupper($status) ?></text>
 
                                 <!-- Room Number Label -->
-                                <text x="<?= $x + 52.5 ?>" y="<?= $isNorth ? $y + 106 : $y + 114 ?>" text-anchor="middle" fill="<?= $st['stroke'] ?>" font-size="11" font-weight="bold" font-family="serif" letter-spacing="0.5">ROOM <?= e($room['room_number']) ?></text>
+                                <text x="<?= $x + 52.5 ?>" y="<?= $isNorth ? $y + 82 : $y + 88 ?>" text-anchor="middle" fill="<?= $st['stroke'] ?>" font-size="11" font-weight="bold" font-family="serif" letter-spacing="0.5">ROOM <?= e($room['room_number']) ?></text>
                             </g>
                             <?php
                         };
 
-                        // Render North Wing (Y = 40)
+                        // Render North Wing (Y = 30)
                         foreach ($northWing as $idx => $rData) {
                             if (isset($xCoords[$idx])) {
-                                $renderArchitecturalRoom($rData, $xCoords[$idx], 40, true);
+                                $renderArchitecturalRoom($rData, $xCoords[$idx], 30, true);
                             }
                         }
 
-                        // Render South Wing (Y = 310)
+                        // Render South Wing (Y = 250)
                         foreach ($southWing as $idx => $rData) {
                             if (isset($xCoords[$idx])) {
-                                $renderArchitecturalRoom($rData, $xCoords[$idx], 310, false);
+                                $renderArchitecturalRoom($rData, $xCoords[$idx], 250, false);
                             }
                         }
                         ?>
