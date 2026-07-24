@@ -23,14 +23,14 @@ renderAdminLayoutStart('Guests', 'guests', $currentAdmin, ['../assets/css/admin/
     <div class="col-xl-6">
         <div class="panel-card p-4 h-100">
             <p class="eyebrow mb-1">Guest Search</p>
-            <h3 class="mb-3">Find Walk-in Guests</h3>
+            <h3 class="mb-3">Find Guest</h3>
             <form method="get" class="d-flex gap-2 mb-4">
                 <input class="form-control" name="search" type="search" value="<?php echo e($searchTerm); ?>" placeholder="Search name, email, or phone">
                 <button class="btn btn-warning fw-semibold text-nowrap" type="submit"><i class="bi bi-search me-1"></i>Search</button>
             </form>
 
             <div class="table-responsive">
-                <table class="table align-middle mb-0">
+                <table class="table table-dark-soft align-middle mb-0">
                     <thead>
                         <tr>
                             <th>Guest</th>
@@ -41,26 +41,26 @@ renderAdminLayoutStart('Guests', 'guests', $currentAdmin, ['../assets/css/admin/
                     <tbody>
                         <?php if (!$guests): ?>
                             <tr>
-                                <td colspan="3" class="text-light-emphasis text-center py-4">No guests found.</td>
+                                <td colspan="3" class="guest-phone-text text-center py-4">No guests found.</td>
                             </tr>
                         <?php endif; ?>
                         <?php foreach ($guests as $guest): ?>
                             <tr>
                                 <td>
-                                    <div class="fw-semibold text-dark-emphasis mb-1"><?php echo e($guest['first_name'] . ' ' . $guest['last_name']); ?></div>
+                                    <div class="guest-name-text mb-1"><?php echo e($guest['first_name'] . ' ' . $guest['last_name']); ?></div>
                                     <?php if ($guest['email']): ?>
-                                        <div class="guest-email-text text-muted"><?php echo e($guest['email']); ?></div>
+                                        <div class="guest-email-text"><?php echo e($guest['email']); ?></div>
                                     <?php endif; ?>
                                     <?php if ($guest['phone']): ?>
-                                        <div class="guest-phone-text text-muted"><?php echo e($guest['phone']); ?></div>
+                                        <div class="guest-phone-text"><?php echo e($guest['phone']); ?></div>
                                     <?php endif; ?>
                                     <?php if (!$guest['email'] && !$guest['phone']): ?>
-                                        <div class="guest-phone-text text-muted font-italic">No contact info</div>
+                                        <div class="guest-phone-text font-italic">No contact info</div>
                                     <?php endif; ?>
                                 </td>
                                 <td class="text-nowrap">
-                                    <div class="fw-medium mb-0.5"><?php echo e((int) $guest['reservation_count']); ?> stay<?php echo (int)$guest['reservation_count'] === 1 ? '' : 's'; ?></div>
-                                    <small class="text-muted d-block" style="font-size: 0.78rem;">Last: <?php echo e($guest['last_stay'] ?: 'No stay yet'); ?></small>
+                                    <div class="guest-stay-text fw-medium mb-0.5"><?php echo e((int) $guest['reservation_count']); ?> stay<?php echo (int)$guest['reservation_count'] === 1 ? '' : 's'; ?></div>
+                                    <div class="guest-stay-subtext">Last: <?php echo e($guest['last_stay'] ?: 'No stay yet'); ?></div>
                                 </td>
                                 <td class="text-end guest-actions-cell">
                                     <div class="guest-actions-group">

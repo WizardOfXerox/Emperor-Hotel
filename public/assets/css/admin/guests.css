@@ -4,16 +4,58 @@
     align-items: stretch;
 }
 
+.guest-name-text {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
 .guest-email-text {
     word-break: break-all;
     font-size: 0.82rem;
     line-height: 1.35;
-    opacity: 0.85;
 }
 
 .guest-phone-text {
     font-size: 0.8rem;
-    opacity: 0.75;
+}
+
+.guest-stay-text {
+    font-weight: 500;
+    font-size: 0.88rem;
+}
+
+.guest-stay-subtext {
+    font-size: 0.78rem;
+}
+
+/* Dark Mode Typography (Default) */
+.guest-name-text,
+.guest-stay-text {
+    color: #f8fafc;
+}
+
+.guest-email-text {
+    color: #cbd5e1;
+}
+
+.guest-phone-text,
+.guest-stay-subtext {
+    color: #94a3b8;
+}
+
+/* Light Mode Typography */
+body.light-mode .guest-name-text,
+body.light-mode .guest-stay-text {
+    color: #0f172a !important;
+}
+
+body.light-mode .guest-email-text {
+    color: #475569 !important;
+}
+
+body.light-mode .guest-phone-text,
+body.light-mode .guest-stay-subtext {
+    color: #64748b !important;
 }
 
 .guest-actions-cell {
@@ -38,26 +80,26 @@
 }
 
 /* Light & Dark Mode Compatibility for Action Buttons */
-[data-bs-theme="light"] .guest-actions-group .btn-outline-secondary {
-    color: #475569;
-    border-color: #cbd5e1;
-    background-color: #f8fafc;
+body.light-mode .guest-actions-group .btn-outline-secondary {
+    color: #475569 !important;
+    border-color: #cbd5e1 !important;
+    background-color: #f8fafc !important;
 }
 
-[data-bs-theme="light"] .guest-actions-group .btn-outline-secondary:hover {
-    color: #0f172a;
-    border-color: #94a3b8;
-    background-color: #e2e8f0;
+body.light-mode .guest-actions-group .btn-outline-secondary:hover {
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+    background-color: #e2e8f0 !important;
 }
 
-[data-bs-theme="dark"] .guest-actions-group .btn-outline-secondary {
+.guest-actions-group .btn-outline-secondary {
     color: #cbd5e1;
-    border-color: rgba(255, 255, 255, 0.2);
-    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.25);
+    background-color: rgba(255, 255, 255, 0.06);
 }
 
-[data-bs-theme="dark"] .guest-actions-group .btn-outline-secondary:hover {
+.guest-actions-group .btn-outline-secondary:hover {
     color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.4);
-    background-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.45);
+    background-color: rgba(255, 255, 255, 0.15);
 }
