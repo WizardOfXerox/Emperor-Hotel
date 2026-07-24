@@ -131,6 +131,8 @@ $rooms = $availabilityDatesValid
     ? $reservationModel->roomsWithDateAvailability($availabilityCheckIn, $availabilityCheckOut)
     : $roomModel->all();
 
+$selectedRoomId = isset($_GET['room_id']) ? (int) $_GET['room_id'] : null;
+
 renderAdminLayoutStart('Create Reservation', 'create-reservation', $currentAdmin, ['../assets/css/admin/reservations.css?v=20260530-create-only']);
 ?>
 <section class="row g-4 justify-content-center">
@@ -181,9 +183,27 @@ renderAdminLayoutStart('Create Reservation', 'create-reservation', $currentAdmin
             </div>
 
             <!-- Section 3: Room Selection -->
-            <div class="panel-card p-4">
-                <h4 class="h6 mb-3 text-warning"><i class="bi bi-door-open me-2"></i>Select Room</h4>
-                <?php renderRoomChoiceCards($rooms, null, false, $db); ?>
+            <div class="panel-card p-4" id="roomSelectionSection">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+                    <h4 class="h6 mb-0 text-warning font-serif fw-bold"><i class="bi bi-door-open me-2"></i>Select Room</h4>
+                    <div class="d-flex align-items-center gap-2" style="max-width: 480px; width: 100%;">
+                        <label for="quickRoomSelect" class="small text-nowrap fw-bold text-gold me-1"><i class="bi bi-lightning-charge-fill me-1"></i>Quick Select Room:</label>
+                        <select class="form-select border-warning border-opacity-50 font-sans fw-semibold shadow-sm" id="quickRoomSelect">
+                            <option value="">-- Instant Choose Room # --</option>
+                            <?php foreach ($rooms as $r): ?>
+                                <?php
+                                    $rId = (int) $r['room_id'];
+                                    $rStatus = $r['status'] ?? 'Available';
+                                    $rSelected = $selectedRoomId === $rId ? 'selected' : '';
+                                ?>
+                                <option value="<?php echo e($rId); ?>" <?php echo $rSelected; ?>>
+                                    Room <?php echo e($r['room_number']); ?> &bull; <?php echo e($r['room_type']); ?> (<?php echo formatMoney((float)$r['price_per_night']); ?>/night &bull; <?php echo e($rStatus); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <?php renderRoomChoiceCards($rooms, $selectedRoomId, true, $db); ?>
             </div>
 
             <!-- Section 4: Initial Status & Inclusions -->
@@ -232,22 +252,76 @@ renderAdminLayoutStart('Create Reservation', 'create-reservation', $currentAdmin
     </div>
 </section>
 <script>
-document.querySelectorAll("[data-reservation-payment-method]").forEach((methodSelect) => {
-    const form = methodSelect.closest("form");
-    const message = form ? form.querySelector("[data-payment-route-message]") : null;
+document.addEventListener("DOMContentLoaded", () => {
+    const quickRoomSelect = document.getElementById("quickRoomSelect");
+    const roomInputs = document.querySelectorAll('input[name="room_id"]');
 
-    const syncPaymentRoute = () => {
-        const isCash = methodSelect.value === "Cash";
+    // 1. Synchronize Quick Select Dropdown -> Room Radio Input & Card
+    if (quickRoomSelect) {
+        quickRoomSelect.addEventListener("change", (e) => {
+            const selectedVal = e.target.value;
+            if (!selectedVal) return;
 
-        if (message) {
-            message.textContent = isCash
-                ? "Cash creates an automatic pending payment reference for the full reservation total."
-                : "This method will open the Payments page after the reservation is created.";
+            const targetRadio = document.querySelector(`input[name="room_id"][value="${selectedVal}"]`);
+            if (targetRadio && !targetRadio.disabled) {
+                targetRadio.checked = true;
+                targetRadio.dispatchEvent(new Event("change", { bubbles: true }));
+                
+                const card = targetRadio.closest("[data-room-card]");
+                if (card) {
+                    card.click();
+                    card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }
+            }
+        });
+    }
+
+    // 2. Synchronize Room Radio Input -> Quick Select Dropdown
+    roomInputs.forEach(input => {
+        input.addEventListener("change", () => {
+            if (input.checked && quickRoomSelect) {
+                quickRoomSelect.value = input.value;
+            }
+        });
+    });
+
+    // 3. Auto-Select & Auto-Scroll on initial page load if room_id is present
+    const checkedRadio = document.querySelector('input[name="room_id"]:checked');
+    if (checkedRadio) {
+        checkedRadio.dispatchEvent(new Event("change", { bubbles: true }));
+        if (quickRoomSelect) {
+            quickRoomSelect.value = checkedRadio.value;
         }
-    };
 
-    methodSelect.addEventListener("change", syncPaymentRoute);
-    syncPaymentRoute();
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("room_id")) {
+            const card = checkedRadio.closest("[data-room-card]");
+            if (card) {
+                setTimeout(() => {
+                    card.scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 200);
+            }
+        }
+    }
+
+    // 4. Payment Mode Sync Message
+    document.querySelectorAll("[data-reservation-payment-method]").forEach((methodSelect) => {
+        const form = methodSelect.closest("form");
+        const message = form ? form.querySelector("[data-payment-route-message]") : null;
+
+        const syncPaymentRoute = () => {
+            const isCash = methodSelect.value === "Cash";
+
+            if (message) {
+                message.textContent = isCash
+                    ? "Cash creates an automatic pending payment reference for the full reservation total."
+                    : "This method will open the Payments page after the reservation is created.";
+            }
+        };
+
+        methodSelect.addEventListener("change", syncPaymentRoute);
+        syncPaymentRoute();
+    });
 });
 </script>
 <?php renderRoomAvailabilityUpdater(); ?>
