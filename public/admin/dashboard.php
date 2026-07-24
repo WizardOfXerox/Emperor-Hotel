@@ -442,12 +442,89 @@ const hasValues = (values) => values.some((value) => Number(value) > 0);const is
 Chart.defaults.color = isLightMode ? '#334155' : '#94a3b8';
 Chart.defaults.borderColor = isLightMode ? 'rgba(15, 23, 42, 0.08)' : 'rgba(248, 250, 252, 0.08)';
 
+const emperorValuePlugin = {
+    id: 'emperorValueLabels',
+    afterDatasetsDraw(chart) {
+        const { ctx } = chart;
+        const isLight = document.documentElement.classList.contains('light-mode');
+
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+            const meta = chart.getDatasetMeta(datasetIndex);
+            if (meta.hidden) return;
+
+            meta.data.forEach((element, index) => {
+                const value = dataset.data[index];
+                if (value === null || value === undefined || value === 0) return;
+
+                ctx.save();
+                ctx.font = '700 11px "Outfit", "Segoe UI", system-ui, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                if (chart.config.type === 'line' || dataset.type === 'line') {
+                    const text = typeof value === 'number' && value > 1000 ? '₱' + Math.round(value).toLocaleString() : String(value);
+                    const x = element.x;
+                    const y = element.y - 12;
+                    ctx.fillStyle = dataset.borderColor || (isLight ? '#0284c7' : '#38bdf8');
+                    ctx.shadowColor = isLight ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)';
+                    ctx.shadowBlur = 4;
+                    ctx.fillText(text, x, y);
+                } else if (chart.config.type === 'bar' || dataset.type === 'bar') {
+                    const text = typeof value === 'number' ? value.toLocaleString() : String(value);
+                    const x = element.x;
+                    const y = Math.max(element.y - 12, chart.chartArea.top + 10);
+                    ctx.fillStyle = isLight ? '#b45309' : '#fdd700';
+                    ctx.shadowColor = isLight ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
+                    ctx.shadowBlur = 3;
+                    ctx.fillText(text, x, y);
+                }
+                ctx.restore();
+            });
+        });
+    }
+};
+
+const emperorDoughnutPlugin = {
+    id: 'emperorDoughnutLabels',
+    afterDatasetsDraw(chart) {
+        if (chart.config.type !== 'doughnut' && chart.config.type !== 'pie') return;
+        const { ctx } = chart;
+        const dataset = chart.data.datasets[0];
+        if (!dataset || !dataset.data) return;
+
+        const total = dataset.data.reduce((a, b) => a + Number(b || 0), 0);
+        const meta = chart.getDatasetMeta(0);
+        if (meta.hidden) return;
+
+        meta.data.forEach((element, index) => {
+            const value = Number(dataset.data[index] || 0);
+            if (!value || total <= 0) return;
+
+            const percent = Math.round((value / total) * 100);
+            if (percent < 4) return;
+
+            const position = element.tooltipPosition();
+            ctx.save();
+            ctx.font = '700 11px "Outfit", "Segoe UI", system-ui, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+            ctx.shadowBlur = 5;
+
+            ctx.fillText(value + ' (' + percent + '%)', position.x, position.y);
+            ctx.restore();
+        });
+    }
+};
+
 const renderDoughnutChart = (canvasId, chartData, label) => {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 
     new Chart(canvas, {
         type: 'doughnut',
+        plugins: [emperorDoughnutPlugin],
         data: {
             labels: chartData.labels,
             datasets: [{
@@ -480,6 +557,7 @@ const monthlyCanvas = document.getElementById('monthlyPerformanceChart');
 
 if (monthlyCanvas) {
     new Chart(monthlyCanvas, {
+        plugins: [emperorValuePlugin],
         data: {
             labels: dashboardChartData.monthly.labels,
             datasets: [
