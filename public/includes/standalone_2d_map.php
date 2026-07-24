@@ -95,8 +95,8 @@ function renderStandalone2DMap(PDO $db, string $mode = 'public', string $checkIn
             <div class="tab-pane fade <?= $floorNum === 1 ? 'show active' : '' ?>" id="aurora-pane-floor-<?= $floorNum ?>" role="tabpanel">
                 
                 <!-- Interactive SVG Architectural Blueprint Canvas -->
-                <div class="blueprint-canvas-container position-relative rounded-4 p-2 p-lg-3 border border-secondary border-opacity-30 overflow-auto" style="background: #0f141d; max-height: calc(100vh - 220px);">
-                    <svg viewBox="0 0 1000 440" class="w-100 h-auto aurora-svg-blueprint" xmlns="http://www.w3.org/2000/svg" style="min-width: 650px;">
+                <div class="blueprint-canvas-container position-relative rounded-4 p-2 p-lg-3 border border-secondary border-opacity-30 overflow-hidden" style="background: #0f141d;">
+                    <svg viewBox="0 0 1000 440" class="w-100 h-auto aurora-svg-blueprint" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <!-- Neon Glow Filters -->
                             <filter id="glowGreen_<?= $floorNum ?>" x="-20%" y="-20%" width="140%" height="140%">
