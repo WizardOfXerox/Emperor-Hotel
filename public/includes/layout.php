@@ -95,6 +95,7 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
         'reservations' => ['label' => 'Reservations', 'href' => 'reservations.php', 'icon' => 'bi-calendar-check'],
         'booking-records' => ['label' => 'Booking Logs', 'href' => 'booking-records.php', 'icon' => 'bi-clock-history'],
         'rooms' => ['label' => 'Rooms', 'href' => 'rooms.php', 'icon' => 'bi-door-open'],
+        'map' => ['label' => 'Map', 'href' => 'map.php', 'icon' => 'bi-map-fill'],
         'payments' => ['label' => 'Payments', 'href' => 'payments.php', 'icon' => 'bi-credit-card-2-back'],
         'guests' => ['label' => 'Guests', 'href' => 'guests.php', 'icon' => 'bi-person-lines-fill'],
         'reports' => ['label' => 'Reports', 'href' => 'reports.php', 'icon' => 'bi-graph-up-arrow'],

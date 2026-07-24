@@ -122,6 +122,8 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
             <a class="home-nav__link" href="home.php">HOME</a>
             <a class="home-nav__link" href="rooms.php">ROOMS</a>
             <a class="home-nav__link" href="suites.php">SUITES</a>
+            <a class="home-nav__link" href="map.php">MAP</a>
+            <a class="home-nav__link" href="contact.php">CONTACT</a>
         </div>
 
         <div class="home-nav__auth">

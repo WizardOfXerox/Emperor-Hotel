@@ -66,6 +66,7 @@ renderHeader('Contact Us | Emperor Hotel', ['../assets/css/site/home.css', '../a
             <a class="home-nav__link" href="home.php">HOME</a>
             <a class="home-nav__link" href="rooms.php">ROOMS</a>
             <a class="home-nav__link" href="suites.php">SUITES</a>
+            <a class="home-nav__link" href="map.php">MAP</a>
             <a class="home-nav__link home-nav__link--active" href="contact.php">CONTACT</a>
         </div>
 
