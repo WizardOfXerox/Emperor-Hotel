@@ -35,7 +35,9 @@ renderHeader('Suites Showcase | Emperor Hotel', ['../assets/css/site/home.css', 
             <a class="home-nav__link" href="home.php">HOME</a>
             <a class="home-nav__link" href="rooms.php">ROOMS</a>
             <a class="home-nav__link home-nav__link--active" href="suites.php">SUITES</a>
-            <a class="home-nav__link" href="map.php">MAP</a>
+            <?php if (isFeatureMapEnabled()): ?>
+                <a class="home-nav__link" href="map.php">MAP</a>
+            <?php endif; ?>
             <a class="home-nav__link" href="contact.php">CONTACT</a>
         </div>
 

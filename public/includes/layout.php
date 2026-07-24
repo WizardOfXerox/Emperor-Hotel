@@ -95,12 +95,16 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
         'reservations' => ['label' => 'Reservations', 'href' => 'reservations.php', 'icon' => 'bi-calendar-check'],
         'booking-records' => ['label' => 'Booking Logs', 'href' => 'booking-records.php', 'icon' => 'bi-clock-history'],
         'rooms' => ['label' => 'Rooms', 'href' => 'rooms.php', 'icon' => 'bi-door-open'],
-        'map' => ['label' => 'Map', 'href' => 'map.php', 'icon' => 'bi-map-fill'],
-        'payments' => ['label' => 'Payments', 'href' => 'payments.php', 'icon' => 'bi-credit-card-2-back'],
-        'guests' => ['label' => 'Guests', 'href' => 'guests.php', 'icon' => 'bi-person-lines-fill'],
-        'reports' => ['label' => 'Reports', 'href' => 'reports.php', 'icon' => 'bi-graph-up-arrow'],
-        'users' => ['label' => 'Users', 'href' => 'users.php', 'icon' => 'bi-people'],
     ];
+
+    if (isFeatureMapEnabled()) {
+        $links['map'] = ['label' => 'Map', 'href' => 'map.php', 'icon' => 'bi-map-fill'];
+    }
+
+    $links['payments'] = ['label' => 'Payments', 'href' => 'payments.php', 'icon' => 'bi-credit-card-2-back'];
+    $links['guests'] = ['label' => 'Guests', 'href' => 'guests.php', 'icon' => 'bi-person-lines-fill'];
+    $links['reports'] = ['label' => 'Reports', 'href' => 'reports.php', 'icon' => 'bi-graph-up-arrow'];
+    $links['users'] = ['label' => 'Users', 'href' => 'users.php', 'icon' => 'bi-people'];
 
     // Mobile Top Navigation Bar (< 992px)
     echo '<div class="admin-mobile-nav d-lg-none d-flex align-items-center justify-content-between p-3 shadow-sm" style="background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212, 175, 55, 0.3); position: sticky; top: 0; z-index: 1030;">';

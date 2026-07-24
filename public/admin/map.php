@@ -9,6 +9,11 @@ require_once __DIR__ . '/../includes/standalone_2d_map.php';
 requireAuth('../auth/login.php');
 requireRole('admin', '../user/dashboard.php');
 
+if (!isFeatureMapEnabled()) {
+    setFlash('warning', 'The Interactive Hotel Map feature is currently disabled in system configuration.');
+    redirect('dashboard.php');
+}
+
 $db = Database::connect();
 $currentAdmin = currentUser();
 $roomModel = new Room($db);

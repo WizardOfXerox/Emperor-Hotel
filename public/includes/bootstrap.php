@@ -62,3 +62,20 @@ spl_autoload_register(static function (string $className): void {
         require_once $modelPath;
     }
 });
+
+function isFeatureMapEnabled(): bool
+{
+    $val = getenv('FEATURE_MAP_ENABLED');
+    if ($val === false && isset($_ENV['FEATURE_MAP_ENABLED'])) {
+        $val = $_ENV['FEATURE_MAP_ENABLED'];
+    }
+    if ($val === false && isset($_SERVER['FEATURE_MAP_ENABLED'])) {
+        $val = $_SERVER['FEATURE_MAP_ENABLED'];
+    }
+    if ($val === false || $val === null || $val === '') {
+        return true;
+    }
+
+    $clean = strtolower(trim((string) $val));
+    return !in_array($clean, ['false', '0', 'off', 'no', 'disabled'], true);
+}

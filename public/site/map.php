@@ -6,6 +6,11 @@ require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/standalone_2d_map.php';
 
+if (!isFeatureMapEnabled()) {
+    setFlash('warning', 'The Interactive Hotel Map feature is currently disabled in system configuration.');
+    redirect('home.php');
+}
+
 $db = Database::connect();
 $user = currentUser();
 $dashboardHref = $user ? ($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php') : '../auth/login.php';
