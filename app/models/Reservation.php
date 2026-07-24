@@ -319,6 +319,14 @@ class Reservation
             if (in_array($status, ['Confirmed', 'Checked-in', 'Checked-out'], true)) {
                 $paymentStmt = $this->db->prepare("UPDATE payments SET payment_status = 'Confirmed' WHERE reservation_id = :reservation_id AND payment_status = 'Pending'");
                 $paymentStmt->execute(['reservation_id' => $reservationId]);
+            } elseif ($status === 'Cancelled') {
+                // If payment was Confirmed (they paid), automatically process a Refund!
+                $refundStmt = $this->db->prepare("UPDATE payments SET payment_status = 'Refunded' WHERE reservation_id = :reservation_id AND payment_status = 'Confirmed'");
+                $refundStmt->execute(['reservation_id' => $reservationId]);
+
+                // If payment was Pending (they haven't paid yet), update to Failed so it no longer remains Pending
+                $cancelPendingStmt = $this->db->prepare("UPDATE payments SET payment_status = 'Failed' WHERE reservation_id = :reservation_id AND payment_status = 'Pending'");
+                $cancelPendingStmt->execute(['reservation_id' => $reservationId]);
             }
         }
 
