@@ -200,13 +200,28 @@ td.small.text-muted {
     color: #f8fafc;
     font-size: 0.88rem;
     font-weight: 500;
+    text-decoration: none !important;
     transition: background 0.2s ease, color 0.2s ease;
 }
 
+.sidebar-link i {
+    color: inherit;
+    font-size: 1rem;
+    transition: color 0.2s ease;
+}
+
 .sidebar-link:hover,
-.sidebar-link.active {
-    color: #020617;
-    background: #fdd700;
+.sidebar-link.active,
+.sidebar-link:focus {
+    color: #020617 !important;
+    background: #fdd700 !important;
+    font-weight: 700 !important;
+}
+
+.sidebar-link:hover i,
+.sidebar-link.active i,
+.sidebar-link:focus i {
+    color: #020617 !important;
 }
 
 .content-panel {
@@ -876,19 +891,24 @@ body.light-mode .sidebar-actions {
 
 body.light-mode .sidebar-link {
     color: #334155 !important;
+    text-decoration: none !important;
 }
 
 body.light-mode .sidebar-link i {
-    color: #b45309 !important;
+    color: #b45309;
 }
 
 body.light-mode .sidebar-link:hover,
-body.light-mode .sidebar-link.active {
+body.light-mode .sidebar-link.active,
+body.light-mode .sidebar-link:focus {
     color: #0f172a !important;
-    background: #fef08a !important;
+    background: #fdd700 !important;
+    font-weight: 700 !important;
 }
 
-body.light-mode .sidebar-link.active i {
+body.light-mode .sidebar-link:hover i,
+body.light-mode .sidebar-link.active i,
+body.light-mode .sidebar-link:focus i {
     color: #0f172a !important;
 }
 
