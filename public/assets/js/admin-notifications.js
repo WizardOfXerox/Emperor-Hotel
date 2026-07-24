@@ -76,7 +76,10 @@
 
     async function checkNotifications() {
         try {
-            const res = await fetch('../admin/api_notifications.php');
+            let res = await fetch('api_notifications.php');
+            if (!res.ok) {
+                res = await fetch('../admin/api_notifications.php');
+            }
             if (!res.ok) return;
 
             const data = await res.json();
@@ -85,19 +88,31 @@
             const notifications = data.notifications || [];
             const pendingCount = data.pending_count || 0;
 
-            // Update badges
-            if (pendingCount > 0) {
-                notifBadge.textContent = pendingCount;
-                notifBadge.style.display = 'inline-block';
-                if (notifHeaderBadge) notifHeaderBadge.textContent = pendingCount + ' Pending';
-            } else {
-                notifBadge.style.display = 'none';
-                if (notifHeaderBadge) notifHeaderBadge.textContent = '0 Pending';
-            }
+            const notifBadgeMobile = document.getElementById('adminNotifBadgeMobile');
+            const notifHeaderBadgeMobile = document.getElementById('adminNotifHeaderBadgeMobile');
+            const notifItemsMobile = document.getElementById('adminNotifItemsMobile');
+
+            // Update desktop & mobile badges
+            [notifBadge, notifBadgeMobile].forEach(badge => {
+                if (!badge) return;
+                if (pendingCount > 0) {
+                    badge.textContent = pendingCount;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+
+            [notifHeaderBadge, notifHeaderBadgeMobile].forEach(headerBadge => {
+                if (!headerBadge) return;
+                headerBadge.textContent = pendingCount > 0 ? pendingCount + ' Pending' : '0 Pending';
+            });
 
             // Render list
             if (notifications.length === 0) {
-                notifItems.innerHTML = '<li class="text-center py-3 text-muted small"><i class="bi bi-check2-circle me-1 text-success"></i>No new reservations</li>';
+                const emptyHtml = '<li class="text-center py-3 text-muted small"><i class="bi bi-check2-circle me-1 text-success"></i>No new notifications</li>';
+                if (notifItems) notifItems.innerHTML = emptyHtml;
+                if (notifItemsMobile) notifItemsMobile.innerHTML = emptyHtml;
                 return;
             }
 
@@ -113,7 +128,7 @@
                     }
                 }
 
-                const notifUrl = n.url || `../admin/reservations.php?search=${encodeURIComponent(n.guest_name)}`;
+                const notifUrl = n.url || `reservations.php?search=${encodeURIComponent(n.guest_name)}`;
                 const badgeBg = n.status === 'Pending' ? 'bg-warning text-dark' 
                     : (n.status === 'Conflict' || n.status === 'Overdue' || n.status === 'Failed' ? 'bg-danger text-white' : 'bg-success text-white');
 
@@ -132,7 +147,8 @@
                 `;
             });
 
-            notifItems.innerHTML = listHtml;
+            if (notifItems) notifItems.innerHTML = listHtml;
+            if (notifItemsMobile) notifItemsMobile.innerHTML = listHtml;
 
             // Trigger popup toast alerts for brand new reservations found after initial load
             if (initialLoadComplete && newReservationsFound.length > 0) {
