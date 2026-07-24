@@ -384,12 +384,26 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     border-radius: 18px;
 }
 
+.bg-gold {
+    background-color: #fdd700 !important;
+    color: #020617 !important;
+}
+
+.badge-gold {
+    background-color: #fdd700 !important;
+    color: #020617 !important;
+    font-weight: 700 !important;
+    border: none !important;
+}
+
 .badge-soft {
     display: inline-flex;
-    padding: 0.35rem 0.7rem;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
     border-radius: 999px;
-    background: rgba(253, 215, 0, 0.12);
-    color: #fdd700;
+    background: rgba(253, 215, 0, 0.18) !important;
+    color: #fdd700 !important;
+    border: 1px solid rgba(253, 215, 0, 0.35) !important;
     font-size: 0.82rem;
     font-weight: 700;
 }
