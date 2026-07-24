@@ -417,6 +417,43 @@ function onStandaloneMapRoomClick(roomId, roomNumber, roomType, price, status, m
 
     window.location.href = `rooms.php?search=${encodeURIComponent(roomNumber)}`;
 }
+
+async function updateStandaloneMapAvailability(checkIn, checkOut) {
+    if (!checkIn || !checkOut) return;
+    try {
+        let endpoint = 'map_availability.php';
+        if (window.location.pathname.includes('/admin/')) {
+            endpoint = '../site/map_availability.php';
+        } else if (window.location.pathname.includes('/site/')) {
+            endpoint = 'map_availability.php';
+        }
+        const response = await fetch(`${endpoint}?check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`);
+        const data = await response.json();
+        if (!data.success || !Array.isArray(data.rooms)) return;
+
+        const styleMap = {
+            'Available':   { stroke: '#10B981', fill: 'rgba(16, 185, 129, 0.12)', badgeBg: 'rgba(16, 185, 129, 0.25)', badgeText: '#6EE7B7' },
+            'Reserved':    { stroke: '#3B82F6', fill: 'rgba(59, 130, 246, 0.12)', badgeBg: 'rgba(59, 130, 246, 0.25)', badgeText: '#93C5FD' },
+            'Occupied':    { stroke: '#EF4444', fill: 'rgba(239, 68, 68, 0.12)', badgeBg: 'rgba(239, 68, 68, 0.25)', badgeText: '#FCA5A5' },
+            'Cleaning':    { stroke: '#F59E0B', fill: 'rgba(245, 158, 11, 0.12)', badgeBg: 'rgba(245, 158, 11, 0.25)', badgeText: '#FDE68A' },
+            'Maintenance': { stroke: '#64748B', fill: 'rgba(100, 116, 139, 0.12)', badgeBg: 'rgba(100, 116, 139, 0.25)', badgeText: '#CBD5E1' },
+        };
+
+        data.rooms.forEach(r => {
+            document.querySelectorAll(`.aurora-room-zone[data-room-id="${r.room_id}"]`).forEach(zone => {
+                zone.setAttribute('data-room-status', r.status);
+                const rect = zone.querySelector('.room-perimeter-rect');
+                const st = styleMap[r.status] || styleMap['Available'];
+                if (rect) {
+                    rect.setAttribute('fill', st.fill);
+                    rect.setAttribute('stroke', st.stroke);
+                }
+            });
+        });
+    } catch (err) {
+        console.error("Standalone availability update failed:", err);
+    }
+}
 </script>
 <?php
 }
