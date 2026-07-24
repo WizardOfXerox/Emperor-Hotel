@@ -326,11 +326,43 @@ document.addEventListener('DOMContentLoaded', () => {
     Chart.defaults.borderColor = isLightMode ? 'rgba(15, 23, 42, 0.08)' : 'rgba(248, 250, 252, 0.08)';
     Chart.defaults.font.family = "'Outfit', 'Segoe UI', system-ui, sans-serif";
 
+    // High-Contrast Pill Badge Renderer for Chart Labels
+    const drawPillBadge = (ctx, text, x, y, bgColor, textColor) => {
+        ctx.save();
+        ctx.font = '700 10px "Outfit", "Segoe UI", system-ui, sans-serif';
+        const metrics = ctx.measureText(text);
+        const textWidth = metrics.width;
+        const textHeight = 11;
+        const px = 5;
+        const py = 2;
+        const rectX = x - textWidth / 2 - px;
+        const rectY = y - textHeight / 2 - py;
+        const rectW = textWidth + px * 2;
+        const rectH = textHeight + py * 2;
+        const radius = 4;
+
+        ctx.fillStyle = bgColor;
+        ctx.beginPath();
+        if (ctx.roundRect) {
+            ctx.roundRect(rectX, rectY, rectW, rectH, radius);
+        } else {
+            ctx.rect(rectX, rectY, rectW, rectH);
+        }
+        ctx.fill();
+
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, x, y);
+        ctx.restore();
+    };
+
     // Value Labels Plugin for Line and Bar Charts
     const emperorValuePlugin = {
         id: 'emperorValueLabels',
         afterDatasetsDraw(chart) {
-            const { ctx } = chart;
+            const { ctx, chartArea } = chart;
+            if (!chartArea) return;
             const isLight = document.documentElement.classList.contains('light-mode');
 
             chart.data.datasets.forEach((dataset, datasetIndex) => {
@@ -341,46 +373,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     const value = dataset.data[index];
                     if (value === null || value === undefined || value === 0) return;
 
-                    ctx.save();
-                    ctx.font = '700 11px "Outfit", "Segoe UI", system-ui, sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-
                     if (chart.config.type === 'line') {
                         const text = String(value);
                         const x = element.x;
-                        const y = element.y - 12;
-                        ctx.fillStyle = dataset.borderColor || (isLight ? '#0f172a' : '#fdd700');
-                        ctx.shadowColor = isLight ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)';
-                        ctx.shadowBlur = 4;
-                        ctx.fillText(text, x, y);
+                        const yOffset = datasetIndex === 0 ? -14 : 14;
+                        const y = Math.max(chartArea.top + 12, Math.min(chartArea.bottom - 12, element.y + yOffset));
+                        const bgColor = datasetIndex === 0 ? '#fdd700' : '#ef4444';
+                        const textColor = datasetIndex === 0 ? '#020617' : '#ffffff';
+                        drawPillBadge(ctx, text, x, y, bgColor, textColor);
                     } else if (chart.config.type === 'bar') {
                         if (chart.options.indexAxis === 'y') {
                             const text = typeof value === 'number' ? value.toFixed(1) + ' ★' : String(value);
-                            const x = Math.min(element.x + 22, chart.chartArea.right - 10);
+                            const x = Math.min(element.x + 24, chartArea.right - 18);
                             const y = element.y;
-                            ctx.fillStyle = isLight ? '#0284c7' : '#38bdf8';
-                            ctx.textAlign = 'left';
-                            ctx.shadowColor = isLight ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
-                            ctx.shadowBlur = 3;
-                            ctx.fillText(text, x, y);
+                            drawPillBadge(ctx, text, x, y, isLight ? '#0284c7' : '#38bdf8', '#020617');
                         } else {
                             const text = typeof value === 'number' ? value.toLocaleString() : String(value);
                             const x = element.x;
-                            const y = Math.max(element.y - 12, chart.chartArea.top + 10);
-                            ctx.fillStyle = isLight ? '#b45309' : '#fdd700';
-                            ctx.shadowColor = isLight ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
-                            ctx.shadowBlur = 3;
-                            ctx.fillText(text, x, y);
+                            const y = Math.max(chartArea.top + 14, element.y - 12);
+                            drawPillBadge(ctx, text, x, y, isLight ? '#b45309' : '#fdd700', '#020617');
                         }
                     }
-                    ctx.restore();
                 });
             });
         }
     };
 
-    // Doughnut Labels Plugin
+    // Doughnut Percentage Pill Plugin
     const emperorDoughnutPlugin = {
         id: 'emperorDoughnutLabels',
         afterDatasetsDraw(chart) {
@@ -398,20 +417,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!value || total <= 0) return;
 
                 const percent = Math.round((value / total) * 100);
-                if (percent < 3) return;
+                if (percent < 4) return;
 
                 const position = element.tooltipPosition();
-                ctx.save();
-                ctx.font = '700 11px "Outfit", "Segoe UI", system-ui, sans-serif';
-                ctx.fillStyle = '#ffffff';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-                ctx.shadowBlur = 5;
-
-                const text = '₱' + Math.round(value).toLocaleString() + ' (' + percent + '%)';
-                ctx.fillText(text, position.x, position.y);
-                ctx.restore();
+                const text = percent + '%';
+                drawPillBadge(ctx, text, position.x, position.y, 'rgba(2, 6, 23, 0.88)', '#ffffff');
             });
         }
     };
@@ -450,6 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: { padding: { top: 22, right: 20, left: 10, bottom: 5 } },
                 plugins: {
                     legend: { position: 'top', labels: { boxWidth: 12 } }
                 },
@@ -488,6 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: { padding: { top: 15, bottom: 15 } },
                 plugins: {
                     legend: { position: 'bottom', labels: { boxWidth: 12 } }
                 },
@@ -516,6 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: { padding: { top: 22, right: 15 } },
                 plugins: { legend: { display: false } },
                 scales: {
                     x: { grid: { display: false } },
@@ -546,6 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 responsive: true,
                 maintainAspectRatio: false,
                 indexAxis: 'y',
+                layout: { padding: { right: 35 } },
                 plugins: { legend: { display: false } },
                 scales: {
                     x: { max: 5.0, min: 0, grid: { color: 'rgba(248, 250, 252, 0.05)' } },
