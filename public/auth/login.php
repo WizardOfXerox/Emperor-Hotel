@@ -49,6 +49,7 @@ renderHeader('Log In - Emperor Hotel', ['../assets/css/site/home.css'], '');
             <a class="home-nav__link" href="../site/home.php">HOME</a>
             <a class="home-nav__link" href="../site/rooms.php">ROOMS</a>
             <a class="home-nav__link" href="../site/suites.php">SUITES</a>
+            <a class="home-nav__link" href="../site/map.php">MAP</a>
             <a class="home-nav__link" href="../site/contact.php">CONTACT</a>
         </div>
 
