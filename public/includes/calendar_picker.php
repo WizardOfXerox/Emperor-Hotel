@@ -527,7 +527,7 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
         </div>
     </div>
 
-    <form action="javascript:void(0);" method="GET" id="inlineCalendarForm" onsubmit="event.preventDefault(); handleInlineCalendarSearch();">
+    <div class="calendar-search-row" id="inlineCalendarForm">
         <div class="row g-2 mb-4 align-items-end">
             <div class="col-12 col-sm-5 col-lg-5">
                 <label class="form-label text-xs text-uppercase tracking-wider fw-bold mb-1 calendar-input-label"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
@@ -538,12 +538,12 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
                 <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning fw-bold py-2 calendar-date-input" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>">
             </div>
             <div class="col-12 col-sm-2 col-lg-2 mt-2 mt-sm-0">
-                <button type="submit" class="btn btn-sm w-100 rounded-pill py-2 font-serif fw-bold shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
+                <button type="button" class="btn btn-sm w-100 rounded-pill py-2 font-serif fw-bold shadow" onclick="handleInlineCalendarSearch()" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
                     <i class="bi bi-search me-1"></i>Search
                 </button>
             </div>
         </div>
-    </form>
+    </div>
 
     <!-- Visual Interactive 7-Column Calendar Month Grid -->
     <div id="calendarVisualGrid" class="calendar-visual-grid p-3 rounded-4 border shadow-inner" style="max-width: 520px; width: 100%; margin: 0 auto;">
