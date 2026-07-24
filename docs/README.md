@@ -19,6 +19,10 @@ This folder contains the main project documentation for the Emperor Hotel Reserv
 | `code-explanation.md` | Gives a detailed code-level walkthrough of folders, models, pages, reservation flow, payments, room XML, validation, and the Manage modal. |
 | `rubric-presentation-guide.md` | Maps the grading requirements to the actual project features, files, demo flow, and defense scripts. |
 | `sql-query-explanation.md` | Explains the SQL queries inside every model class, including CRUD queries, joins, aggregates, payment totals, reports, and date-overlap logic. |
+| `master_system_test_suite.md` | Comprehensive empirical test execution matrix and verification log for all 73 system test cases. |
+| `test_cases.md` | Complete Master Test Cases Specification document with full PASS test execution outcomes. |
+| `test_cases_blank.md` | Clean, unexecuted Blank Test Case Copy for manual QA testing, grading, and auditor sign-off. |
+| `test_cases.csv` / `test_cases_blank.csv` | Spreadsheet-ready CSV copies of full test cases and unexecuted blank QA testing forms. |
 
 ## Important Note
 

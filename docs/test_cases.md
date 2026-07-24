@@ -6,10 +6,10 @@ This document contains the official comprehensive test cases specification for t
 
 ## 📊 Summary Execution Matrix
 
-- **Total Test Cases**: 65
-- **Passed**: 65
+- **Total Test Cases**: 73
+- **Passed**: 73
 - **Failed**: 0
-- **System Version**: Emperor Hotel v2.7 (Production Executive Analytics & Dual-Mode SMTP Edition)
+- **System Version**: Emperor Hotel v3.0 (Executive Analytics, High-Contrast Chart Data Labels & Global Watchlist Edition)
 - **Database Backend**: MySQL / MariaDB via PHP PDO
 
 ---
@@ -83,6 +83,14 @@ This document contains the official comprehensive test cases specification for t
 | **TC-063** | Admin Inventory | Floor-Based Room Number Range Validation ($N00$ to $N99$) | 1. Open `/public/admin/rooms.php`<br>2. Select Floor 2 and enter Room #105<br>3. Submit form | **Floor:** 2<br>**Room #:** 105 | Server validation rejects creation with error *"Floor 2 room numbers must be between 200 and 299"*; UI displays real-time floor range hint | Out-of-range room number rejected with clear floor range validation message | **PASS** |
 | **TC-064** | Admin Inventory | Simplified Suite Pricing Card & Dynamic Baseline Rate Reset | 1. Select Suite on 2-field Suite Pricing card on `rooms.php`<br>2. Enter new rate and submit<br>3. Click "Reset Standard Prices" | **Suite:** Deluxe Suite<br>**Rate:** ₱6,000.00 | Suite prices updated; reset query restores prices from `base_price_per_night` dynamically | Suite baseline price saved and reset query restored baseline rates dynamically | **PASS** |
 | **TC-065** | Public Frontend | Luxury 5-Star Contact Us Page & Concierge SMTP Inquiry Dispatch | 1. Open `/public/site/contact.php`<br>2. Inspect dynamic `.env` hotel info (`SUPPORT_EMAIL`, `SUPPORT_PHONE`, `HOTEL_ADDRESS`) without unverified claims<br>3. Submit inquiry form | **Name:** Lord Kelvin<br>**Inquiry:** Suite Reservation | Hotel info renders from `.env`/config, inquiry form submits, notice displayed, and confirmation email dispatched via SMTP engine | Contact page loaded dynamic info, submitted inquiry, and dispatched SMTP email | **PASS** |
+| **TC-066** | Data Visualization | Canvas High-Contrast Data Label Badges (`drawPillBadge`) | 1. Open `reports.php` and `dashboard.php`<br>2. Inspect Chart.js line points, bar tops, and doughnut slices | **Plugin:** `emperorValuePlugin`<br>**Badge:** `roundRect` | Numbers render inside dark/light rounded pill badges with high contrast; values never clip or overlap axes | Pill badges render cleanly above points and bar tops with non-clipping padding | **PASS** |
+| **TC-067** | Data Visualization | Tabular Card Visual Graphs with `[Graph]` / `[Table]` View Toggle | 1. Open `/public/admin/reports.php`<br>2. Click `[Graph]` / `[Table]` toggle on tabular report cards | **Cards:** Room Nights, Donut Share, Revenue Method, Daily Records | Card view switches instantly between interactive Chart.js graphs and structured data tables | View toggles switch seamlessly between visual charts and tabular data views | **PASS** |
+| **TC-068** | Data Visualization | Horizontal Status Bar Charts replacing cramped Doughnuts | 1. Open Admin Dashboard (`/public/admin/dashboard.php`)<br>2. Inspect Reservations, Rooms, and Payments status breakdown | **Chart Type:** Horizontal Bar | Status breakdown renders as horizontal bar rows with dedicated count/percentage badges (even for low counts like 1 or 2) | Horizontal status bar charts render all count levels legibly | **PASS** |
+| **TC-069** | System Watchlist | Site-Wide Front Desk Alerts & Header Notification Bell Dropdown | 1. Navigate across any Admin page (`reservations.php`, `rooms.php`, `payments.php`, `reports.php`) | **Alerts:** Overdue Checkouts, Overbooking, Failed Payments | Operational Watchlist card renders globally at top of layout and notification bell lists action items | Watchlist banner and notification bell populate operational alerts site-wide | **PASS** |
+| **TC-070** | Admin Desk | Quick Select Room Dropdown & URL `room_id` Auto-Selection | 1. Open `/public/admin/create-reservation.php?room_id=4`<br>2. Test Quick Select Room dropdown | **Room ID:** `4` (Room #104) | Room #104 auto-selects on load, pre-populates inclusions preview, and quick select dropdown syncs bidirectionally | Room #104 auto-selected on load and quick select dropdown synced live | **PASS** |
+| **TC-071** | Financial Guard | Unconfirmed Cash Payment Refund Protection | 1. Open `/public/admin/payments.php` for pending cash reservation with ₱0.00 confirmed paid<br>2. Inspect Process Refund button | **Confirmed Paid:** `₱0.00` | Process Refund button is disabled; backend throws exception if refund is submitted without confirmed payment | Refund button disabled on UI and backend blocks unconfirmed refund requests | **PASS** |
+| **TC-072** | Payment Engine | Automated Payment Status Sync on Reservation Cancellation | 1. Cancel unpaid Pending reservation<br>2. Cancel paid Confirmed reservation | **Status:** Cancelled | Unpaid pending payment status updates to "Failed"; paid confirmed payment status updates to "Refunded" | Unpaid payment marked Failed and paid payment marked Refunded automatically | **PASS** |
+| **TC-073** | Room Operations | Maintenance & Deletion Safety Rules for Occupied Rooms | 1. Attempt to set status to Maintenance or delete room with checked-in guest | **Room Status:** `Checked-in` | System blocks action with error *"Cannot set room to Maintenance / delete room while a guest is Checked-In"* | Operation blocked with clear error message preserving room occupancy integrity | **PASS** |
 
 ---
 

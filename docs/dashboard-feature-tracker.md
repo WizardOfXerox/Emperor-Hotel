@@ -160,10 +160,19 @@ Current unresolved tracker rows:
 | Frontend | Luxury Glassmorphism Modal Theme System | Done | Cohesive obsidian-gold glassmorphism modal popup theme (`#0B1120` to `#0F172A`) with gold focus glow and serif titles across all admin action dialogues | Full dark and light mode support |
 | Payments | Process Refund & Ledger Audit Trail | Done | Front desk manage modal includes Process Refund action, updating remaining balance due while maintaining an immutable transaction audit log | Keep financial log records immutable |
 | Payments | Standardized E-Wallet Payment Channel | Done | GCash and generic Online Payment updated to official E-Wallet category across DB schemas, payment forms, and financial reports | Maintain payment method consistency |
+| Reports & Charts | High-Contrast Canvas Data Label Badges | Done | Canvas `drawPillBadge` and `emperorValuePlugin` render numbers in rounded pill badges preventing clipping across line curves, bar tops, and doughnut slices | Preserves crisp high-contrast text in dark/light mode |
+| Reports | Tabular Card Visual Graphs with Toggle | Done | Lower tabular report cards on `reports.php` feature dynamic Chart.js visualizations (Donut share, grouped bars, horizontal bars) with `[Graph]` / `[Table]` view toggles | Seamless instant switching between graphs and data tables |
+| Dashboard | Horizontal Status Bar Breakdown | Done | Replaced cramped status doughnut charts on `dashboard.php` with Horizontal Status Bar Charts so even low counts (1 or 2) display dedicated pill badges | Solves cramped doughnut label clipping |
+| Layout | Site-Wide Front Desk Alerts & Global Watchlist | Done | Operational Watchlist banner and header notification bell list active alerts (Overdue check-outs, Overlap conflicts, Failed payments) globally across ALL admin pages | Rendered site-wide via `renderAdminLayoutStart()` |
+| Admin Desk | Quick Select Room & URL Auto-Select | Done | `create-reservation.php` features an instant Quick Select Room dropdown and auto-selects `?room_id=` URL parameters on page load | Auto-scrolls and populates room inclusions live |
+| Payments | Unconfirmed Cash Refund Protection Guard | Done | Process Refund button is disabled and backend exception blocks refunding cash payments when confirmed paid amount is ₱0.00 | Prevents refunding unconfirmed/pending transactions |
+| Payment Engine | Automated Payment Sync on Reservation Cancellation | Done | Cancelling a reservation automatically updates unpaid `Pending` payments to `Failed` and paid `Confirmed` payments to `Refunded` | Keeps financial logs clean and automated |
+| Room Safety | Maintenance & Deletion Safety Rules | Done | Server validation blocks room deletion or `Maintenance` status assignment while a guest is actively `Checked-in` | Preserves guest occupancy integrity |
 
 ## Suggested Next Build Order
 
-1. Build a separate arrivals/departures board if the front desk needs a focused daily operations page.
-2. Add editable guest profile details from the Guests page.
-3. Add CSV/PDF export for reports and receipts if required.
+1. Build a Folio Invoice & Printable Receipt PDF Generator for guest check-out settlement.
+2. Build a Housekeeping Task Management board (`Needs Cleaning` ➔ `In Progress` ➔ `Inspected`).
+3. Add Add-On Services & Room Charges (Minibar, Spa, Airport Transfer) to reservation balances.
 4. Add CSRF protection and more inline client-side validation hints.
+
