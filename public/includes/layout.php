@@ -246,6 +246,26 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }, 3000);
 
+    const updateSidebarActiveState = (targetUrl) => {
+        try {
+            const urlObj = new URL(targetUrl, window.location.origin + window.location.pathname);
+            const fileName = urlObj.pathname.split('/').pop().split('?')[0] || 'dashboard.php';
+            
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                const href = link.getAttribute('href');
+                if (!href) return;
+                const linkFileName = href.split('/').pop().split('?')[0];
+                if (linkFileName === fileName) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        } catch (e) {
+            console.error("Error updating sidebar active state:", e);
+        }
+    };
+
     const handleDynamicFetch = (url) => {
         const contentPanel = document.querySelector(".content-panel") || document.body;
         
@@ -277,6 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             window.history.pushState(null, "", url);
+            updateSidebarActiveState(url);
         })
         .catch(err => {
             console.error("AJAX filter error, falling back to page reload:", err);
@@ -334,10 +355,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    updateSidebarActiveState(window.location.href);
     attachDynamicEvents();
 
     window.addEventListener("popstate", () => {
         handleDynamicFetch(window.location.href);
+        updateSidebarActiveState(window.location.href);
     });
 });
 </script>
