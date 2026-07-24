@@ -15,6 +15,15 @@ try {
     }
 
     $db = Database::connect();
+    $reservationModel = new Reservation($db);
+    $paymentModel = new Payment($db);
+
+    $operationalAlerts = $reservationModel->operationalAlerts();
+    $failedPayments = $paymentModel->failedPayments(5);
+
+    $alertCount = count($operationalAlerts['overdue_checkouts'])
+        + count($operationalAlerts['overbooking_conflicts'])
+        + count($failedPayments);
 
     // Fetch reservations created in the last 48 hours or still in Pending status
     $stmt = $db->query("
@@ -33,6 +42,58 @@ try {
 
     $notifications = [];
     $pendingCount = 0;
+
+    // Add Operational Alerts to Notifications list
+    foreach ($operationalAlerts['overbooking_conflicts'] as $conflict) {
+        $notifications[] = [
+            'reservation_id' => 'conflict_' . $conflict['room_id'],
+            'guest_name' => 'Room ' . $conflict['room_number'] . ' Overbooking Conflict',
+            'room_type' => $conflict['conflict_pairs'] . ' overlapping reservation pair(s)',
+            'room_number' => $conflict['room_number'],
+            'amount' => 'Requires Action',
+            'status' => 'Conflict',
+            'check_in' => 'Immediate',
+            'check_out' => 'Action Needed',
+            'time_ago' => 'Active Alert',
+            'is_new' => true,
+            'url' => '../admin/reservations.php?search=' . urlencode((string)$conflict['room_number']),
+        ];
+        $pendingCount++;
+    }
+
+    foreach ($operationalAlerts['overdue_checkouts'] as $overdue) {
+        $notifications[] = [
+            'reservation_id' => 'overdue_' . $overdue['reservation_id'],
+            'guest_name' => 'Overdue: ' . trim($overdue['first_name'] . ' ' . $overdue['last_name']),
+            'room_type' => $overdue['room_type'],
+            'room_number' => $overdue['room_number'],
+            'amount' => 'Checkout Due',
+            'status' => 'Overdue',
+            'check_in' => $overdue['check_in'],
+            'check_out' => $overdue['check_out'],
+            'time_ago' => 'Due ' . $overdue['check_out'],
+            'is_new' => true,
+            'url' => '../admin/reservations.php?search=' . urlencode(trim($overdue['first_name'] . ' ' . $overdue['last_name'])),
+        ];
+        $pendingCount++;
+    }
+
+    foreach ($failedPayments as $fp) {
+        $notifications[] = [
+            'reservation_id' => 'failed_pay_' . $fp['payment_id'],
+            'guest_name' => 'Failed Payment: ' . trim($fp['first_name'] . ' ' . $fp['last_name']),
+            'room_type' => 'Room #' . $fp['room_number'],
+            'room_number' => $fp['room_number'],
+            'amount' => formatMoney((float)$fp['amount']),
+            'status' => 'Failed',
+            'check_in' => 'Payment Issue',
+            'check_out' => 'Review Log',
+            'time_ago' => 'Failed Log',
+            'is_new' => true,
+            'url' => '../admin/payments.php',
+        ];
+        $pendingCount++;
+    }
 
     foreach ($rows as $r) {
         if ($r['status'] === 'Pending') {
@@ -54,6 +115,7 @@ try {
             'check_out' => $r['check_out'],
             'time_ago' => $timeAgo,
             'is_new' => $diffMinutes <= 30 || $r['status'] === 'Pending',
+            'url' => '../admin/reservations.php?search=' . urlencode(trim($r['first_name'] . ' ' . $r['last_name'])),
         ];
     }
 

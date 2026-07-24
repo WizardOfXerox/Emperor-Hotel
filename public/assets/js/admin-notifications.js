@@ -113,12 +113,14 @@
                     }
                 }
 
-                const badgeBg = n.status === 'Pending' ? 'bg-warning text-dark' : (n.status === 'Conflict' ? 'bg-danger text-white' : 'bg-success text-white');
+                const notifUrl = n.url || `../admin/reservations.php?search=${encodeURIComponent(n.guest_name)}`;
+                const badgeBg = n.status === 'Pending' ? 'bg-warning text-dark' 
+                    : (n.status === 'Conflict' || n.status === 'Overdue' || n.status === 'Failed' ? 'bg-danger text-white' : 'bg-success text-white');
 
                 listHtml += `
-                    <a href="../admin/reservations.php?search=${encodeURIComponent(n.guest_name)}" class="dropdown-item notif-item-card p-3 rounded-3 d-flex align-items-center justify-content-between gap-2 text-wrap text-decoration-none mb-1">
+                    <a href="${notifUrl}" class="dropdown-item notif-item-card p-3 rounded-3 d-flex align-items-center justify-content-between gap-2 text-wrap text-decoration-none mb-1">
                         <div>
-                            <div class="fw-bold font-serif notif-guest-name small"><i class="bi bi-door-closed me-1"></i>${escapeHtml(n.guest_name)}</div>
+                            <div class="fw-bold font-serif notif-guest-name small"><i class="bi bi-bell-fill me-1"></i>${escapeHtml(n.guest_name)}</div>
                             <div class="text-xs notif-details mt-1">${escapeHtml(n.room_type)} (#${escapeHtml(n.room_number)}) &bull; <strong>${escapeHtml(n.amount)}</strong></div>
                             <div class="text-xs notif-meta mt-1">${escapeHtml(n.check_in)} &rarr; ${escapeHtml(n.check_out)}</div>
                         </div>
