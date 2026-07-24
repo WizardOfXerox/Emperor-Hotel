@@ -237,55 +237,65 @@ function renderOperationalAlertBanner(): void
             + count($operationalAlerts['overbooking_conflicts'])
             + count($failedPayments);
 
-        if ($totalAlertCount <= 0) {
-            return;
-        }
-
-        echo '<section class="row g-4 mb-4" id="globalOperationalAlertBanner">';
-        echo '<div class="col-12">';
-        echo '<div class="dashboard-alert-banner p-3 p-md-4 rounded-4 shadow-sm">';
-        
-        // Article 1: Overdue Checkouts
-        echo '<article class="dashboard-alert-card">';
-        echo '<div><p class="eyebrow mb-1">Overdue Check-outs</p><strong>' . count($operationalAlerts['overdue_checkouts']) . '</strong></div>';
-        if (!$operationalAlerts['overdue_checkouts']) {
-            echo '<small>No guests are currently overdue for check-out.</small>';
-        } else {
-            foreach ($operationalAlerts['overdue_checkouts'] as $alert) {
-                echo '<small>Room ' . e($alert['room_number']) . ' - ' . e($alert['first_name'] . ' ' . $alert['last_name']) . ', due ' . e($alert['check_out']) . '</small>';
-            }
-        }
-        echo '</article>';
-
-        // Article 2: Failed Payments
-        echo '<article class="dashboard-alert-card">';
-        echo '<div><p class="eyebrow mb-1">Failed Payments</p><strong>' . count($failedPayments) . '</strong></div>';
-        if (!$failedPayments) {
-            echo '<small>No failed payment logs are currently visible.</small>';
-        } else {
-            foreach ($failedPayments as $payment) {
-                echo '<small>' . e($payment['first_name'] . ' ' . $payment['last_name']) . ' - ' . e(formatMoney((float)$payment['amount'])) . ' for Room ' . e($payment['room_number']) . '</small>';
-            }
-        }
-        echo '</article>';
-
-        // Article 3: Overlap Conflicts
-        echo '<article class="dashboard-alert-card">';
-        echo '<div><p class="eyebrow mb-1">Overlap Conflicts</p><strong>' . count($operationalAlerts['overbooking_conflicts']) . '</strong></div>';
-        if (!$operationalAlerts['overbooking_conflicts']) {
-            echo '<small>No overlapping active reservations were detected.</small>';
-        } else {
-            foreach ($operationalAlerts['overbooking_conflicts'] as $conflict) {
-                echo '<a class="text-danger text-decoration-none small d-block mt-1" href="reservations.php?search=' . e($conflict['room_number']) . '" title="View & Resolve Room ' . e($conflict['room_number']) . ' Overlap">';
-                echo '<i class="bi bi-exclamation-triangle-fill me-1 text-danger"></i>Room ' . e($conflict['room_number']) . ' &mdash; ' . e($conflict['conflict_pairs']) . ' conflict pair(s) ';
-                echo '<span class="badge bg-danger ms-1 text-xs">Resolve <i class="bi bi-arrow-right"></i></span></a>';
-            }
-            echo '<a class="text-warning text-decoration-none small d-block mt-2" href="reservations.php?status=Conflict"><i class="bi bi-flag-fill me-1"></i>View all Conflict reservations <i class="bi bi-arrow-right"></i></a>';
-        }
-        echo '</article>';
-
+        echo '<section class="dashboard-alert-panel panel-card p-4 mb-4" id="globalOperationalAlertBanner">';
+        echo '<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">';
+        echo '<div>';
+        echo '<p class="eyebrow mb-1">Front Desk Alerts</p>';
+        echo '<h3 class="mb-0">Operational Watchlist</h3>';
+        echo '</div>';
+        echo '<div class="d-flex flex-wrap gap-2">';
+        echo '<span class="badge-soft">' . $totalAlertCount . ' active alerts</span>';
+        echo '<a class="btn btn-outline-light btn-sm" href="reports.php">Open Reports</a>';
         echo '</div>';
         echo '</div>';
+
+        if ($totalAlertCount === 0) {
+            echo '<div class="dashboard-alert-empty">No overdue check-outs, failed payments, or overlap conflicts need attention right now.</div>';
+        } else {
+            echo '<div class="dashboard-alert-grid">';
+            
+            // Article 1: Overdue Checkouts
+            echo '<article class="dashboard-alert-card">';
+            echo '<div><p class="eyebrow mb-1">Overdue Check-outs</p><strong>' . count($operationalAlerts['overdue_checkouts']) . '</strong></div>';
+            if (!$operationalAlerts['overdue_checkouts']) {
+                echo '<small>No checked-in guests are past their check-out date.</small>';
+            } else {
+                foreach ($operationalAlerts['overdue_checkouts'] as $alert) {
+                    echo '<small>Room ' . e($alert['room_number']) . ' - ' . e($alert['first_name'] . ' ' . $alert['last_name']) . ', due ' . e($alert['check_out']) . '</small>';
+                }
+            }
+            echo '</article>';
+
+            // Article 2: Failed Payments
+            echo '<article class="dashboard-alert-card">';
+            echo '<div><p class="eyebrow mb-1">Failed Payments</p><strong>' . count($failedPayments) . '</strong></div>';
+            if (!$failedPayments) {
+                echo '<small>No failed payment logs are currently visible.</small>';
+            } else {
+                foreach ($failedPayments as $payment) {
+                    echo '<small>' . e($payment['first_name'] . ' ' . $payment['last_name']) . ' - ' . e(formatMoney((float)$payment['amount'])) . ' for Room ' . e($payment['room_number']) . '</small>';
+                }
+            }
+            echo '</article>';
+
+            // Article 3: Overlap Conflicts
+            echo '<article class="dashboard-alert-card">';
+            echo '<div><p class="eyebrow mb-1">Overlap Conflicts</p><strong>' . count($operationalAlerts['overbooking_conflicts']) . '</strong></div>';
+            if (!$operationalAlerts['overbooking_conflicts']) {
+                echo '<small>No overlapping active reservations were detected.</small>';
+            } else {
+                foreach ($operationalAlerts['overbooking_conflicts'] as $conflict) {
+                    echo '<a class="text-danger text-decoration-none small d-block mt-1" href="reservations.php?search=' . e($conflict['room_number']) . '" title="View & Resolve Room ' . e($conflict['room_number']) . ' Overlap">';
+                    echo '<i class="bi bi-exclamation-triangle-fill me-1 text-danger"></i>Room ' . e($conflict['room_number']) . ' &mdash; ' . e($conflict['conflict_pairs']) . ' conflict pair(s) ';
+                    echo '<span class="badge bg-danger ms-1 text-xs">Resolve <i class="bi bi-arrow-right"></i></span></a>';
+                }
+                echo '<a class="text-warning text-decoration-none small d-block mt-2" href="reservations.php?status=Conflict"><i class="bi bi-flag-fill me-1"></i>View all Conflict reservations <i class="bi bi-arrow-right"></i></a>';
+            }
+            echo '</article>';
+
+            echo '</div>';
+        }
+
         echo '</section>';
     } catch (Throwable $e) {
         // Ignore layout alert errors if DB is unreachable
