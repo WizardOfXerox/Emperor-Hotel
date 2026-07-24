@@ -302,7 +302,11 @@ $ratingsPerType = $reviewModel->averageRatingPerRoomType();
 $ratingDist = $reviewModel->overallRatingDistribution();
 
 // Prepare JSON arrays for Chart.js
-$trendDates = json_encode(array_column($trendReport['rows'], 'reservation_date'));
+$trendFormattedDates = array_map(static function($dateStr) {
+    $ts = strtotime((string) $dateStr);
+    return $ts ? date('M j', $ts) : (string) $dateStr;
+}, array_column($trendReport['rows'], 'reservation_date'));
+$trendDates = json_encode($trendFormattedDates);
 $trendActive = json_encode(array_column($trendReport['rows'], 'active_reservations'));
 $trendCancelled = json_encode(array_column($trendReport['rows'], 'cancelled_reservations'));
 
@@ -359,8 +363,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     legend: { position: 'top', labels: { boxWidth: 12 } }
                 },
                 scales: {
-                    x: { grid: { color: 'rgba(248, 250, 252, 0.05)' } },
-                    y: { grid: { color: 'rgba(248, 250, 252, 0.05)' }, beginAtZero: true, ticks: { stepSize: 1 } }
+                    x: {
+                        grid: { color: isLightMode ? 'rgba(0, 0, 0, 0.05)' : 'rgba(248, 250, 252, 0.05)' },
+                        ticks: {
+                            maxRotation: 0,
+                            minRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: 12,
+                            font: { size: 11, weight: '500' }
+                        }
+                    },
+                    y: { grid: { color: isLightMode ? 'rgba(0, 0, 0, 0.05)' : 'rgba(248, 250, 252, 0.05)' }, beginAtZero: true, ticks: { stepSize: 1 } }
                 }
             }
         });

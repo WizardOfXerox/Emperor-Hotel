@@ -349,13 +349,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
 }
 
-.bi[class*="bi-calendar"] {
+/* Uniform icon colors for form controls */
+.form-control .bi-calendar,
+.form-select .bi-calendar {
     color: #fdd700;
-}
-
-.sidebar-link.active .bi[class*="bi-calendar"],
-.sidebar-link:hover .bi[class*="bi-calendar"] {
-    color: #020617;
 }
 
 .form-control:disabled,
