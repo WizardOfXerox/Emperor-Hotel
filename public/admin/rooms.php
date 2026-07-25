@@ -659,7 +659,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
     }
 })();
 
-function toggleCustomSuiteInput(selectEl, customBoxId, hiddenInputId) {
+window.toggleCustomSuiteInput = function toggleCustomSuiteInput(selectEl, customBoxId, hiddenInputId) {
     const customBox = document.getElementById(customBoxId);
     const hiddenInput = document.getElementById(hiddenInputId);
     if (!customBox || !hiddenInput) return;
@@ -675,16 +675,16 @@ function toggleCustomSuiteInput(selectEl, customBoxId, hiddenInputId) {
         customBox.classList.add('d-none');
         hiddenInput.value = selectEl.value;
     }
-}
+};
 
-function updateCustomSuiteValue(inputEl, hiddenInputId) {
+window.updateCustomSuiteValue = function updateCustomSuiteValue(inputEl, hiddenInputId) {
     const hiddenInput = document.getElementById(hiddenInputId);
     if (hiddenInput) {
         hiddenInput.value = inputEl.value.trim();
     }
-}
+};
 
-const roomDataStats = <?php echo json_encode(array_map(static fn(array $r): array => [
+window.roomDataStats = <?php echo json_encode(array_map(static fn(array $r): array => [
     'id' => (int)$r['room_id'],
     'room_number' => (string)$r['room_number'],
     'room_type' => (string)$r['room_type'],
@@ -693,7 +693,9 @@ const roomDataStats = <?php echo json_encode(array_map(static fn(array $r): arra
     'base_price' => (float)($r['base_price_per_night'] ?? $r['price_per_night']),
 ], $roomModel->all()), JSON_THROW_ON_ERROR); ?>;
 
-function updateBulkTargetOptions() {
+var roomDataStats = window.roomDataStats;
+
+window.updateBulkTargetOptions = function updateBulkTargetOptions() {
     const targetTypeSelect = document.getElementById('bulkTargetType');
     const targetValueSelect = document.getElementById('bulkTargetValue');
     if (!targetTypeSelect || !targetValueSelect) return;
@@ -708,7 +710,7 @@ function updateBulkTargetOptions() {
         targetValueSelect.innerHTML = '<option value="all">All Suites & Floors</option>';
         
         const suiteFloorMap = {};
-        roomDataStats.forEach(r => {
+        window.roomDataStats.forEach(r => {
             if (!suiteFloorMap[r.room_type]) {
                 suiteFloorMap[r.room_type] = new Set();
             }
@@ -721,10 +723,10 @@ function updateBulkTargetOptions() {
             targetValueSelect.innerHTML += `<option value="${st}">${st} (${floorLabel})</option>`;
         });
     }
-    calculateSmartPreview();
-}
+    window.calculateSmartPreview();
+};
 
-function calculateSmartPreview() {
+window.calculateSmartPreview = function calculateSmartPreview() {
     const targetTypeSelect = document.getElementById('bulkTargetType');
     const targetValueSelect = document.getElementById('bulkTargetValue');
     const modeSelect = document.getElementById('bulkAdjustmentMode');
@@ -753,7 +755,7 @@ function calculateSmartPreview() {
         if (labelEl) labelEl.innerText = 'Offset Rate (+/- PHP)';
     }
 
-    const affected = roomDataStats.filter(r => {
+    const affected = window.roomDataStats.filter(r => {
         if (targetType === 'suite' && targetValue !== 'all' && targetValue !== '') return r.room_type === targetValue;
         if (targetType === 'floor' && targetValue !== 'all' && targetValue !== '') return r.floor === parseInt(targetValue, 10);
         return true;
@@ -786,9 +788,9 @@ function calculateSmartPreview() {
     if (previewText) {
         previewText.innerHTML = `Base rate: <span class="text-light-emphasis">PHP ${baseAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span> | Current avg: <strong>PHP ${currentAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> ➔ New avg: <strong class="text-warning">PHP ${newAvg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>${diffFormatted}`;
     }
-}
+};
 
-function updateRoomNumberRangeHint(floorInput, roomNumInputId, hintElId) {
+window.updateRoomNumberRangeHint = function updateRoomNumberRangeHint(floorInput, roomNumInputId, hintElId) {
     const floor = parseInt(floorInput.value, 10) || 1;
     const minRoom = floor * 100;
     const maxRoom = (floor * 100) + 99;
@@ -805,9 +807,9 @@ function updateRoomNumberRangeHint(floorInput, roomNumInputId, hintElId) {
     if (hintEl) {
         hintEl.innerHTML = `<i class="bi bi-info-circle me-1"></i>Floor ${floor} valid range: ${minRoom} – ${maxRoom}`;
     }
-}
+};
 
-function onSimpleSuiteSelectChange(selectEl) {
+window.onSimpleSuiteSelectChange = function onSimpleSuiteSelectChange(selectEl) {
     const selectedOption = selectEl.options[selectEl.selectedIndex];
     const price = selectedOption ? selectedOption.getAttribute('data-price') : '';
     const priceInput = document.getElementById('simplePriceInput');
@@ -818,14 +820,20 @@ function onSimpleSuiteSelectChange(selectEl) {
             priceInput.placeholder = 'e.g. 4500.00';
         }
     }
-}
+};
 
-document.addEventListener("DOMContentLoaded", () => {
-    const simpleSelect = document.getElementById('simpleSuiteSelect');
-    if (simpleSelect) {
-        onSimpleSuiteSelectChange(simpleSelect);
+;(function() {
+    function initSimpleSuiteSelect() {
+        const simpleSelect = document.getElementById('simpleSuiteSelect');
+        if (simpleSelect) {
+            window.onSimpleSuiteSelectChange(simpleSelect);
+        }
     }
-});
+    initSimpleSuiteSelect();
+    if (document.readyState === 'loading') {
+        document.addEventListener("DOMContentLoaded", initSimpleSuiteSelect);
+    }
+})();
 </script>
 
 <?php renderAdminLayoutEnd(); ?>
