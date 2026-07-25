@@ -143,6 +143,29 @@ renderSiteLayoutStart('Reservation Receipt', $user, '../site/');
         </div>
 
         <!-- Front Desk & Check-In Notice -->
+        <?php
+            $confirmedPayments = array_filter($payments, fn($p) => ($p['status'] ?? '') === 'Confirmed');
+            $totalPaid = array_reduce($confirmedPayments, fn($sum, $p) => $sum + (float) $p['amount'], 0.0);
+            $extensionBalance = max(0.0, $totalAmount - $totalPaid);
+        ?>
+
+        <?php if ($extensionBalance > 0.01 && in_array($reservation['status'], ['Pending', 'Confirmed', 'Checked-in'], true)): ?>
+            <div class="p-3 rounded-3 border mb-4 no-print" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4) !important;">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-exclamation-triangle-fill text-danger fs-4"></i>
+                        <div>
+                            <strong class="text-danger font-serif text-xs d-block">Stay Extension Balance Due:</strong>
+                            <span class="text-white text-xs">This stay was extended. Additional balance due: <strong class="text-warning font-mono fw-bold">₱<?= number_format($extensionBalance) ?></strong></span>
+                        </div>
+                    </div>
+                    <a href="payment.php?reservation_id=<?= $reservationId ?>&payment_method=Online%20Payment" class="btn btn-sm btn-warning font-serif fw-bold text-dark px-3 rounded-pill">
+                        <i class="bi bi-credit-card-fill me-1"></i>Pay Extension Balance Now
+                    </a>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <div class="p-3 rounded-3 border mb-4" style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
             <div class="d-flex align-items-center gap-3">
                 <i class="bi bi-info-circle-fill text-warning fs-4"></i>

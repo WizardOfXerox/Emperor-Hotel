@@ -490,8 +490,8 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                             <i class="bi bi-receipt me-1"></i>Receipt
                         </a>
 
-                        <?php if ($activeBalanceDue > 0.01 && in_array($reservation['status'], ['Pending', 'Confirmed'], true)): ?>
-                            <a class="btn btn-xs btn-warning rounded-pill px-3 fw-bold font-serif text-dark" href="payment.php?reservation_id=<?= $reservationId ?>&payment_method=Online%20Payment">Pay Now</a>
+                        <?php if ($activeBalanceDue > 0.01 && in_array($reservation['status'], ['Pending', 'Confirmed', 'Checked-in'], true)): ?>
+                            <a class="btn btn-xs btn-warning rounded-pill px-3 fw-bold font-serif text-dark" href="payment.php?reservation_id=<?= $reservationId ?>&payment_method=Online%20Payment"><i class="bi bi-credit-card me-1"></i>Pay Balance (₱<?= number_format($activeBalanceDue) ?>)</a>
                         <?php endif; ?>
 
                         <?php if (in_array($reservation['status'], ['Checked-out', 'Confirmed'], true)): ?>
