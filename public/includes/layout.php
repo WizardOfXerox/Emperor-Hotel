@@ -79,7 +79,7 @@ function renderFlashBlock(): void
         };
 
         echo '<div class="alert alert-' . e($type) . ' alert-dismissible fade show mb-4 shadow-sm" role="alert">' 
-            . e($message['message']) 
+            . $message['message'] 
             . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
             . '</div>';
     }
