@@ -176,7 +176,7 @@ function renderRoomShowcaseSection(): void
 
         // 5. Action Buttons (Positioned at the very bottom of feature cards!)
         echo '<div class="room-actions d-flex flex-wrap gap-2 align-items-center justify-content-center mt-3 mb-1">';
-        echo '<a class="room-price room-price--booking" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
+        echo '<a class="btn room-price room-price--booking rounded-pill px-4 py-2 fw-bold font-serif" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
         echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=' . $inspectRoomId . '"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
         echo '</div>';
 
