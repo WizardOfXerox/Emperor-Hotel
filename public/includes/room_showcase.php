@@ -126,10 +126,9 @@ function renderRoomShowcaseSection(): void
 
         echo '<section class="rooms">';
 
-        // 1. Suite Title & Inclusions at the top
+        // 1. Suite Category, Title & Tagline Header
         echo '<div class="container-content">';
         echo '<div class="content">';
-        echo '<div>' . $statusBadgeHtml . '<span class="badge bg-dark border border-gold text-gold px-3 py-2 rounded-pill fs-6 fw-bold">' . e($roomInfo['dimensions'] ?? '38 sqm') . '</span></div>';
         echo '<h2>' . e($presentation['category']) . '</h2>';
         echo '<h1>' . e($presentation['heading']) . '</h1>';
         echo '<p>' . e($presentation['tagline']) . '</p>';
@@ -157,13 +156,13 @@ function renderRoomShowcaseSection(): void
         }
         echo '</div></div>';
 
-        // 3. Action Buttons (Positioned between Carousel and Card Description!)
-        echo '<div class="room-actions d-flex flex-wrap gap-2 align-items-center justify-content-center my-2">';
-        echo '<a class="room-price room-price--booking" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
-        echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=' . $inspectRoomId . '"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
+        // 3. Available Room Status & Dimensions Badges (Positioned directly below the Carousel!)
+        echo '<div class="room-badges d-flex flex-wrap gap-2 align-items-center justify-content-center my-2">';
+        echo $statusBadgeHtml;
+        echo '<span class="badge bg-dark border border-gold text-gold px-3 py-2 rounded-pill fs-6 fw-bold">' . e($roomInfo['dimensions'] ?? '38 sqm') . '</span>';
         echo '</div>';
 
-        // 4. 3 Description Cards at the bottom
+        // 4. 3 Feature Description Cards
         echo '<div class="container-card">';
         foreach ($presentation['cards'] as $card) {
             echo '<article class="card"><div class="card-content">';
@@ -174,6 +173,13 @@ function renderRoomShowcaseSection(): void
             echo '</ul></div></article>';
         }
         echo '</div>';
+
+        // 5. Action Buttons (Positioned at the very bottom of feature cards!)
+        echo '<div class="room-actions d-flex flex-wrap gap-2 align-items-center justify-content-center mt-3 mb-1">';
+        echo '<a class="room-price room-price--booking" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
+        echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=' . $inspectRoomId . '"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
+        echo '</div>';
+
         echo '</section>';
     }
 

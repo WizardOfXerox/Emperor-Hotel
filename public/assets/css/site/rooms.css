@@ -386,13 +386,21 @@ body.rooms-showcase-page .rooms .content .room-inclusion-line {
     text-align: center;
 }
 
+body.rooms-showcase-page .rooms .room-badges {
+    width: 100%;
+    max-width: 760px;
+    margin-top: 10px;
+    margin-bottom: 4px;
+}
+
 body.rooms-showcase-page .rooms .container-card {
     gap: 14px;
     width: 100%;
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    margin-top: 10px;
+    margin-top: 8px;
+    margin-bottom: 12px;
 }
 
 body.rooms-showcase-page .rooms .card {
