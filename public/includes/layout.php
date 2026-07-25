@@ -383,18 +383,23 @@ document.addEventListener("DOMContentLoaded", () => {
             window.history.pushState(null, "", url);
             updateSidebarActiveState(url);
 
-            // Re-evaluate inline script tags from the fetched AJAX response
+            // Re-evaluate inline script tags from the fetched AJAX response safely with semicolon isolation
             doc.querySelectorAll("script").forEach(oldScript => {
                 try {
                     const newScript = document.createElement("script");
                     Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                    newScript.textContent = oldScript.textContent;
+                    newScript.textContent = ";\n" + oldScript.textContent + "\n;";
                     document.body.appendChild(newScript);
                     newScript.remove();
                 } catch (e) {
                     console.error("Script evaluation error:", e);
                 }
             });
+
+            // Dispatch DOMContentLoaded event for SPA dynamic page fetches
+            if (document.readyState === "complete" || document.readyState === "interactive") {
+                window.dispatchEvent(new Event("DOMContentLoaded"));
+            }
         })
         .catch(err => {
             console.error("AJAX filter error, falling back to page reload:", err);

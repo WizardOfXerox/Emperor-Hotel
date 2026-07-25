@@ -418,6 +418,40 @@ body.light-mode .room-map-card--reserved    .room-status-badge { background: #db
 body.light-mode .room-map-card--occupied    .room-status-badge { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
 body.light-mode .room-map-card--cleaning    .room-status-badge { background: #f3e8ff; border-color: #a855f7; color: #6b21a8; }
 body.light-mode .room-map-card--maintenance .room-status-badge { background: #ffe4e6; border-color: #f43f5e; color: #9f1239; }
+
+@media (max-width: 575.98px) {
+    #hotelMapFloorTabs {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 8px !important;
+        margin-bottom: 1rem !important;
+    }
+    #hotelMapFloorTabs .nav-item {
+        flex: 0 0 auto !important;
+    }
+    #hotelMapFloorTabs .floor-tab-btn {
+        padding: 0.4rem 1rem !important;
+        font-size: 0.8rem !important;
+        white-space: nowrap !important;
+    }
+    .map-title {
+        font-size: 1.1rem !important;
+    }
+    .room-map-card {
+        padding: 6px !important;
+    }
+    .room-map-card .card-body {
+        padding: 4px !important;
+    }
+    .room-type-title {
+        font-size: 0.78rem !important;
+    }
+    .room-status-badge {
+        font-size: 9.5px !important;
+        padding: 2px 6px !important;
+    }
+}
 </style>
 
 <script>

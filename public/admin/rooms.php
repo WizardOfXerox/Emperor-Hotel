@@ -239,11 +239,11 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
         </div>
     </div>
     <form method="get" class="row g-3">
-        <div class="col-lg-4">
+        <div class="col-12 col-md-6 col-lg-4">
             <label class="form-label" for="search">Search</label>
             <input class="form-control" id="search" name="search" type="search" value="<?php echo e($filters['search']); ?>" placeholder="Room number, type, or status">
         </div>
-        <div class="col-lg-2">
+        <div class="col-6 col-md-3 col-lg-2">
             <label class="form-label" for="room_type">Room Type</label>
             <select class="form-select" id="room_type" name="room_type">
                 <option value="">All</option>
@@ -252,7 +252,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="col-lg-2">
+        <div class="col-6 col-md-3 col-lg-2">
             <label class="form-label" for="status">Status</label>
             <select class="form-select" id="status" name="status">
                 <option value="">All</option>
@@ -261,11 +261,11 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="col-lg-2">
+        <div class="col-6 col-md-3 col-lg-2">
             <label class="form-label" for="floor">Floor</label>
             <input class="form-control" id="floor" name="floor" type="number" min="1" step="1" value="<?php echo e($filters['floor']); ?>" placeholder="Any">
         </div>
-        <div class="col-lg-2">
+        <div class="col-6 col-md-3 col-lg-2">
             <label class="form-label" for="per_page">Per Page</label>
             <select class="form-select" id="per_page" name="per_page">
                 <?php foreach ([5, 10, 20, 50] as $option): ?>
@@ -273,7 +273,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="col-lg-4">
+        <div class="col-12 col-md-6 col-lg-4">
             <label class="form-label" for="sort">Sort By</label>
             <div class="input-group">
                 <select class="form-select" id="sort" name="sort">
@@ -287,8 +287,8 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
                 </select>
             </div>
         </div>
-        <div class="col-lg-8 d-flex align-items-end justify-content-end gap-2">
-            <button class="btn btn-warning fw-semibold" type="submit">Apply Filters</button>
+        <div class="col-12 col-lg-8 d-flex align-items-end justify-content-end gap-2">
+            <button class="btn btn-warning fw-semibold w-100 w-md-auto" type="submit">Apply Filters</button>
         </div>
     </form>
 </section>
