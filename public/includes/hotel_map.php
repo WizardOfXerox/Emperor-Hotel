@@ -212,7 +212,7 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
 <div class="hotel-map-container h-100 my-0 p-4 rounded-4 shadow-lg border" id="hotelMapContainer">
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2 border-bottom pb-3">
         <div>
-            <h4 class="m-0 font-serif fw-bold map-title"><i class="bi bi-diagram-3-fill me-2 text-warning"></i>Rooms Availability</h4>
+            <h4 class="m-0 font-serif fw-bold map-title"><i class="bi bi-diagram-3-fill me-2 text-warning"></i>Rooms Availability Information</h4>
             <small class="text-muted opacity-90 fw-semibold" id="mapActiveRangeSubtitle">
                 <?php if (!empty($checkIn) && !empty($checkOut)): ?>
                     <span class="badge bg-gold text-dark px-2 py-1 me-1" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;"><i class="bi bi-calendar-check me-1"></i><?= e($checkIn) ?> to <?= e($checkOut) ?></span> Live availability for stay dates.
