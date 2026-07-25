@@ -992,6 +992,32 @@ class Reservation
 
     public function syncRoomStatus(int $roomId): void
     {
+        // Auto-promote Pending reservations that already have confirmed payments.
+        // This catches cases where payments were inserted directly (e.g. seeder, XML import)
+        // bypassing Payment::create() which normally calls syncFullyPaidReservation().
+        $pendingWithPayments = $this->db->prepare(
+            "SELECT r.reservation_id
+             FROM reservations r
+             WHERE r.room_id = :room_id
+               AND r.status = 'Pending'
+               AND EXISTS (
+                   SELECT 1 FROM payments p
+                   WHERE p.reservation_id = r.reservation_id
+                     AND p.payment_status = 'Confirmed'
+                     AND p.amount > 0
+               )"
+        );
+        $pendingWithPayments->execute(['room_id' => $roomId]);
+        $pendingIds = $pendingWithPayments->fetchAll(PDO::FETCH_COLUMN);
+
+        if (!empty($pendingIds)) {
+            $placeholders = implode(',', array_fill(0, count($pendingIds), '?'));
+            $promoteStmt = $this->db->prepare(
+                "UPDATE reservations SET status = 'Confirmed' WHERE reservation_id IN ($placeholders)"
+            );
+            $promoteStmt->execute($pendingIds);
+        }
+
         // SQL: Confirms the room exists before recalculating its status.
         $roomStatement = $this->db->prepare('SELECT status FROM rooms WHERE room_id = :room_id LIMIT 1');
         $roomStatement->execute(['room_id' => $roomId]);
