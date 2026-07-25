@@ -179,6 +179,7 @@ class Room
             throw new RuntimeException('Room number is required.');
         }
 
+        $data['room_id'] = $roomId;
         $this->assertRoomType((string) ($data['room_type'] ?? ''));
         $this->assertRoomStatus((string) ($data['status'] ?? ''));
         $this->validateRoomNumbers($data);
@@ -508,11 +509,17 @@ class Room
             $existingRoom = $this->findByNumber($roomData['room_number']);
 
             if ($existingRoom) {
+                if (empty($roomData['room_type'])) {
+                    $roomData['room_type'] = $existingRoom['room_type'];
+                }
                 $this->update((int) $existingRoom['room_id'], $roomData);
                 $updated++;
                 continue;
             }
 
+            if (empty($roomData['room_type'])) {
+                $roomData['room_type'] = 'Imperial Deluxe';
+            }
             $this->create($roomData);
             $created++;
         }
