@@ -1017,6 +1017,29 @@ class Reservation
         return (int) $statement->fetchColumn() > 0;
     }
 
+    public function getBookedDateRangesForRoom(int $roomId, ?int $excludeReservationId = null): array
+    {
+        // SQL: Returns all active check_in and check_out date ranges for a given room.
+        $sql = "SELECT reservation_id, check_in, check_out, status
+                FROM reservations
+                WHERE room_id = :room_id
+                  AND status NOT IN ('Cancelled', 'Checked-out')
+                  AND (status IN ('Confirmed', 'Checked-in') OR (status = 'Pending' AND created_at >= NOW() - INTERVAL 24 HOUR))";
+        $params = ['room_id' => $roomId];
+
+        if ($excludeReservationId !== null) {
+            $sql .= " AND reservation_id != :exclude_id";
+            $params['exclude_id'] = $excludeReservationId;
+        }
+
+        $sql .= " ORDER BY check_in ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
     private function availabilityLabel(bool $dateAvailable): string
     {
         if ($dateAvailable) {

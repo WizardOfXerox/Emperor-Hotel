@@ -327,22 +327,77 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
                         </div>
 
                         <?php if ($canExtendStay): ?>
-                            <div class="reservation-modal-section">
-                                <h6>Extend Stay</h6>
-                                <form method="post" class="extend-stay-form reservation-modal-extend" title="Extend stay in the same room">
+                            <?php
+                                $bookedRanges = $reservationModel->getBookedDateRangesForRoom((int) $reservation['room_id'], $reservationId);
+                                $bookedDatesMap = [];
+                                foreach ($bookedRanges as $bRange) {
+                                    $bStart = new DateTimeImmutable((string) $bRange['check_in']);
+                                    $bEnd = new DateTimeImmutable((string) $bRange['check_out']);
+                                    $curr = $bStart;
+                                    while ($curr < $bEnd) {
+                                        $bookedDatesMap[$curr->format('Y-m-d')] = true;
+                                        $curr = $curr->modify('+1 day');
+                                    }
+                                }
+                                
+                                $currentCheckOutObj = new DateTimeImmutable((string) $reservation['check_out']);
+                                $extensionDays = [];
+                                $hasFirstBlockedDate = false;
+                                
+                                for ($i = 1; $i <= 30; $i++) {
+                                    $dateObj = $currentCheckOutObj->modify("+{$i} days");
+                                    $dateStr = $dateObj->format('Y-m-d');
+                                    $isBooked = isset($bookedDatesMap[$dateStr]);
+                                    
+                                    if ($isBooked) {
+                                        $hasFirstBlockedDate = true;
+                                    }
+                                    
+                                    $extensionDays[] = [
+                                        'date' => $dateStr,
+                                        'display' => $dateObj->format('M j (D)'),
+                                        'is_booked' => $isBooked,
+                                        'is_blocked_by_prior' => $hasFirstBlockedDate,
+                                    ];
+                                }
+                            ?>
+                            <div class="reservation-modal-section border border-warning border-opacity-25 rounded-3 p-3 my-3 bg-dark bg-opacity-50">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h6 class="text-warning font-serif m-0"><i class="bi bi-calendar-event me-2"></i>Extend Stay Calendar Inspector</h6>
+                                    <span class="badge bg-dark border border-gold text-gold font-sans text-xs">Room <?php echo e($reservation['room_number']); ?></span>
+                                </div>
+                                <p class="text-muted text-xs mb-2">Current Check-Out: <strong class="text-white"><?php echo e($reservation['check_out']); ?></strong>. Click an available date below to extend stay:</p>
+                                
+                                <form method="post" class="extend-stay-form">
                                     <input type="hidden" name="action" value="extend_stay">
                                     <input type="hidden" name="reservation_id" value="<?php echo e($reservationId); ?>">
-                                    <label class="visually-hidden" for="modal_new_check_out_<?php echo e($reservationId); ?>">New check-out date</label>
-                                    <input
-                                        class="form-control form-control-sm"
-                                        id="modal_new_check_out_<?php echo e($reservationId); ?>"
-                                        name="new_check_out"
-                                        type="date"
-                                        min="<?php echo e($minimumExtensionDate); ?>"
-                                        value="<?php echo e($minimumExtensionDate); ?>"
-                                        required
-                                    >
-                                    <button class="btn btn-sm btn-outline-warning" type="submit">Extend</button>
+                                    
+                                    <div class="d-flex flex-wrap gap-1.5 mb-3" style="max-height: 160px; overflow-y: auto; padding: 4px; border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 8px; background: rgba(15, 23, 42, 0.7);">
+                                        <?php foreach ($extensionDays as $day): ?>
+                                            <?php if ($day['is_booked'] || $day['is_blocked_by_prior']): ?>
+                                                <button type="button" class="btn btn-sm btn-outline-danger disabled border-opacity-50 text-xs py-1 px-2 opacity-75" title="❌ Unavailable - Room reserved on this date" style="cursor: not-allowed; background: rgba(239, 68, 68, 0.15); color: #f87171;">
+                                                    ❌ <?php echo e($day['display']); ?> (Reserved)
+                                                </button>
+                                            <?php else: ?>
+                                                <button type="button" class="btn btn-sm btn-outline-success text-xs py-1 px-2 date-extend-option" data-date="<?php echo e($day['date']); ?>" onclick="selectExtendCheckOut('<?php echo e($reservationId); ?>', '<?php echo e($day['date']); ?>', this)">
+                                                    🟢 <?php echo e($day['display']); ?>
+                                                </button>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input
+                                            class="form-control form-control-sm text-center font-monospace fw-bold bg-dark text-warning border-warning"
+                                            id="modal_new_check_out_<?php echo e($reservationId); ?>"
+                                            name="new_check_out"
+                                            type="date"
+                                            min="<?php echo e($minimumExtensionDate); ?>"
+                                            value="<?php echo e($minimumExtensionDate); ?>"
+                                            required
+                                        >
+                                        <button class="btn btn-sm btn-warning px-3 font-serif fw-bold" type="submit"><i class="bi bi-check-lg me-1"></i>Confirm Extension</button>
+                                    </div>
                                 </form>
                             </div>
                         <?php endif; ?>
@@ -367,5 +422,21 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
 document.querySelectorAll(".reservation-action-modal").forEach((modal) => {
     document.body.appendChild(modal);
 });
+
+function selectExtendCheckOut(resId, dateStr, btn) {
+    const input = document.getElementById('modal_new_check_out_' + resId);
+    if (input) {
+        input.value = dateStr;
+    }
+    const container = btn.closest('.d-flex');
+    if (container) {
+        container.querySelectorAll('.date-extend-option').forEach(b => {
+            b.classList.remove('btn-success', 'text-white', 'fw-bold');
+            b.classList.add('btn-outline-success');
+        });
+        btn.classList.remove('btn-outline-success');
+        btn.classList.add('btn-success', 'text-white', 'fw-bold');
+    }
+}
 </script>
 <?php renderAdminLayoutEnd(); ?>
