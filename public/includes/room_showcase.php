@@ -97,11 +97,11 @@ function renderRoomShowcaseSection(): void
         
         $statusBadgeHtml = '';
         if ($availCount > 2) {
-            $statusBadgeHtml = '<span class="badge bg-success px-3 py-2 rounded-pill fs-6 fw-bold mb-2 me-2"><i class="bi bi-circle-fill me-1"></i>🟢 ' . $availCount . ' Available Now</span>';
+            $statusBadgeHtml = '<span class="badge bg-success px-3 py-1.5 rounded-pill fs-7 fw-bold"><i class="bi bi-circle-fill me-1"></i>🟢 ' . $availCount . ' Available Now</span>';
         } elseif ($availCount > 0) {
-            $statusBadgeHtml = '<span class="badge bg-warning text-dark px-3 py-2 rounded-pill fs-6 fw-bold mb-2 me-2"><i class="bi bi-exclamation-triangle-fill me-1"></i>🟡 Only ' . $availCount . ' Left!</span>';
+            $statusBadgeHtml = '<span class="badge bg-warning text-dark px-3 py-1.5 rounded-pill fs-7 fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i>🟡 Only ' . $availCount . ' Left!</span>';
         } else {
-            $statusBadgeHtml = '<span class="badge bg-danger px-3 py-2 rounded-pill fs-6 fw-bold mb-2 me-2"><i class="bi bi-x-circle-fill me-1"></i>🔴 Fully Booked</span>';
+            $statusBadgeHtml = '<span class="badge bg-danger px-3 py-1.5 rounded-pill fs-7 fw-bold"><i class="bi bi-x-circle-fill me-1"></i>🔴 Fully Booked</span>';
         }
 
         $defaultFirstRoomIdMap = [
@@ -157,9 +157,9 @@ function renderRoomShowcaseSection(): void
         echo '</div></div>';
 
         // 3. Available Room Status & Dimensions Badges (Positioned directly below the Carousel!)
-        echo '<div class="room-badges d-flex flex-wrap gap-2 align-items-center justify-content-center my-2">';
+        echo '<div class="room-badges d-flex flex-wrap gap-2 align-items-center justify-content-center my-1">';
         echo $statusBadgeHtml;
-        echo '<span class="badge bg-dark border border-gold text-gold px-3 py-2 rounded-pill fs-6 fw-bold">' . e($roomInfo['dimensions'] ?? '38 sqm') . '</span>';
+        echo '<span class="badge bg-dark border border-gold text-gold px-3 py-1.5 rounded-pill fs-7 fw-bold">' . e($roomInfo['dimensions'] ?? '38 sqm') . '</span>';
         echo '</div>';
 
         // 4. 3 Feature Description Cards
