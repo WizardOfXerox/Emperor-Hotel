@@ -287,6 +287,10 @@ async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, 
     const modalEl = document.getElementById('roomInspectorModal');
     if (!modalEl) return;
 
+    if (document.body && modalEl.parentElement !== document.body) {
+        document.body.appendChild(modalEl);
+    }
+
     const modalTitle = document.getElementById('inspectorRoomTitle');
     const modalSub = document.getElementById('inspectorRoomSub');
     const modalBody = document.getElementById('roomInspectorModalBody');
@@ -446,6 +450,20 @@ async function updateHotelMapAvailability(checkIn, checkOut) {
         console.error("Map availability update failed:", err);
     }
 }
+
+(function autoRelocateHotelMapModals() {
+    function relocate() {
+        const modalEl = document.getElementById('roomInspectorModal');
+        if (modalEl && document.body && modalEl.parentElement !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', relocate);
+    } else {
+        relocate();
+    }
+})();
 </script>
 <?php
 }

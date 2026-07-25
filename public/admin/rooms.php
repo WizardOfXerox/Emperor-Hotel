@@ -645,9 +645,19 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
 <?php endforeach; ?>
 
 <script>
-document.querySelectorAll(".modal").forEach((modal) => {
-    document.body.appendChild(modal);
-});
+(function relocateAllAdminModals() {
+    function run() {
+        document.querySelectorAll(".modal").forEach((modal) => {
+            if (document.body && modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+        });
+    }
+    run();
+    if (document.readyState === 'loading') {
+        document.addEventListener("DOMContentLoaded", run);
+    }
+})();
 
 function toggleCustomSuiteInput(selectEl, customBoxId, hiddenInputId) {
     const customBox = document.getElementById(customBoxId);
