@@ -456,6 +456,11 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
                                     </div>
                                 </form>
                             </div>
+                        <?php else: ?>
+                            <div class="reservation-modal-section">
+                                <h6>Extend Stay</h6>
+                                <p class="text-muted text-xs mb-0"><i class="bi bi-info-circle text-warning me-1"></i>Stay extension is unavailable for <strong><?php echo e($reservation['status']); ?></strong> reservations.</p>
+                            </div>
                         <?php endif; ?>
 
                         <div class="reservation-modal-section reservation-modal-section--danger">
