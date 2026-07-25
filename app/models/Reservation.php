@@ -405,6 +405,60 @@ class Reservation
         ];
     }
 
+    public function reassignRoom(int $reservationId, int $newRoomId): array
+    {
+        $reservation = $this->find($reservationId);
+        if (!$reservation) {
+            throw new RuntimeException('Reservation not found.');
+        }
+
+        if (in_array($reservation['status'], ['Cancelled', 'Checked-out'], true)) {
+            throw new RuntimeException('Cancelled or checked-out reservations cannot be reassigned.');
+        }
+
+        $oldRoomId = (int) $reservation['room_id'];
+        if ($oldRoomId === $newRoomId) {
+            throw new RuntimeException('Guest is already assigned to this room.');
+        }
+
+        $newRoom = $this->assertRoomExists($newRoomId);
+
+        // Verify that the new room is available for the guest's stay dates
+        if (!$this->roomIsAvailable($newRoomId, (string) $reservation['check_in'], (string) $reservation['check_out'], $reservationId)) {
+            throw new RuntimeException("Room {$newRoom['room_number']} is not available for requested stay dates ({$reservation['check_in']} to {$reservation['check_out']}).");
+        }
+
+        // Recalculate total if room rate differs
+        $checkIn = new DateTimeImmutable((string) $reservation['check_in']);
+        $checkOut = new DateTimeImmutable((string) $reservation['check_out']);
+        $nights = max(1, (int) round(($checkOut->getTimestamp() - $checkIn->getTimestamp()) / 86400));
+        $newTotal = $nights * (float) $newRoom['price_per_night'];
+
+        $stmt = $this->db->prepare(
+            'UPDATE reservations
+             SET room_id = :room_id,
+                 total_amount = :total_amount
+             WHERE reservation_id = :reservation_id'
+        );
+        $stmt->execute([
+            'room_id' => $newRoomId,
+            'total_amount' => $newTotal,
+            'reservation_id' => $reservationId,
+        ]);
+
+        // Sync status of both old and new rooms
+        $this->syncRoomStatus($oldRoomId);
+        $this->syncRoomStatus($newRoomId);
+
+        return [
+            'old_room_id' => $oldRoomId,
+            'new_room_id' => $newRoomId,
+            'new_room_number' => (string) $newRoom['room_number'],
+            'new_room_type' => (string) $newRoom['room_type'],
+            'new_total' => $newTotal,
+        ];
+    }
+
     public function availableFrontDeskActions(array $reservation): array
     {
         $status = (string) ($reservation['status'] ?? '');

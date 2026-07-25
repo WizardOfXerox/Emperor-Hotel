@@ -67,6 +67,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             redirect('reservations.php');
         }
+
+        if ($action === 'reassign_room') {
+            $reassignment = $reservationModel->reassignRoom(
+                (int) ($_POST['reservation_id'] ?? 0),
+                (int) ($_POST['new_room_id'] ?? 0)
+            );
+            setFlash(
+                'success',
+                "🔄 Room reassigned successfully! Guest transferred to Room {$reassignment['new_room_number']} ({$reassignment['new_room_type']}). New total: " . formatMoney((float) $reassignment['new_total'])
+            );
+            redirect('reservations.php');
+        }
     } catch (Throwable $exception) {
         setFlash('error', $exception->getMessage());
         redirect('reservations.php');
@@ -460,6 +472,39 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
                             <div class="reservation-modal-section">
                                 <h6>Extend Stay</h6>
                                 <p class="text-muted text-xs mb-0"><i class="bi bi-info-circle text-warning me-1"></i>Stay extension is unavailable for <strong><?php echo e($reservation['status']); ?></strong> reservations.</p>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if (in_array($reservation['status'], ['Pending', 'Confirmed', 'Checked-in'], true)): ?>
+                            <?php
+                                $availableAltRooms = $reservationModel->roomsWithDateAvailability((string) $reservation['check_in'], (string) $reservation['check_out'], $reservationId);
+                            ?>
+                            <div class="reservation-modal-section border border-info border-opacity-25 rounded-3 p-3 my-3 bg-dark bg-opacity-50">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h6 class="text-info font-serif m-0"><i class="bi bi-arrow-left-right me-2"></i>Reassign / Transfer Room Suite</h6>
+                                    <span class="badge bg-dark border border-info text-info font-sans text-xs">Current: Room <?php echo e($reservation['room_number']); ?></span>
+                                </div>
+                                <p class="text-muted text-xs mb-2">If Room <?php echo e($reservation['room_number']); ?> requires maintenance, reassign guest to an available suite:</p>
+                                
+                                <form method="post" class="d-flex align-items-center gap-2">
+                                    <input type="hidden" name="action" value="reassign_room">
+                                    <input type="hidden" name="reservation_id" value="<?php echo e($reservationId); ?>">
+                                    
+                                    <select name="new_room_id" class="form-select form-select-sm bg-dark text-light border-secondary text-xs" required>
+                                        <option value="" disabled selected>Select Available Room Suite...</option>
+                                        <?php foreach ($availableAltRooms as $altRoom): ?>
+                                            <?php if ((int) $altRoom['room_id'] !== (int) $reservation['room_id']): ?>
+                                                <option value="<?php echo e($altRoom['room_id']); ?>">
+                                                    Room <?php echo e($altRoom['room_number']); ?> &mdash; <?php echo e($altRoom['room_type']); ?> (<?php echo formatMoney((float)$altRoom['price_per_night']); ?>/night, Fl. <?php echo e($altRoom['floor']); ?>)
+                                                </option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    
+                                    <button class="btn btn-sm btn-outline-info text-nowrap font-serif fw-bold" type="submit">
+                                        <i class="bi bi-arrow-left-right me-1"></i>Reassign Room
+                                    </button>
+                                </form>
                             </div>
                         <?php endif; ?>
 
