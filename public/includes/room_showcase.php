@@ -134,17 +134,6 @@ function renderRoomShowcaseSection(): void
         echo '<p class="room-inclusion-line">Comes with: ' . e($includedPerks) . '.</p>';
         echo '</div>';
 
-        echo '<div class="container-card">';
-        foreach ($presentation['cards'] as $card) {
-            echo '<article class="card"><div class="card-content">';
-            echo '<p>' . e($card['title']) . '</p><hr><ul>';
-            foreach ($card['items'] as $item) {
-                echo '<li>' . e($item) . '</li>';
-            }
-            echo '</ul></div></article>';
-        }
-        echo '</div>';
-
         $defaultFirstRoomIdMap = [
             'Imperial Deluxe' => 1,
             'Royal Executive' => 13,
@@ -165,9 +154,20 @@ function renderRoomShowcaseSection(): void
             }
         }
 
-        echo '<div class="room-actions d-flex flex-wrap gap-2 align-items-center">';
+        echo '<div class="room-actions d-flex flex-wrap gap-2 align-items-center justify-content-center mb-4">';
         echo '<a class="room-price room-price--booking" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
         echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=' . $inspectRoomId . '"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
+        echo '</div>';
+
+        echo '<div class="container-card">';
+        foreach ($presentation['cards'] as $card) {
+            echo '<article class="card"><div class="card-content">';
+            echo '<p>' . e($card['title']) . '</p><hr><ul>';
+            foreach ($card['items'] as $item) {
+                echo '<li>' . e($item) . '</li>';
+            }
+            echo '</ul></div></article>';
+        }
         echo '</div>';
         echo '</div></section>';
     }
