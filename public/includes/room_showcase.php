@@ -126,7 +126,7 @@ function renderRoomShowcaseSection(): void
 
         echo '<section class="rooms">';
 
-        // 1. Suite Title, Details & CTA Action Buttons at the top
+        // 1. Suite Title & Inclusions at the top
         echo '<div class="container-content">';
         echo '<div class="content">';
         echo '<div>' . $statusBadgeHtml . '<span class="badge bg-dark border border-gold text-gold px-3 py-2 rounded-pill fs-6 fw-bold">' . e($roomInfo['dimensions'] ?? '38 sqm') . '</span></div>';
@@ -134,14 +134,9 @@ function renderRoomShowcaseSection(): void
         echo '<h1>' . e($presentation['heading']) . '</h1>';
         echo '<p>' . e($presentation['tagline']) . '</p>';
         echo '<p class="room-inclusion-line">Comes with: ' . e($includedPerks) . '.</p>';
-        echo '</div>';
-
-        echo '<div class="room-actions d-flex flex-wrap gap-2 align-items-center justify-content-center mt-3 mb-2">';
-        echo '<a class="room-price room-price--booking" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
-        echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=' . $inspectRoomId . '"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
         echo '</div></div>';
 
-        // 2. Carousel Image Slideshow (On top of the cards!)
+        // 2. Carousel Image Slideshow
         echo '<div class="container-carousel">';
         $slideCount = count($roomInfo['carousel']);
         echo '<div class="carousel-wrapper position-relative">';
@@ -162,7 +157,13 @@ function renderRoomShowcaseSection(): void
         }
         echo '</div></div>';
 
-        // 3. 3 Description Cards at the bottom
+        // 3. Action Buttons (Positioned between Carousel and Card Description!)
+        echo '<div class="room-actions d-flex flex-wrap gap-3 align-items-center justify-content-center my-3">';
+        echo '<a class="room-price room-price--booking" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
+        echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=' . $inspectRoomId . '"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
+        echo '</div>';
+
+        // 4. 3 Description Cards at the bottom
         echo '<div class="container-card">';
         foreach ($presentation['cards'] as $card) {
             echo '<article class="card"><div class="card-content">';
