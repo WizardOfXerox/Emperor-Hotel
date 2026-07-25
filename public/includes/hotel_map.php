@@ -11,6 +11,9 @@ declare(strict_types=1);
  */
 function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoomId = null, string $checkIn = '', string $checkOut = ''): void
 {
+    $reservationModel = new Reservation($db);
+    $reservationModel->syncAllRoomStatuses();
+
     $roomModel = new Room($db);
     $rooms = $roomModel->all();
 

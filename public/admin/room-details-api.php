@@ -17,6 +17,9 @@ try {
         throw new RuntimeException('Invalid room ID requested.');
     }
 
+    $reservationModel = new Reservation($db);
+    $reservationModel->syncRoomStatus($roomId);
+
     $roomModel = new Room($db);
     $room = $roomModel->find($roomId);
 

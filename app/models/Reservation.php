@@ -990,7 +990,7 @@ class Reservation
         return $statement->fetchAll();
     }
 
-    private function syncRoomStatus(int $roomId): void
+    public function syncRoomStatus(int $roomId): void
     {
         // SQL: Confirms the room exists before recalculating its status.
         $roomStatement = $this->db->prepare('SELECT status FROM rooms WHERE room_id = :room_id LIMIT 1');
@@ -1041,6 +1041,15 @@ class Reservation
             'status' => $roomStatus,
             'room_id' => $roomId,
         ]);
+    }
+
+    public function syncAllRoomStatuses(): void
+    {
+        $stmt = $this->db->query("SELECT room_id FROM rooms");
+        $roomIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($roomIds as $roomId) {
+            $this->syncRoomStatus((int) $roomId);
+        }
     }
 
     public function roomHasActiveOverlap(int $roomId, string $checkIn, string $checkOut, ?int $excludeReservationId = null): bool
