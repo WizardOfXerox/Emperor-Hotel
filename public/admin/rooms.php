@@ -645,7 +645,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
 <?php endforeach; ?>
 
 <script>
-(function relocateAllAdminModals() {
+;(function relocateAllAdminModals() {
     function run() {
         document.querySelectorAll(".modal").forEach((modal) => {
             if (document.body && modal.parentElement !== document.body) {

@@ -49,6 +49,166 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
     }
     ksort($floors);
 ?>
+<script>
+;(function initHotelMapGlobal() {
+    window.onHotelMapRoomClick = window.onHotelMapRoomClick || async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, mode = 'public') {
+    if (mode !== 'admin') {
+        if (typeof selectRoomFromCard === 'function') {
+            selectRoomFromCard(roomId, roomType, price);
+            const roomCard = document.querySelector(`.room-card[data-room-id="${roomId}"]`);
+            if (roomCard) {
+                roomCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                roomCard.classList.add('highlight-pulse');
+                setTimeout(() => roomCard.classList.remove('highlight-pulse'), 1500);
+                return;
+            }
+        }
+
+        const checkIn = document.getElementById('modalCheckInInput')?.value || '';
+        const checkOut = document.getElementById('modalCheckOutInput')?.value || '';
+        let url = `room-detail.php?id=${roomId}`;
+        if (checkIn && checkOut) {
+            url += `&check_in=${encodeURIComponent(checkIn)}&check_out=${encodeURIComponent(checkOut)}`;
+        }
+        window.location.href = url;
+        return;
+    }
+
+    const modalEl = document.getElementById('roomInspectorModal');
+    if (!modalEl) return;
+
+    if (document.body && modalEl.parentElement !== document.body) {
+        document.body.appendChild(modalEl);
+    }
+
+    const modalTitle = document.getElementById('inspectorRoomTitle');
+    const modalSub = document.getElementById('inspectorRoomSub');
+    const modalBody = document.getElementById('roomInspectorModalBody');
+
+    if (modalTitle) modalTitle.innerHTML = `<i class="bi bi-door-open me-2"></i>Room #${roomNumber}`;
+    if (modalSub) modalSub.textContent = `${roomType} — Floor ${Math.floor(roomId / 100) || 1} (₱${price}/night)`;
+
+    if (modalBody) {
+        modalBody.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-warning" role="status"><span class="visually-hidden">Loading...</span></div>
+                <p class="text-muted small mt-2">Loading reservation & guest details for Room #${roomNumber}...</p>
+            </div>
+        `;
+    }
+
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+
+    try {
+        let endpoint = 'room-details-api.php';
+        if (window.location.pathname.includes('/site/')) {
+            endpoint = '../admin/room-details-api.php';
+        } else if (!window.location.pathname.includes('/admin/')) {
+            endpoint = 'admin/room-details-api.php';
+        }
+
+        const res = await fetch(`${endpoint}?room_id=${roomId}`);
+        const data = await res.json();
+
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to load room details');
+        }
+
+        const room = data.room;
+        const reservation = data.reservation;
+        const isAdmin = window.location.pathname.includes('/admin/');
+
+        let html = `
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-3 inspector-info-box">
+                <div>
+                    <span class="text-muted small d-block">Room Category & Floor</span>
+                    <strong class="fs-6">${room.room_type} (Floor ${room.floor})</strong>
+                </div>
+                <div class="text-end">
+                    <span class="text-muted small d-block">Daily Rate</span>
+                    <strong class="text-warning fs-6">₱${Number(room.price_per_night).toLocaleString()}/night</strong>
+                </div>
+            </div>
+        `;
+
+        if (data.has_reservation && reservation) {
+            html += `
+                <div class="panel-card p-3 mb-3 border rounded-3 inspector-booking-card">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="m-0 font-serif fw-bold"><i class="bi bi-person-badge me-2 text-warning"></i>Active Guest Booking</h6>
+                        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold">${reservation.status}</span>
+                    </div>
+                    <hr class="my-2 opacity-25">
+                    <div class="row g-2 text-sm inspector-booking-text">
+                        <div class="col-6"><strong>Guest:</strong> ${reservation.guest_name}</div>
+                        <div class="col-6"><strong>Phone:</strong> ${reservation.guest_phone}</div>
+                        <div class="col-12"><strong>Email:</strong> ${reservation.guest_email}</div>
+                        <div class="col-6"><strong>Check-In:</strong> ${reservation.check_in}</div>
+                        <div class="col-6"><strong>Check-Out:</strong> ${reservation.check_out}</div>
+                        <div class="col-6"><strong>Total Amount:</strong> ${reservation.formatted_total}</div>
+                        <div class="col-6"><strong>Payment:</strong> ${reservation.payment_method} (${reservation.payment_status})</div>
+                    </div>
+                    ${isAdmin ? `
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        <a href="reservations.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-warning btn-sm fw-bold flex-grow-1"><i class="bi bi-sliders me-1"></i>Manage Reservation</a>
+                        <a href="payments.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-outline-warning btn-sm fw-semibold"><i class="bi bi-credit-card me-1"></i>Payments</a>
+                        <a href="rooms.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-outline-warning btn-sm fw-bold"><i class="bi bi-pencil-square me-1"></i>Edit Room</a>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        } else {
+            html += `
+                <div class="alert alert-success border-success text-center p-3 mb-3 rounded-3">
+                    <i class="bi bi-check-circle-fill fs-4 text-success d-block mb-1"></i>
+                    <strong>Room #${room.room_number} is Currently Available</strong>
+                    <p class="small m-0 mt-1 opacity-75">No active reservations exist for this room.</p>
+                </div>
+                ${isAdmin ? `
+                <div class="d-flex gap-2 mb-3">
+                    <a href="create-reservation.php?room_id=${room.room_id}" class="btn btn-warning fw-bold flex-grow-1 py-2 shadow-sm"><i class="bi bi-plus-circle me-1"></i>Create Reservation for Room #${room.room_number}</a>
+                    <a href="rooms.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-outline-warning fw-bold py-2 shadow-sm"><i class="bi bi-pencil-square me-1"></i>Edit Room</a>
+                </div>
+                ` : `
+                <a href="user-booking.php?room_id=${room.room_id}" class="btn btn-warning fw-bold w-100 py-2 mb-3 shadow-sm"><i class="bi bi-calendar-plus me-1"></i>Book Room #${room.room_number}</a>
+                `}
+            `;
+        }
+
+        if (isAdmin) {
+            html += `
+                <form method="post" action="rooms.php" class="border-top pt-3 mt-2">
+                    <input type="hidden" name="action" value="update_status">
+                    <input type="hidden" name="room_id" value="${room.room_id}">
+                    <label class="form-label fw-bold small opacity-75">Change Room Operational Status</label>
+                    <div class="input-group">
+                        <select name="status" class="form-select form-select-sm inspector-status-select">
+                            <option value="Available" ${room.status === 'Available' ? 'selected' : ''}>Available</option>
+                            <option value="Reserved" ${room.status === 'Reserved' ? 'selected' : ''}>Reserved</option>
+                            <option value="Occupied" ${room.status === 'Occupied' ? 'selected' : ''}>Occupied</option>
+                            <option value="Cleaning" ${room.status === 'Cleaning' ? 'selected' : ''}>Cleaning</option>
+                            <option value="Maintenance" ${room.status === 'Maintenance' ? 'selected' : ''}>Maintenance</option>
+                        </select>
+                        <button type="submit" class="btn btn-outline-warning btn-sm fw-semibold">Save Status</button>
+                        <a href="rooms.php?search=${encodeURIComponent(room.room_number)}" class="btn btn-warning btn-sm fw-bold"><i class="bi bi-pencil-square me-1"></i>Edit Room</a>
+                    </div>
+                </form>
+            `;
+        }
+
+        modalBody.innerHTML = html;
+    } catch (err) {
+        modalBody.innerHTML = `
+            <div class="alert alert-danger p-3 mb-0">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>${err.message || 'Unable to load room inspection details.'}
+            </div>
+        `;
+    }
+};
+})();
+</script>
+
 <div class="hotel-map-container h-100 my-0 p-4 rounded-4 shadow-lg border" id="hotelMapContainer">
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2 border-bottom pb-3">
         <div>
@@ -261,7 +421,7 @@ body.light-mode .room-map-card--maintenance .room-status-badge { background: #ff
 </style>
 
 <script>
-async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, mode = 'public') {
+window.onHotelMapRoomClick = async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, mode = 'public') {
     if (mode !== 'admin') {
         if (typeof selectRoomFromCard === 'function') {
             selectRoomFromCard(roomId, roomType, price);
@@ -417,7 +577,7 @@ async function onHotelMapRoomClick(roomId, roomNumber, roomType, price, status, 
     }
 }
 
-async function updateHotelMapAvailability(checkIn, checkOut) {
+window.updateHotelMapAvailability = async function updateHotelMapAvailability(checkIn, checkOut) {
     if (!checkIn || !checkOut) return;
     try {
         let endpoint = 'map_availability.php';

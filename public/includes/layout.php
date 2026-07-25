@@ -382,6 +382,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
             window.history.pushState(null, "", url);
             updateSidebarActiveState(url);
+
+            // Re-evaluate inline script tags from the fetched AJAX response
+            doc.querySelectorAll("script").forEach(oldScript => {
+                try {
+                    const newScript = document.createElement("script");
+                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.textContent = oldScript.textContent;
+                    document.body.appendChild(newScript);
+                    newScript.remove();
+                } catch (e) {
+                    console.error("Script evaluation error:", e);
+                }
+            });
         })
         .catch(err => {
             console.error("AJAX filter error, falling back to page reload:", err);
