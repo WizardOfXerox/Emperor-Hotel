@@ -324,7 +324,7 @@ try {
         $db->exec("UPDATE rooms SET status = 'Reserved' WHERE room_id = " . $room['room_id']);
     }
 
-    // D. Pending Reservation Requests (15 Bookings)
+    // D. Pending & Online Reservation Requests (15 Bookings)
     for ($p = 0; $p < 15; $p++) {
         $room = $roomsList[rand(0, count($roomsList) - 1)];
         $gId = $guestIds[array_rand($guestIds)];
@@ -336,6 +336,12 @@ try {
         $checkOutDate = date('Y-m-d', strtotime("+$daysAhead days + 2 days"));
         $totalAmount = (float)$room['price_per_night'] * 2;
 
+        $method = $paymentMethods[rand(0, count($paymentMethods) - 1)];
+        $isOnlinePayment = in_array($method, ['Credit Card', 'Debit Card', 'E-Wallet', 'Bank Transfer'], true);
+        $resStatus = $isOnlinePayment ? 'Confirmed' : 'Pending';
+        $payStatus = $isOnlinePayment ? 'Confirmed' : 'Pending';
+        $refPrefix = $isOnlinePayment ? 'PAY' : 'PND';
+
         $stmtRes->execute([
             'user_id' => $uId,
             'guest_id' => $gId,
@@ -343,19 +349,18 @@ try {
             'check_in' => $checkInDate,
             'check_out' => $checkOutDate,
             'total_amount' => $totalAmount,
-            'status' => 'Pending',
+            'status' => $resStatus,
             'created_at' => date('Y-m-d H:i:s', strtotime('-1 days'))
         ]);
         $resId = (int)$db->lastInsertId();
         $resCount++;
 
-        $method = $paymentMethods[rand(0, count($paymentMethods) - 1)];
         $stmtPay->execute([
             'reservation_id' => $resId,
             'amount' => $totalAmount,
             'payment_method' => $method,
-            'payment_status' => 'Pending',
-            'transaction_reference' => 'PND-' . date('Ymd') . '-' . rand(10000, 99999),
+            'payment_status' => $payStatus,
+            'transaction_reference' => $refPrefix . '-' . date('Ymd') . '-' . rand(10000, 99999),
             'payment_date' => date('Y-m-d H:i:s', strtotime('-1 days'))
         ]);
         $payCount++;
@@ -400,6 +405,10 @@ try {
     // F. Cleaning & Maintenance Rooms
     $db->exec("UPDATE rooms SET status = 'Cleaning' WHERE room_number IN ('103', '203')");
     $db->exec("UPDATE rooms SET status = 'Maintenance' WHERE room_number IN ('312')");
+
+    // Sync all room operational statuses with active reservations
+    $reservationModel = new Reservation($db);
+    $reservationModel->syncAllRoomStatuses();
 
     echo "Inserted $resCount total reservations.\n";
     echo "Inserted $payCount total payment transactions.\n";
