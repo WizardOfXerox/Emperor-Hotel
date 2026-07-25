@@ -158,7 +158,7 @@ function renderRoomShowcaseSection(): void
         echo '</div></div>';
 
         // 3. Action Buttons (Positioned between Carousel and Card Description!)
-        echo '<div class="room-actions d-flex flex-wrap gap-3 align-items-center justify-content-center my-3">';
+        echo '<div class="room-actions d-flex flex-wrap gap-2 align-items-center justify-content-center my-2">';
         echo '<a class="room-price room-price--booking" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
         echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=' . $inspectRoomId . '"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
         echo '</div>';
