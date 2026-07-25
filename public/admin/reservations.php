@@ -340,63 +340,119 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
                                     }
                                 }
                                 
-                                $currentCheckOutObj = new DateTimeImmutable((string) $reservation['check_out']);
-                                $extensionDays = [];
+                                $checkInStr = (string) $reservation['check_in'];
+                                $checkOutStr = (string) $reservation['check_out'];
+                                $currentCheckOutObj = new DateTimeImmutable($checkOutStr);
+                                $pricePerNight = (float) ($reservation['price_per_night'] ?? 4500.0);
+
+                                // Build 7-column month calendar grid view starting from month of checkOut
+                                $monthStart = new DateTimeImmutable($currentCheckOutObj->format('Y-m-01'));
+                                $monthTitle = $monthStart->format('F Y');
+                                $daysInMonth = (int) $monthStart->format('t');
+                                $startDayOfWeek = (int) $monthStart->format('w'); // 0 = Sun, 6 = Sat
+
+                                $gridCells = [];
                                 $hasFirstBlockedDate = false;
-                                
-                                for ($i = 1; $i <= 30; $i++) {
-                                    $dateObj = $currentCheckOutObj->modify("+{$i} days");
-                                    $dateStr = $dateObj->format('Y-m-d');
+
+                                // Leading empty slots
+                                for ($pad = 0; $pad < $startDayOfWeek; $pad++) {
+                                    $gridCells[] = ['type' => 'empty'];
+                                }
+
+                                for ($day = 1; $day <= $daysInMonth; $day++) {
+                                    $dateStr = sprintf('%s-%02d', $monthStart->format('Y-m'), $day);
+                                    $isPast = $dateStr < $checkInStr;
+                                    $isCurrentStay = ($dateStr >= $checkInStr && $dateStr < $checkOutStr);
+                                    $isCheckOutDay = ($dateStr === $checkOutStr);
+                                    $isAfterCheckOut = ($dateStr > $checkOutStr);
+
                                     $isBooked = isset($bookedDatesMap[$dateStr]);
-                                    
-                                    if ($isBooked) {
+                                    if ($isAfterCheckOut && $isBooked) {
                                         $hasFirstBlockedDate = true;
                                     }
-                                    
-                                    $extensionDays[] = [
+
+                                    $gridCells[] = [
+                                        'type' => 'day',
+                                        'day_num' => $day,
                                         'date' => $dateStr,
-                                        'display' => $dateObj->format('M j (D)'),
-                                        'is_booked' => $isBooked,
-                                        'is_blocked_by_prior' => $hasFirstBlockedDate,
+                                        'is_current_stay' => $isCurrentStay,
+                                        'is_checkout' => $isCheckOutDay,
+                                        'is_available' => ($isAfterCheckOut && !$isBooked && !$hasFirstBlockedDate),
+                                        'is_reserved' => ($isAfterCheckOut && $isBooked),
+                                        'is_blocked_beyond' => ($isAfterCheckOut && !$isBooked && $hasFirstBlockedDate),
+                                        'is_disabled' => ($isPast || $isCurrentStay || $isCheckOutDay || $isBooked || $hasFirstBlockedDate),
                                     ];
                                 }
                             ?>
-                            <div class="reservation-modal-section border border-warning border-opacity-25 rounded-3 p-3 my-3 bg-dark bg-opacity-50">
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <h6 class="text-warning font-serif m-0"><i class="bi bi-calendar-event me-2"></i>Extend Stay Calendar Inspector</h6>
-                                    <span class="badge bg-dark border border-gold text-gold font-sans text-xs">Room <?php echo e($reservation['room_number']); ?></span>
+                            <div class="reservation-modal-section border border-warning border-opacity-30 rounded-4 p-3 my-3 bg-dark" style="box-shadow: 0 8px 25px rgba(0,0,0,0.5);">
+                                <div class="d-flex flex-wrap align-items-center justify-content-between pb-2 mb-3 border-bottom border-warning border-opacity-25">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-calendar3 text-warning fs-5"></i>
+                                        <h6 class="text-warning font-serif fw-bold m-0">Extend Stay Calendar Grid</h6>
+                                    </div>
+                                    <span class="badge bg-dark border border-gold text-gold font-sans text-xs">Room <?php echo e($reservation['room_number']); ?> (<?php echo e($reservation['room_type']); ?>)</span>
                                 </div>
-                                <p class="text-muted text-xs mb-2">Current Check-Out: <strong class="text-white"><?php echo e($reservation['check_out']); ?></strong>. Click an available date below to extend stay:</p>
-                                
-                                <form method="post" class="extend-stay-form">
+
+                                <div class="d-flex align-items-center justify-content-between mb-3 px-1">
+                                    <span class="text-white font-serif fw-bold fs-6"><i class="bi bi-calendar-month text-warning me-1"></i><?php echo e($monthTitle); ?></span>
+                                    <div class="d-flex align-items-center gap-2 text-xs">
+                                        <span class="d-inline-flex align-items-center gap-1 text-white-50"><span style="width:9px;height:9px;border-radius:50%;background:#eab308;display:inline-block;"></span> Current Stay</span>
+                                        <span class="d-inline-flex align-items-center gap-1 text-white-50"><span style="width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block;"></span> 🟢 Available</span>
+                                        <span class="d-inline-flex align-items-center gap-1 text-white-50"><span style="width:9px;height:9px;border-radius:50%;background:#ef4444;display:inline-block;"></span> 🔴 ❌ Reserved</span>
+                                    </div>
+                                </div>
+
+                                <!-- 7-Column Weekday Header -->
+                                <div class="extend-cal-grid-header mb-2 text-center text-uppercase font-serif fw-bold text-xs text-warning" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;">
+                                    <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
+                                </div>
+
+                                <!-- 7-Column Days Grid -->
+                                <div class="extend-cal-grid-days text-center mb-3" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;">
+                                    <?php foreach ($gridCells as $cell): ?>
+                                        <?php if ($cell['type'] === 'empty'): ?>
+                                            <div style="aspect-ratio: 1/1;"></div>
+                                        <?php elseif ($cell['is_current_stay'] || $cell['is_checkout']): ?>
+                                            <div class="extend-day-cell current-stay-cell d-flex flex-column align-items-center justify-content-center rounded-3 p-1" title="Current Stay (Check-Out: <?php echo e($checkOutStr); ?>)" style="aspect-ratio: 1/1; background: rgba(212, 175, 55, 0.25); border: 1.5px solid #D4AF37; color: #FFDF73; font-weight: 700; font-size: 12px;">
+                                                <span><?php echo e($cell['day_num']); ?></span>
+                                                <small style="font-size: 7.5px;" class="text-uppercase"><?php echo $cell['is_checkout'] ? 'OUT' : 'STAY'; ?></small>
+                                            </div>
+                                        <?php elseif ($cell['is_available']): ?>
+                                            <button type="button" class="btn p-0 extend-day-cell available-cell d-flex flex-column align-items-center justify-content-center rounded-3 date-extend-option-grid-<?php echo e($reservationId); ?>" data-date="<?php echo e($cell['date']); ?>" onclick="selectGridCheckOut('<?php echo e($reservationId); ?>', '<?php echo e($cell['date']); ?>', this, <?php echo e($pricePerNight); ?>, '<?php echo e($checkOutStr); ?>', <?php echo e($reservationTotal); ?>)" title="🟢 Available for Extension" style="aspect-ratio: 1/1; background: rgba(34, 197, 94, 0.2); border: 1.5px solid #22c55e; color: #4ade80; font-weight: 700; font-size: 12px;">
+                                                <span><?php echo e($cell['day_num']); ?></span>
+                                                <small style="font-size: 7.5px;">🟢 FREE</small>
+                                            </button>
+                                        <?php elseif ($cell['is_reserved']): ?>
+                                            <div class="extend-day-cell reserved-cell d-flex flex-column align-items-center justify-content-center rounded-3 opacity-75" title="🔴 ❌ Reserved by another guest" style="aspect-ratio: 1/1; background: rgba(239, 68, 68, 0.25); border: 1.5px solid #ef4444; color: #f87171; font-weight: 700; font-size: 12px; cursor: not-allowed;">
+                                                <span><?php echo e($cell['day_num']); ?></span>
+                                                <small style="font-size: 7.5px;">❌ BUSY</small>
+                                            </div>
+                                        <?php elseif ($cell['is_blocked_beyond']): ?>
+                                            <div class="extend-day-cell blocked-beyond-cell d-flex flex-column align-items-center justify-content-center rounded-3 opacity-40" title="🚫 Disabled - Blocked by prior reservation" style="aspect-ratio: 1/1; background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.08); color: #475569; font-weight: 700; font-size: 12px; cursor: not-allowed;">
+                                                <span><?php echo e($cell['day_num']); ?></span>
+                                                <small style="font-size: 7.5px;">🚫 OFF</small>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="extend-day-cell text-muted opacity-25 d-flex align-items-center justify-content-center rounded-3" style="aspect-ratio: 1/1; border: 1px solid rgba(255,255,255,0.05); font-size: 12px;">
+                                                <span><?php echo e($cell['day_num']); ?></span>
+                                            </div>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </div>
+
+                                <!-- Selected Extension Summary & Form -->
+                                <form method="post" class="extend-stay-form mt-2 p-2.5 rounded-3 bg-dark border border-warning border-opacity-25">
                                     <input type="hidden" name="action" value="extend_stay">
                                     <input type="hidden" name="reservation_id" value="<?php echo e($reservationId); ?>">
-                                    
-                                    <div class="d-flex flex-wrap gap-1.5 mb-3" style="max-height: 160px; overflow-y: auto; padding: 4px; border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 8px; background: rgba(15, 23, 42, 0.7);">
-                                        <?php foreach ($extensionDays as $day): ?>
-                                            <?php if ($day['is_booked'] || $day['is_blocked_by_prior']): ?>
-                                                <button type="button" class="btn btn-sm btn-outline-danger disabled border-opacity-50 text-xs py-1 px-2 opacity-75" title="❌ Unavailable - Room reserved on this date" style="cursor: not-allowed; background: rgba(239, 68, 68, 0.15); color: #f87171;">
-                                                    ❌ <?php echo e($day['display']); ?> (Reserved)
-                                                </button>
-                                            <?php else: ?>
-                                                <button type="button" class="btn btn-sm btn-outline-success text-xs py-1 px-2 date-extend-option" data-date="<?php echo e($day['date']); ?>" onclick="selectExtendCheckOut('<?php echo e($reservationId); ?>', '<?php echo e($day['date']); ?>', this)">
-                                                    🟢 <?php echo e($day['display']); ?>
-                                                </button>
-                                            <?php endif; ?>
-                                        <?php endforeach; ?>
-                                    </div>
+                                    <input type="hidden" id="modal_new_check_out_<?php echo e($reservationId); ?>" name="new_check_out" value="<?php echo e($minimumExtensionDate); ?>">
 
-                                    <div class="d-flex align-items-center gap-2">
-                                        <input
-                                            class="form-control form-control-sm text-center font-monospace fw-bold bg-dark text-warning border-warning"
-                                            id="modal_new_check_out_<?php echo e($reservationId); ?>"
-                                            name="new_check_out"
-                                            type="date"
-                                            min="<?php echo e($minimumExtensionDate); ?>"
-                                            value="<?php echo e($minimumExtensionDate); ?>"
-                                            required
-                                        >
-                                        <button class="btn btn-sm btn-warning px-3 font-serif fw-bold" type="submit"><i class="bi bi-check-lg me-1"></i>Confirm Extension</button>
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="text-xs">
+                                            <span class="text-muted">New Check-Out:</span> <strong class="text-warning font-monospace fs-6" id="summary_new_checkout_<?php echo e($reservationId); ?>"><?php echo e($minimumExtensionDate); ?></strong>
+                                            <span class="badge bg-gold text-dark font-sans fw-bold ms-2" id="summary_extra_nights_<?php echo e($reservationId); ?>">+1 Night</span>
+                                            <span class="text-success fw-bold ms-2" id="summary_extra_cost_<?php echo e($reservationId); ?>">+<?php echo e(formatMoney($pricePerNight)); ?></span>
+                                        </div>
+                                        <button class="btn btn-sm btn-warning px-4 font-serif fw-bold shadow-sm" type="submit"><i class="bi bi-check-circle-fill me-1"></i>Confirm Extension</button>
                                     </div>
                                 </form>
                             </div>
@@ -423,20 +479,39 @@ document.querySelectorAll(".reservation-action-modal").forEach((modal) => {
     document.body.appendChild(modal);
 });
 
-function selectExtendCheckOut(resId, dateStr, btn) {
+function selectGridCheckOut(resId, dateStr, btn, ratePerNight, currentCheckOut, currentTotal) {
     const input = document.getElementById('modal_new_check_out_' + resId);
     if (input) {
         input.value = dateStr;
     }
-    const container = btn.closest('.d-flex');
-    if (container) {
-        container.querySelectorAll('.date-extend-option').forEach(b => {
-            b.classList.remove('btn-success', 'text-white', 'fw-bold');
-            b.classList.add('btn-outline-success');
-        });
-        btn.classList.remove('btn-outline-success');
-        btn.classList.add('btn-success', 'text-white', 'fw-bold');
-    }
+    
+    // Highlight selected grid cell
+    document.querySelectorAll('.date-extend-option-grid-' + resId).forEach(b => {
+        b.style.background = 'rgba(34, 197, 94, 0.2)';
+        b.style.borderColor = '#22c55e';
+        b.style.color = '#4ade80';
+        b.style.boxShadow = 'none';
+    });
+    
+    btn.style.background = '#22c55e';
+    btn.style.borderColor = '#ffffff';
+    btn.style.color = '#020617';
+    btn.style.boxShadow = '0 0 14px rgba(34, 197, 94, 0.9)';
+
+    // Calculate extra nights and extra cost
+    const dOut = new Date(currentCheckOut);
+    const dNew = new Date(dateStr);
+    const diffTime = Math.abs(dNew - dOut);
+    const extraNights = Math.round(diffTime / (1000 * 60 * 60 * 24));
+    const extraCost = extraNights * ratePerNight;
+    
+    const checkoutEl = document.getElementById('summary_new_checkout_' + resId);
+    const nightsEl = document.getElementById('summary_extra_nights_' + resId);
+    const costEl = document.getElementById('summary_extra_cost_' + resId);
+
+    if (checkoutEl) checkoutEl.textContent = dateStr;
+    if (nightsEl) nightsEl.textContent = '+' + extraNights + (extraNights === 1 ? ' Night' : ' Nights');
+    if (costEl) costEl.textContent = '+' + new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(extraCost);
 }
 </script>
 <?php renderAdminLayoutEnd(); ?>
