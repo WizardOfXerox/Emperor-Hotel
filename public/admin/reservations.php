@@ -477,34 +477,54 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
 
                         <?php if (in_array($reservation['status'], ['Pending', 'Confirmed', 'Checked-in'], true)): ?>
                             <?php
-                                $availableAltRooms = $reservationModel->roomsWithDateAvailability((string) $reservation['check_in'], (string) $reservation['check_out'], $reservationId);
+                                $allRoomsWithAvail = $reservationModel->roomsWithDateAvailability((string) $reservation['check_in'], (string) $reservation['check_out'], $reservationId);
                             ?>
-                            <div class="reservation-modal-section border border-info border-opacity-25 rounded-3 p-3 my-3 bg-dark bg-opacity-50">
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <h6 class="text-info font-serif m-0"><i class="bi bi-arrow-left-right me-2"></i>Reassign / Transfer Room Suite</h6>
-                                    <span class="badge bg-dark border border-info text-info font-sans text-xs">Current: Room <?php echo e($reservation['room_number']); ?></span>
+                            <div class="reservation-modal-section border border-info border-opacity-30 rounded-4 p-3 my-3 bg-dark" style="box-shadow: 0 8px 25px rgba(0,0,0,0.5);">
+                                <div class="d-flex flex-wrap align-items-center justify-content-between pb-2 mb-3 border-bottom border-info border-opacity-25">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-arrow-left-right text-info fs-5"></i>
+                                        <h6 class="text-info font-serif fw-bold m-0">Reassign / Transfer Room Suite</h6>
+                                    </div>
+                                    <span class="badge bg-dark border border-gold text-gold font-sans text-xs">Current: Room <?php echo e($reservation['room_number']); ?></span>
                                 </div>
-                                <p class="text-muted text-xs mb-2">If Room <?php echo e($reservation['room_number']); ?> requires maintenance, reassign guest to an available suite:</p>
-                                
-                                <form method="post" class="d-flex align-items-center gap-2">
-                                    <input type="hidden" name="action" value="reassign_room">
-                                    <input type="hidden" name="reservation_id" value="<?php echo e($reservationId); ?>">
-                                    
-                                    <select name="new_room_id" class="form-select form-select-sm bg-dark text-light border-secondary text-xs" required>
-                                        <option value="" disabled selected>Select Available Room Suite...</option>
-                                        <?php foreach ($availableAltRooms as $altRoom): ?>
-                                            <?php if ((int) $altRoom['room_id'] !== (int) $reservation['room_id']): ?>
-                                                <option value="<?php echo e($altRoom['room_id']); ?>">
-                                                    Room <?php echo e($altRoom['room_number']); ?> &mdash; <?php echo e($altRoom['room_type']); ?> (<?php echo formatMoney((float)$altRoom['price_per_night']); ?>/night, Fl. <?php echo e($altRoom['floor']); ?>)
-                                                </option>
-                                            <?php endif; ?>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    
-                                    <button class="btn btn-sm btn-outline-info text-nowrap font-serif fw-bold" type="submit">
-                                        <i class="bi bi-arrow-left-right me-1"></i>Reassign Room
-                                    </button>
-                                </form>
+                                <p class="text-muted text-xs mb-3">Room availability for stay dates <strong class="text-white"><?php echo e($reservation['check_in']); ?></strong> &rarr; <strong class="text-white"><?php echo e($reservation['check_out']); ?></strong>:</p>
+
+                                <!-- Visual Room Inventory Availability Badges -->
+                                <div class="d-flex flex-column gap-2 mb-3" style="max-height: 180px; overflow-y: auto; padding: 4px;">
+                                    <?php foreach ($allRoomsWithAvail as $altRoom): ?>
+                                        <?php
+                                            $isCurrent = (int) $altRoom['room_id'] === (int) $reservation['room_id'];
+                                            $isMaint = ($altRoom['status'] ?? '') === 'Maintenance';
+                                            $isAvailable = !empty($altRoom['is_available_for_dates']) && !$isMaint;
+                                        ?>
+                                        <div class="d-flex align-items-center justify-content-between p-2 rounded-3 border text-xs" style="background: rgba(15, 23, 42, 0.7); border-color: <?php echo $isCurrent ? 'rgba(212, 175, 55, 0.4)' : ($isAvailable ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.2)'); ?> !important;">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <strong class="text-white font-serif fs-6">Room <?php echo e($altRoom['room_number']); ?></strong>
+                                                <span class="text-muted">&mdash; <?php echo e($altRoom['room_type']); ?> (Fl. <?php echo e($altRoom['floor']); ?>)</span>
+                                                <span class="text-warning font-mono fw-bold"><?php echo formatMoney((float)$altRoom['price_per_night']); ?>/night</span>
+                                            </div>
+
+                                            <div>
+                                                <?php if ($isCurrent): ?>
+                                                    <span class="badge bg-gold text-dark font-serif fw-bold px-2 py-1"><i class="bi bi-pin-angle-fill me-1"></i>Current Room</span>
+                                                <?php elseif ($isMaint): ?>
+                                                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger font-sans text-xs px-2 py-1"><i class="bi bi-tools me-1"></i>Maintenance Hold</span>
+                                                <?php elseif ($isAvailable): ?>
+                                                    <form method="post" class="d-inline">
+                                                        <input type="hidden" name="action" value="reassign_room">
+                                                        <input type="hidden" name="reservation_id" value="<?php echo e($reservationId); ?>">
+                                                        <input type="hidden" name="new_room_id" value="<?php echo e($altRoom['room_id']); ?>">
+                                                        <button class="btn btn-xs btn-success font-serif fw-bold px-3 text-nowrap" type="submit" onclick="return confirm('Reassign guest to Room <?php echo e($altRoom['room_number']); ?>?')">
+                                                            🟢 Transfer to Room <?php echo e($altRoom['room_number']); ?>
+                                                        </button>
+                                                    </form>
+                                                <?php else: ?>
+                                                    <span class="badge bg-secondary bg-opacity-25 text-white-50 border border-secondary font-sans text-xs px-2 py-1"><i class="bi bi-x-circle me-1"></i>Occupied for Dates</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
                             </div>
                         <?php endif; ?>
 
