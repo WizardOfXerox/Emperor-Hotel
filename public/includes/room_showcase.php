@@ -92,27 +92,6 @@ function renderRoomShowcaseSection(): void
             $priceText = formatMoney((float) $stats['lowest_price']) . ' / NIGHT';
         }
 
-        echo '<section class="rooms">';
-        echo '<div class="container-carousel">';
-        $slideCount = count($roomInfo['carousel']);
-        echo '<div class="carousel-wrapper position-relative">';
-        if ($slideCount > 1) {
-            echo '<button class="carousel-control prev" type="button" data-carousel-prev aria-label="Previous ' . e($roomType) . ' image">&#10094;</button>';
-        }
-        echo '<div class="carousel-track" data-carousel>';
-
-        foreach ($roomInfo['carousel'] as $slideIndex => $imagePath) {
-            echo '<div class="carousel-slide">';
-            echo '<img src="' . e($imagePath) . '" alt="' . e($roomType . ' room view ' . ($slideIndex + 1)) . '" draggable="false">';
-            echo '</div>';
-        }
-
-        echo '</div>';
-        if ($slideCount > 1) {
-            echo '<button class="carousel-control next" type="button" data-carousel-next aria-label="Next ' . e($roomType) . ' image">&#10095;</button>';
-        }
-        echo '</div></div>';
-
         $availCount = (int) ($stats['available'] ?? 0);
         $totalCount = (int) ($stats['total'] ?? 0);
         
@@ -124,15 +103,6 @@ function renderRoomShowcaseSection(): void
         } else {
             $statusBadgeHtml = '<span class="badge bg-danger px-3 py-2 rounded-pill fs-6 fw-bold mb-2 me-2"><i class="bi bi-x-circle-fill me-1"></i>🔴 Fully Booked</span>';
         }
-
-        echo '<div class="container-content">';
-        echo '<div class="content">';
-        echo '<div>' . $statusBadgeHtml . '<span class="badge bg-dark border border-gold text-gold px-3 py-2 rounded-pill fs-6 fw-bold">' . e($roomInfo['dimensions'] ?? '38 sqm') . '</span></div>';
-        echo '<h2>' . e($presentation['category']) . '</h2>';
-        echo '<h1>' . e($presentation['heading']) . '</h1>';
-        echo '<p>' . e($presentation['tagline']) . '</p>';
-        echo '<p class="room-inclusion-line">Comes with: ' . e($includedPerks) . '.</p>';
-        echo '</div>';
 
         $defaultFirstRoomIdMap = [
             'Imperial Deluxe' => 1,
@@ -154,11 +124,45 @@ function renderRoomShowcaseSection(): void
             }
         }
 
-        echo '<div class="room-actions d-flex flex-wrap gap-2 align-items-center justify-content-center mb-4">';
-        echo '<a class="room-price room-price--booking" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
-        echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=' . $inspectRoomId . '"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
+        echo '<section class="rooms">';
+
+        // 1. Suite Title, Details & CTA Action Buttons at the top
+        echo '<div class="container-content">';
+        echo '<div class="content">';
+        echo '<div>' . $statusBadgeHtml . '<span class="badge bg-dark border border-gold text-gold px-3 py-2 rounded-pill fs-6 fw-bold">' . e($roomInfo['dimensions'] ?? '38 sqm') . '</span></div>';
+        echo '<h2>' . e($presentation['category']) . '</h2>';
+        echo '<h1>' . e($presentation['heading']) . '</h1>';
+        echo '<p>' . e($presentation['tagline']) . '</p>';
+        echo '<p class="room-inclusion-line">Comes with: ' . e($includedPerks) . '.</p>';
         echo '</div>';
 
+        echo '<div class="room-actions d-flex flex-wrap gap-2 align-items-center justify-content-center mt-3 mb-2">';
+        echo '<a class="room-price room-price--booking" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
+        echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=' . $inspectRoomId . '"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
+        echo '</div></div>';
+
+        // 2. Carousel Image Slideshow (On top of the cards!)
+        echo '<div class="container-carousel">';
+        $slideCount = count($roomInfo['carousel']);
+        echo '<div class="carousel-wrapper position-relative">';
+        if ($slideCount > 1) {
+            echo '<button class="carousel-control prev" type="button" data-carousel-prev aria-label="Previous ' . e($roomType) . ' image">&#10094;</button>';
+        }
+        echo '<div class="carousel-track" data-carousel>';
+
+        foreach ($roomInfo['carousel'] as $slideIndex => $imagePath) {
+            echo '<div class="carousel-slide">';
+            echo '<img src="' . e($imagePath) . '" alt="' . e($roomType . ' room view ' . ($slideIndex + 1)) . '" draggable="false">';
+            echo '</div>';
+        }
+
+        echo '</div>';
+        if ($slideCount > 1) {
+            echo '<button class="carousel-control next" type="button" data-carousel-next aria-label="Next ' . e($roomType) . ' image">&#10095;</button>';
+        }
+        echo '</div></div>';
+
+        // 3. 3 Description Cards at the bottom
         echo '<div class="container-card">';
         foreach ($presentation['cards'] as $card) {
             echo '<article class="card"><div class="card-content">';
@@ -169,7 +173,7 @@ function renderRoomShowcaseSection(): void
             echo '</ul></div></article>';
         }
         echo '</div>';
-        echo '</div></section>';
+        echo '</section>';
     }
 
     echo '</div></section>';
