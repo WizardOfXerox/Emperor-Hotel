@@ -223,9 +223,9 @@ body.rooms-showcase-page .rooms {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 14px;
     min-height: auto;
-    padding: 24px 20px;
+    padding: 36px 24px;
     box-sizing: border-box;
     align-items: center;
     justify-content: center;
@@ -235,7 +235,7 @@ body.rooms-showcase-page .rooms {
 
 body.rooms-showcase-page .rooms .container-carousel {
     width: 100%;
-    max-width: 680px;
+    max-width: 840px;
     flex: 0 0 auto;
     display: flex;
     justify-content: center;
@@ -244,7 +244,7 @@ body.rooms-showcase-page .rooms .container-carousel {
 .carousel-wrapper {
     position: relative;
     width: 100%;
-    max-width: 680px;
+    max-width: 840px;
     aspect-ratio: 16 / 9;
 }
 
@@ -297,12 +297,12 @@ body.rooms-showcase-page .rooms .carousel-control {
     top: 50%;
     z-index: 2;
     border: 1px solid rgba(212, 175, 55, 0.4);
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     display: flex;
     color: #f8fafc;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 20px;
     border-radius: 50%;
     position: absolute;
     align-items: center;
@@ -321,19 +321,19 @@ body.rooms-showcase-page .rooms .carousel-control:hover {
 
 body.rooms-showcase-page .rooms .carousel-control.prev,
 .rooms .carousel-control.prev {
-    left: 12px !important;
+    left: 14px !important;
     right: auto !important;
 }
 
 body.rooms-showcase-page .rooms .carousel-control.next,
 .rooms .carousel-control.next {
-    right: 12px !important;
+    right: 14px !important;
     left: auto !important;
 }
 
 body.rooms-showcase-page .rooms .container-content {
     width: 100%;
-    max-width: 680px;
+    max-width: 840px;
     height: auto;
     display: flex;
     flex-direction: column;
@@ -350,11 +350,11 @@ body.rooms-showcase-page .rooms .content {
 }
 
 body.rooms-showcase-page .rooms .content h1 {
-    margin: 0 0 2px;
+    margin: 0 0 4px;
     background: linear-gradient(135deg, #FFF 30%, #D4AF37 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    font-size: clamp(26px, 3.2vw, 36px);
+    font-size: clamp(30px, 3.8vw, 42px);
     line-height: 1.1;
     font-family: 'DM Serif Display', serif;
     font-weight: 800;
@@ -364,7 +364,7 @@ body.rooms-showcase-page .rooms .content h1 {
 body.rooms-showcase-page .rooms .content h2 {
     margin: 0;
     color: #94A3B8;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
@@ -374,46 +374,47 @@ body.rooms-showcase-page .rooms .content h2 {
 body.rooms-showcase-page .rooms .content p {
     margin: 0;
     color: #E2E8F0;
-    font-size: 14px;
-    line-height: 1.3;
+    font-size: 15px;
+    line-height: 1.4;
     text-align: center;
 }
 
 body.rooms-showcase-page .rooms .content .room-inclusion-line {
     margin-top: 2px;
     color: #CBD5E1;
-    font-size: 13px;
+    font-size: 14px;
     text-align: center;
 }
 
 body.rooms-showcase-page .rooms .room-badges {
     width: 100%;
-    max-width: 680px;
-    margin-top: 4px;
-    margin-bottom: 2px;
-}
-
-body.rooms-showcase-page .rooms .container-card {
-    gap: 12px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 4px;
+    max-width: 840px;
+    margin-top: 6px;
     margin-bottom: 4px;
 }
 
+body.rooms-showcase-page .rooms .container-card {
+    gap: 16px;
+    width: 100%;
+    max-width: 840px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+
 body.rooms-showcase-page .rooms .card {
-    flex: 1 1 200px;
-    max-width: 220px;
-    min-height: 140px;
-    padding: 10px 14px;
+    flex: 1 1 250px;
+    max-width: 270px;
+    min-height: 150px;
+    padding: 12px 16px;
     box-sizing: border-box;
     color: #F8FAFC;
     background: rgba(15, 23, 42, 0.75);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(212, 175, 55, 0.25);
-    border-radius: 12px;
+    border-radius: 14px;
     box-shadow: 0 6px 18px rgba(0,0,0,0.3);
     transition: transform 0.3s ease, border-color 0.3s ease;
     text-align: left;
@@ -427,34 +428,34 @@ body.rooms-showcase-page .rooms .card:hover {
 body.rooms-showcase-page .rooms .card-content p {
     margin: 0;
     color: #D4AF37;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     font-family: 'DM Serif Display', serif;
 }
 
 body.rooms-showcase-page .rooms .card-content hr {
     border: none;
-    margin: 4px 0;
+    margin: 6px 0;
     border-top: 1px solid rgba(212, 175, 55, 0.25);
 }
 
 body.rooms-showcase-page .rooms .card-content ul {
     margin: 0;
-    padding: 0 0 0 12px;
+    padding: 0 0 0 14px;
     color: #CBD5E1;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 body.rooms-showcase-page .rooms .card-content li {
     margin: 0;
     color: #CBD5E1;
-    padding-top: 2px;
+    padding-top: 3px;
 }
 
 body.rooms-showcase-page .rooms .room-actions {
-    gap: 16px;
+    gap: 14px;
     display: flex;
-    margin-top: 10px;
+    margin-top: 8px;
     margin-bottom: 0;
     flex-wrap: wrap;
     align-items: center;
@@ -466,29 +467,27 @@ body.rooms-showcase-page .rooms .room-price {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     text-align: center;
     border-radius: 50px;
-    padding: 0.75rem 2rem !important;
+    padding: 0.5rem 1.5rem !important;
     color: #070A10 !important;
     background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important;
     box-shadow: 0 4px 18px rgba(212, 175, 55, 0.35);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border: 1px solid transparent;
     line-height: 1.5;
-    letter-spacing: 0.02em;
 }
 
 body.rooms-showcase-page .rooms .room-actions .btn-outline-warning {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    padding: 0.75rem 2rem !important;
+    padding: 0.5rem 1.5rem !important;
     line-height: 1.5;
-    letter-spacing: 0.02em;
 }
 
 body.rooms-showcase-page .rooms .room-price:hover {
