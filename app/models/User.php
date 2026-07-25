@@ -14,6 +14,17 @@ class User
         return (int) $this->db->query('SELECT COUNT(*) FROM users')->fetchColumn();
     }
 
+    public function countAdmins(): int
+    {
+        // SQL: Counts administrator accounts to verify system admin presence.
+        return (int) $this->db->query("SELECT COUNT(*) FROM users WHERE role = 'admin'")->fetchColumn();
+    }
+
+    public function hasAdmin(): bool
+    {
+        return $this->countAdmins() > 0;
+    }
+
     public function all(): array
     {
         // SQL: Reads user fields with linked guest phone numbers.

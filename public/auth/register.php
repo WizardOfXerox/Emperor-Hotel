@@ -11,7 +11,7 @@ if (isLoggedIn()) {
 }
 
 $userModel = new User(Database::connect());
-$allowAdminRole = $userModel->countUsers() === 0;
+$allowAdminRole = !$userModel->hasAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fullName = trim((string) ($_POST['full_name'] ?? ''));
@@ -197,16 +197,19 @@ renderHeader('Create Account - Emperor Hotel', ['../assets/css/site/home.css'], 
                         </div>
 
                         <?php if ($allowAdminRole): ?>
-                            <div>
-                                <label class="form-label font-serif fw-semibold small mb-1" for="role">Role</label>
-                                <div class="position-relative auth-input-group">
+                            <div class="alert alert-warning bg-warning bg-opacity-10 border border-warning border-opacity-30 rounded-3 p-3 my-3">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <i class="bi bi-shield-lock-fill text-warning fs-5"></i>
+                                    <strong class="text-warning font-serif">Initial Setup: No Admin Account Detected</strong>
+                                </div>
+                                <p class="text-white-50 text-xs mb-2">No system administrator account currently exists. You can register the initial Administrator account now.</p>
+                                <div class="position-relative auth-input-group mt-2">
                                     <i class="bi bi-shield-lock-fill auth-input-icon"></i>
                                     <select class="form-select" id="role" name="role">
-                                        <option value="admin">Admin</option>
-                                        <option value="user">User</option>
+                                        <option value="admin" selected>System Administrator (Admin Role)</option>
+                                        <option value="user">Standard Guest Account (User Role)</option>
                                     </select>
                                 </div>
-                                <div class="form-text text-warning font-serif small mt-1">Only the initial system setup account can select the admin role.</div>
                             </div>
                         <?php endif; ?>
 
