@@ -12,6 +12,42 @@ $dashboardHref = $user ? ($user['role'] === 'admin' ? '../admin/dashboard.php' :
 $dashboardLabel = $user ? ($user['role'] === 'admin' ? 'ADMIN PANEL' : 'MY DASHBOARD') : 'LOG IN';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = (string) ($_POST['action'] ?? 'submit_contact');
+
+    if ($action === 'lookup_inquiries') {
+        $lookupEmail = trim((string) ($_POST['lookup_email'] ?? ''));
+        if ($lookupEmail === '') {
+            setFlash('error', 'Please enter your email address to look up your messages.');
+        } else {
+            $_SESSION['guest_lookup_email'] = $lookupEmail;
+            setFlash('success', 'Showing concierge messages sent for ' . e($lookupEmail));
+        }
+        redirect('contact.php#track-inquiry');
+    }
+
+    if ($action === 'public_guest_reply') {
+        $messageId = (int) ($_POST['message_id'] ?? 0);
+        $replyText = trim((string) ($_POST['guest_reply_text'] ?? ''));
+        $lookupEmail = trim((string) ($_POST['guest_email'] ?? ''));
+
+        $contactMessageModel = new ContactMessage($db);
+        $targetMsg = $contactMessageModel->find($messageId);
+
+        if (!$targetMsg || strtolower(trim($targetMsg['email'])) !== strtolower($lookupEmail)) {
+            setFlash('error', 'Message record not found for this email address.');
+            redirect('contact.php#track-inquiry');
+        }
+
+        if ($replyText === '') {
+            setFlash('error', 'Reply message content cannot be empty.');
+            redirect('contact.php#track-inquiry');
+        }
+
+        $contactMessageModel->appendGuestReply($messageId, $replyText);
+        setFlash('success', 'Your follow-up reply has been sent directly to our Front Desk & Concierge Desk!');
+        redirect('contact.php#track-inquiry');
+    }
+
     $fullName = trim((string) ($_POST['full_name'] ?? ''));
     $email = trim((string) ($_POST['email'] ?? ''));
     $phone = trim((string) ($_POST['phone'] ?? ''));
@@ -34,6 +70,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'message' => $message,
     ]);
 
+    // Save lookup email in session for quick tracking
+    $_SESSION['guest_lookup_email'] = $email;
+
     // Send Concierge Confirmation Email via SMTP
     $subject = "👑 [The Emperor Hotel] We Received Your Inquiry: {$inquiryType}";
     $html = "
@@ -52,6 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div style='margin-bottom: 6px;'><strong>Contact Phone:</strong> " . htmlspecialchars($phone ?: 'N/A') . "</div>
                     <div><strong>Message Summary:</strong> " . htmlspecialchars($message) . "</div>
                 </div>
+
+                <div style='margin-top: 20px; padding-top: 15px; border-top: 1px dashed rgba(212,175,55,0.3); font-size: 12px; color: #94a3b8;'>
+                    💡 <strong>Need to follow up?</strong> You can track and reply to your inquiry at any time on our <a href='http://localhost/emperor_hotel/public/site/contact.php#track-inquiry' style='color: #ffdf73;'>Concierge Contact Page</a> or log into your account portal.
+                </div>
             </div>
             <p style='color: #64748b; font-size: 12px; margin: 0; text-align: center;'>Royal Bay Boulevard, Metro Manila, Philippines | Tel: +63 2 8888 7777</p>
         </div>
@@ -61,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     sendSmtpEmail($email, $subject, $html);
 
     setFlash('success', "Thank you, " . e($fullName) . "! Your message has been sent to our Concierge Desk. A confirmation email was sent to " . e($email) . ".");
-    redirect('contact.php');
+    redirect('contact.php#track-inquiry');
 }
 
 renderHeader('Contact Us | Emperor Hotel', ['../assets/css/site/home.css', '../assets/css/site/rooms.css'], 'contact-page');
@@ -211,6 +254,111 @@ renderHeader('Contact Us | Emperor Hotel', ['../assets/css/site/home.css', '../a
                         </button>
                     </form>
                 </div>
+            </div>
+        </div>
+
+        <!-- TRACK & REPLY TO INQUIRIES (NO ACCOUNT REQUIRED) -->
+        <?php
+        $activeLookupEmail = $_SESSION['guest_lookup_email'] ?? ($user['email'] ?? '');
+        $foundInquiries = [];
+        if ($activeLookupEmail !== '') {
+            $contactMessageModel = new ContactMessage($db);
+            $foundInquiries = $contactMessageModel->findForUser(0, $activeLookupEmail);
+        }
+        ?>
+        <div class="mt-5 pt-4 border-top border-secondary border-opacity-25" id="track-inquiry">
+            <div class="panel-card p-4 p-md-5">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+                    <div>
+                        <h4 class="font-serif fw-bold text-warning mb-1"><i class="bi bi-search me-2"></i>Track &amp; Reply to Your Inquiry (No Account Required)</h4>
+                        <p class="text-xs text-muted mb-0">Submitted a message earlier? Enter your email address below to view concierge responses and send follow-up replies.</p>
+                    </div>
+
+                    <form method="post" class="d-flex gap-2" style="max-width: 450px; width: 100%;">
+                        <input type="hidden" name="action" value="lookup_inquiries">
+                        <input type="email" name="lookup_email" class="form-control form-control-sm bg-dark text-light border-warning text-xs" placeholder="Enter your email address..." value="<?php echo e($activeLookupEmail); ?>" required>
+                        <button type="submit" class="btn btn-sm btn-warning text-dark font-serif fw-bold text-nowrap"><i class="bi bi-search me-1"></i>Track</button>
+                    </form>
+                </div>
+
+                <?php if ($activeLookupEmail !== ''): ?>
+                    <?php if (!$foundInquiries): ?>
+                        <div class="text-center py-4 text-muted small">
+                            <i class="bi bi-inbox me-2"></i>No concierge inquiries found for <strong><?php echo e($activeLookupEmail); ?></strong>. Please submit a new inquiry above.
+                        </div>
+                    <?php else: ?>
+                        <div class="d-flex flex-column gap-3">
+                            <?php foreach ($foundInquiries as $inq):
+                                $inqId = (int) $inq['message_id'];
+                                $hasGuestReply = str_contains($inq['message'], '[Guest Follow-up Reply');
+
+                                if ($hasGuestReply) {
+                                    $parts = explode('[Guest Follow-up Reply', $inq['message'], 2);
+                                    $origText = trim($parts[0]);
+                                    $followUpText = '[Guest Follow-up Reply' . $parts[1];
+                                } else {
+                                    $origText = $inq['message'];
+                                    $followUpText = null;
+                                }
+                            ?>
+                                <div class="p-3 rounded-4 border border-secondary" style="background: rgba(15, 23, 42, 0.9);">
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-2 pb-2 border-bottom border-secondary border-opacity-50">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge-soft"><?php echo e($inq['inquiry_type']); ?></span>
+                                            <?php if ($inq['status'] === 'Replied'): ?>
+                                                <span class="badge bg-success text-white text-xs"><i class="bi bi-check-circle-fill me-1"></i>Concierge Replied</span>
+                                            <?php elseif ($hasGuestReply): ?>
+                                                <span class="badge bg-warning text-dark text-xs font-serif fw-bold"><i class="bi bi-chat-right-quote-fill me-1"></i>Your Follow-up Sent</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-secondary text-light text-xs"><?php echo e($inq['status']); ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <span class="text-muted text-xs"><?php echo e(date('M d, Y H:i', strtotime($inq['created_at']))); ?></span>
+                                    </div>
+
+                                    <!-- Original Inquiry -->
+                                    <div class="mb-3">
+                                        <small class="text-warning text-xs text-uppercase tracking-wider d-block mb-1">Your Message:</small>
+                                        <div class="p-2.5 rounded-3 border border-secondary text-xs text-light" style="background: rgba(30, 41, 59, 0.6); white-space: pre-wrap;"><?php echo e($origText); ?></div>
+                                    </div>
+
+                                    <!-- Staff Reply -->
+                                    <?php if (!empty($inq['reply_message'])): ?>
+                                        <div class="mb-3">
+                                            <small class="text-success text-xs text-uppercase tracking-wider d-block mb-1"><i class="bi bi-check-circle-fill me-1"></i>Emperor Hotel Staff Response (<?php echo e(date('M d, Y H:i', strtotime($inq['replied_at']))); ?>):</small>
+                                            <div class="p-2.5 rounded-3 border border-success text-xs text-light" style="background: rgba(16, 185, 129, 0.1); white-space: pre-wrap;"><?php echo e($inq['reply_message']); ?></div>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <!-- Follow Up Reply -->
+                                    <?php if ($followUpText): ?>
+                                        <div class="mb-3 p-2.5 rounded-3 border shadow-sm" style="background: rgba(212, 175, 55, 0.15); border: 1.5px solid #fdd700 !important;">
+                                            <small class="text-warning text-xs text-uppercase tracking-wider d-block mb-1"><i class="bi bi-chat-right-quote-fill me-1"></i>Your Follow-up Sent:</small>
+                                            <div class="text-xs font-monospace fw-semibold text-white" style="white-space: pre-wrap;"><?php echo e($followUpText); ?></div>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <!-- Quick Follow-up Form -->
+                                    <form method="post" class="mt-3 pt-2 border-top border-secondary border-opacity-25">
+                                        <input type="hidden" name="action" value="public_guest_reply">
+                                        <input type="hidden" name="message_id" value="<?php echo $inqId; ?>">
+                                        <input type="hidden" name="guest_email" value="<?php echo e($activeLookupEmail); ?>">
+
+                                        <div class="mb-2">
+                                            <textarea name="guest_reply_text" rows="2" class="form-control form-control-sm bg-dark text-light border-warning text-xs rounded-3" placeholder="Type a follow-up reply to hotel staff (no login required)..." required></textarea>
+                                        </div>
+
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-xs btn-warning text-dark font-serif fw-bold rounded-pill px-3">
+                                                <i class="bi bi-send-fill me-1"></i>Send Follow-up Reply
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>
