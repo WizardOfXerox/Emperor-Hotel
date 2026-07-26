@@ -14,7 +14,7 @@ if ($pendingUserId <= 0) {
     redirect('login.php');
 }
 
-$pendingUser = $userModel->findById($pendingUserId);
+$pendingUser = $userModel->find($pendingUserId);
 if (!$pendingUser) {
     unset($_SESSION['pending_otp_user_id']);
     setFlash('warning', 'Invalid verification session. Please log in or register.');

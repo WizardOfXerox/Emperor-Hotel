@@ -104,6 +104,11 @@ class User
         return $user ?: null;
     }
 
+    public function findById(int $userId): ?array
+    {
+        return $this->find($userId);
+    }
+
     public function findByEmail(string $email): ?array
     {
         // SQL: Finds one user by unique email for login and duplicate-email checks.
