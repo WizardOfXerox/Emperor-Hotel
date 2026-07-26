@@ -38,6 +38,62 @@ class User
         return $statement->fetchAll();
     }
 
+    public function paginated(array $filters = [], int $page = 1, int $perPage = 10): array
+    {
+        $page = max(1, $page);
+        $perPage = max(1, min($perPage, 100));
+        $offset = ($page - 1) * $perPage;
+
+        $conditions = [];
+        $params = [];
+
+        $search = trim((string) ($filters['search'] ?? ''));
+        if ($search !== '') {
+            $conditions[] = '(u.full_name LIKE :search OR u.email LIKE :search OR g.phone LIKE :search)';
+            $params['search'] = '%' . $search . '%';
+        }
+
+        $role = trim((string) ($filters['role'] ?? ''));
+        if ($role !== '' && in_array($role, ['admin', 'user'], true)) {
+            $conditions[] = 'u.role = :role';
+            $params['role'] = $role;
+        }
+
+        $whereSql = $conditions !== [] ? 'WHERE ' . implode(' AND ', $conditions) : '';
+
+        // SQL: Count total matching users
+        $countSql = "SELECT COUNT(*) FROM users u LEFT JOIN guests g ON g.user_id = u.user_id {$whereSql}";
+        $countStmt = $this->db->prepare($countSql);
+        $countStmt->execute($params);
+        $total = (int) $countStmt->fetchColumn();
+
+        // SQL: Fetch paginated users
+        $dataSql = "SELECT u.user_id, u.full_name, u.email, u.role, u.created_at, COALESCE(g.phone, '') AS phone
+                    FROM users u
+                    LEFT JOIN guests g ON g.user_id = u.user_id
+                    {$whereSql}
+                    ORDER BY u.created_at DESC, u.user_id DESC
+                    LIMIT :limit OFFSET :offset";
+
+        $dataStmt = $this->db->prepare($dataSql);
+        foreach ($params as $key => $val) {
+            $dataStmt->bindValue(':' . $key, $val);
+        }
+        $dataStmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $dataStmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $dataStmt->execute();
+
+        $rows = $dataStmt->fetchAll();
+
+        return [
+            'rows' => $rows,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_pages' => max(1, (int) ceil($total / $perPage)),
+        ];
+    }
+
     public function find(int $userId): ?array
     {
         // SQL: Finds one user by primary key without exposing the password hash.

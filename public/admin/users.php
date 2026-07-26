@@ -119,7 +119,18 @@ if (isset($_GET['edit'])) {
     }
 }
 
-$users = $userModel->all();
+$search = trim((string) ($_GET['search'] ?? ''));
+$roleFilter = trim((string) ($_GET['role'] ?? ''));
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = max(1, (int) ($_GET['per_page'] ?? 10));
+
+$filters = [
+    'search' => $search,
+    'role' => $roleFilter,
+];
+
+$userData = $userModel->paginated($filters, $page, $perPage);
+$users = $userData['rows'];
 
 renderAdminLayoutStart('Users', 'users', $currentAdmin, ['../assets/css/admin/users.css']);
 ?>
@@ -167,47 +178,83 @@ renderAdminLayoutStart('Users', 'users', $currentAdmin, ['../assets/css/admin/us
         </div>
     </div>
     <div class="col-xl-8">
-        <div class="panel-card p-4 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <p class="eyebrow mb-1">User Management</p>
-                    <h3 class="mb-0">Registered Accounts</h3>
+        <div class="panel-card p-4 h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+                    <div>
+                        <p class="eyebrow mb-1">User Management</p>
+                        <h3 class="mb-0">Registered Accounts</h3>
+                    </div>
+                    <span class="badge-soft"><?php echo e($userData['total']); ?> total</span>
                 </div>
-                <span class="badge-soft"><?php echo e(count($users)); ?> total</span>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-dark-soft align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Role</th>
-                            <th>Created</th>
-                            <th class="text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($users as $user): ?>
+
+                <!-- Search & Filter Controls -->
+                <form method="get" class="row g-2 mb-3 align-items-center">
+                    <?php if (isset($_GET['edit'])): ?>
+                        <input type="hidden" name="edit" value="<?php echo e($_GET['edit']); ?>">
+                    <?php endif; ?>
+                    <div class="col-12 col-sm-6 col-md-7">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+                            <input type="search" name="search" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="Search name, email, or phone..." value="<?php echo e($search); ?>">
+                        </div>
+                    </div>
+                    <div class="col-7 col-sm-4 col-md-3">
+                        <select name="role" class="form-select form-select-sm bg-dark text-light border-secondary" onchange="this.form.submit()">
+                            <option value="">All Roles</option>
+                            <option value="admin" <?php echo $roleFilter === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                            <option value="user" <?php echo $roleFilter === 'user' ? 'selected' : ''; ?>>User</option>
+                        </select>
+                    </div>
+                    <div class="col-5 col-sm-2 col-md-2 d-flex gap-1">
+                        <button type="submit" class="btn btn-sm btn-outline-warning w-100">Filter</button>
+                        <?php if ($search !== '' || $roleFilter !== ''): ?>
+                            <a href="users.php" class="btn btn-sm btn-outline-secondary" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+                        <?php endif; ?>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-dark-soft align-middle mb-0">
+                        <thead>
                             <tr>
-                                <td class="fw-semibold"><?php echo e($user['full_name']); ?></td>
-                                <td><?php echo e($user['email']); ?></td>
-                                <td><?php echo e(!empty($user['phone']) ? $user['phone'] : 'N/A'); ?></td>
-                                <td><span class="badge-soft"><?php echo e(ucfirst($user['role'])); ?></span></td>
-                                <td class="small text-muted"><?php echo e(date('Y-m-d', strtotime($user['created_at']))); ?></td>
-                                <td class="text-end">
-                                    <a class="btn btn-sm btn-outline-light" href="users.php?edit=<?php echo e($user['user_id']); ?>">Edit</a>
-                                    <form method="post" class="d-inline">
-                                        <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="user_id" value="<?php echo e($user['user_id']); ?>">
-                                        <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
-                                    </form>
-                                </td>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Role</th>
+                                <th>Created</th>
+                                <th class="text-end">Actions</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php if (!$users): ?>
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No registered accounts match your criteria.</td>
+                                </tr>
+                            <?php endif; ?>
+                            <?php foreach ($users as $user): ?>
+                                <tr>
+                                    <td class="fw-semibold"><?php echo e($user['full_name']); ?></td>
+                                    <td><?php echo e($user['email']); ?></td>
+                                    <td><?php echo e(!empty($user['phone']) ? $user['phone'] : 'N/A'); ?></td>
+                                    <td><span class="badge-soft"><?php echo e(ucfirst($user['role'])); ?></span></td>
+                                    <td class="small text-muted"><?php echo e(date('Y-m-d', strtotime($user['created_at']))); ?></td>
+                                    <td class="text-end">
+                                        <a class="btn btn-sm btn-outline-light" href="users.php?edit=<?php echo e($user['user_id']); ?>">Edit</a>
+                                        <form method="post" class="d-inline">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="user_id" value="<?php echo e($user['user_id']); ?>">
+                                            <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+            <?php renderPaginationControl($userData['total'], $userData['page'], $userData['per_page']); ?>
         </div>
     </div>
 </section>
