@@ -249,7 +249,7 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
 
                             <!-- Navigation Action Button -> View Room Detail -->
                             <div class="p-3 pt-0">
-                                <a href="<?= e($detailUrl) ?>" class="btn btn-warning w-100 rounded-pill py-2 font-serif fw-bold text-dark shadow-sm text-xs d-flex align-items-center justify-content-center gap-2" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none;">
+                                <a href="<?= e($detailUrl) ?>" class="btn btn-warning w-100 rounded-pill py-2 font-serif fw-bold text-dark shadow-sm text-xs d-flex align-items-center justify-content-center gap-2" style="background: #ffc107; border: none;">
                                     <i class="bi bi-eye-fill me-1"></i>View Room #<?= e($rm['room_number']) ?>
                                 </a>
                             </div>
@@ -395,7 +395,7 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
     transform: scale(1.08);
 }
 .rooms-cal-day-btn.is-selected {
-    background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important;
+    background: #ffc107 !important;
     color: #070A10 !important;
     border: none !important;
     font-weight: 900 !important;

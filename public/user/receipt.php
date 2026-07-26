@@ -182,7 +182,7 @@ renderSiteLayoutStart('Reservation Receipt', $user, '../site/');
                 <i class="bi bi-arrow-left me-2"></i>Return to Dashboard
             </a>
 
-            <button type="button" onclick="window.print()" class="btn btn-warning rounded-pill px-4 font-serif fw-bold text-dark text-xs shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none;">
+            <button type="button" onclick="window.print()" class="btn btn-warning rounded-pill px-4 font-serif fw-bold text-dark text-xs shadow" style="background: #ffc107; border: none;">
                 <i class="bi bi-printer-fill me-2"></i>Print Receipt / Save PDF
             </button>
         </div>

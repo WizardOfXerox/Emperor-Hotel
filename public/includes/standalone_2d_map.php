@@ -73,7 +73,7 @@ function renderStandalone2DMap(PDO $db, string $mode = 'public', string $checkIn
                 <?php endforeach; ?>
             </div>
             <?php if (!empty($checkIn) && !empty($checkOut)): ?>
-                <span class="badge bg-gold text-dark px-3 py-2 rounded-pill font-mono text-xs shadow-sm ms-2" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;">
+                <span class="badge bg-gold text-dark px-3 py-2 rounded-pill font-mono text-xs shadow-sm ms-2" style="background: #ffc107; color: #070A10;">
                     <i class="bi bi-calendar-check me-1"></i><?= e($checkIn) ?> &rarr; <?= e($checkOut) ?>
                 </span>
             <?php endif; ?>

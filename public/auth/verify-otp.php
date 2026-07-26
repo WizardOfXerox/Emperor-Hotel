@@ -166,7 +166,7 @@ renderHeader('Verify Email OTP - Emperor Hotel', ['../assets/css/site/home.css']
                             <input type="text" name="d6" maxlength="1" class="form-control text-center font-monospace fw-bold fs-4 text-warning border-warning bg-dark rounded-3" style="height: 58px;" required>
                         </div>
 
-                        <button type="submit" class="btn btn-warning w-100 rounded-pill py-3 font-serif fw-bold fs-6 shadow text-uppercase tracking-wider mt-2" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 8px 25px rgba(212, 175, 55, 0.35);">
+                        <button type="submit" class="btn btn-warning w-100 rounded-pill py-3 font-serif fw-bold fs-6 shadow text-uppercase tracking-wider mt-2" style="background: #ffc107; color: #070A10; border: none; box-shadow: 0 8px 25px rgba(255, 193, 7, 0.35);">
                             <i class="bi bi-shield-check me-2"></i>Verify Code &amp; Continue
                         </button>
                     </form>

@@ -743,7 +743,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 }
 
 .calendar-day-btn.is-selected {
-    background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important;
+    background: #ffc107 !important;
     color: #070A10 !important;
     border: none !important;
     font-weight: 900 !important;
@@ -1670,7 +1670,7 @@ body.light-mode .rooms .card li {
 }
 
 body.light-mode .rooms .room-price {
-    background: linear-gradient(135deg, #d4af37 0%, #ffdf73 50%, #aa7c11 100%) !important;
+    background: #ffc107 !important;
     color: #070a10 !important;
 }
 
@@ -1840,7 +1840,7 @@ body.light-mode .auth-card a:hover {
 }
 
 body.light-mode .auth-card .btn-warning {
-    background: linear-gradient(135deg, #d4af37 0%, #ffdf73 50%, #aa7c11 100%) !important;
+    background: #ffc107 !important;
     color: #070a10 !important;
     border: none !important;
     font-weight: 700 !important;
@@ -2351,7 +2351,7 @@ body.light-mode .room-nav-btn:hover {
 
 /* ===== HIGH-CONTRAST FLOOR BADGE ===== */
 .floor-badge {
-    background: linear-gradient(135deg, #d4af37 0%, #ffdf73 50%, #aa7c11 100%) !important;
+    background: #ffc107 !important;
     color: #070a10 !important;
     font-weight: 800 !important;
     border: none !important;
@@ -2447,7 +2447,7 @@ body.light-mode .layout-btn-group {
 }
 
 .layout-toggle-btn.active {
-    background: linear-gradient(135deg, #d4af37 0%, #ffdf73 50%, #aa7c11 100%) !important;
+    background: #ffc107 !important;
     color: #070a10 !important;
     font-weight: 800 !important;
     box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4) !important;
@@ -2771,7 +2771,7 @@ body.light-mode #adminNotifDropdownMobile > button {
 }
 
 .pagination .page-item.active .page-link {
-    background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important;
+    background: #ffc107 !important;
     border-color: #D4AF37 !important;
     color: #070A10 !important;
     box-shadow: 0 4px 15px rgba(212, 175, 55, 0.35);
@@ -2797,7 +2797,7 @@ body.light-mode .pagination .page-item .page-link {
 }
 
 body.light-mode .pagination .page-item.active .page-link {
-    background: linear-gradient(135deg, #D4AF37 0%, #F59E0B 100%) !important;
+    background: #f59e0b !important;
     border-color: #B45309 !important;
     color: #ffffff !important;
     box-shadow: 0 4px 12px rgba(180, 83, 9, 0.25) !important;
@@ -3051,18 +3051,18 @@ body.light-mode .pagination .page-item.disabled .page-link {
 /* Modal Buttons */
 .modal-footer .btn-warning,
 .modal-body .btn-warning {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
+    background: #ffc107 !important;
     border: 1px solid #FBBF24 !important;
     color: #020617 !important;
     font-weight: 700 !important;
     border-radius: 10px !important;
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3) !important;
+    box-shadow: 0 4px 14px rgba(255, 193, 7, 0.3) !important;
     transition: all 0.25s ease-in-out !important;
 }
 
 .modal-footer .btn-warning:hover,
 .modal-body .btn-warning:hover {
-    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%) !important;
+    background: #f59e0b !important;
     box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5) !important;
     transform: translateY(-1px);
 }

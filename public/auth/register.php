@@ -213,7 +213,7 @@ renderHeader('Create Account - Emperor Hotel', ['../assets/css/site/home.css'], 
                             </div>
                         <?php endif; ?>
 
-                        <button class="btn btn-warning w-100 rounded-pill py-3 font-serif fw-bold fs-6 shadow text-uppercase tracking-wider mt-2" type="submit" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 8px 25px rgba(212, 175, 55, 0.35);">
+                        <button class="btn btn-warning w-100 rounded-pill py-3 font-serif fw-bold fs-6 shadow text-uppercase tracking-wider mt-2" type="submit" style="background: #ffc107; color: #070A10; border: none; box-shadow: 0 8px 25px rgba(255, 193, 7, 0.35);">
                             <i class="bi bi-person-check-fill me-2"></i>Create Account
                         </button>
 

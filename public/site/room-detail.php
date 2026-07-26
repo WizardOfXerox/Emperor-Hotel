@@ -200,7 +200,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                     <div class="position-relative">
                         <img src="<?= e($typeCatalog['hero']) ?>" id="mainRoomHeroImage" class="card-img-top w-100 object-fit-cover transition-all" style="min-height: 260px; height: 45vh; max-height: 440px;" alt="<?= e($roomType) ?>">
                         
-                        <span class="position-absolute top-0 start-0 m-3 badge font-serif fs-6 px-3 py-2 fw-bold rounded-pill shadow" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.5);">
+                        <span class="position-absolute top-0 start-0 m-3 badge font-serif fs-6 px-3 py-2 fw-bold rounded-pill shadow" style="background: #ffc107; color: #070A10; box-shadow: 0 4px 15px rgba(255, 193, 7, 0.5);">
                             <i class="bi bi-door-open me-1"></i>Room #<?= e($room['room_number']) ?>
                         </span>
                         
@@ -317,7 +317,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                     <div class="pt-3 border-top border-secondary">
                         <?php if ($isAvailable): ?>
                             <a href="../user/dashboard.php?selected_room=<?= (int)$room['room_id'] ?>&check_in=<?= e($checkIn) ?>&check_out=<?= e($checkOut) ?>" 
-                               class="btn w-100 rounded-pill py-3 font-serif fw-bold fs-6 shadow text-uppercase tracking-wider" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);">
+                               class="btn w-100 rounded-pill py-3 font-serif fw-bold fs-6 shadow text-uppercase tracking-wider" style="background: #ffc107; color: #070A10; border: none; box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);">
                                 <i class="bi bi-lightning-charge-fill me-2"></i>Reserve Room #<?= e($room['room_number']) ?> Now
                             </a>
                         <?php else: ?>
@@ -368,7 +368,7 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                                             ?>
                                                 <a href="room-detail.php?id=<?= (int)$fRoom['room_id'] ?><?= $dateParams ?>" 
                                                    class="list-group-item list-group-item-action rounded-3 p-2 mb-1 border-0 d-flex align-items-center justify-content-between text-xs transition-all <?= $isCurrent ? 'fw-bold shadow' : '' ?>"
-                                                   style="<?= $isCurrent ? 'background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;' : 'background: rgba(30, 41, 59, 0.6); color: #F8FAFC;' ?>">
+                                                   style="<?= $isCurrent ? 'background: #ffc107; color: #070A10;' : 'background: rgba(30, 41, 59, 0.6); color: #F8FAFC;' ?>">
                                                     <div class="me-2 text-wrap" style="line-height: 1.25; font-size: 0.8rem;">
                                                         <i class="bi bi-door-closed me-1"></i><strong>#<?= e($fRoom['room_number']) ?></strong> &mdash; <span><?= e($fRoom['room_type']) ?></span>
                                                     </div>

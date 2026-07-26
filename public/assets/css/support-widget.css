@@ -11,7 +11,7 @@
     height: 56px;
     border: 1px solid rgba(212, 175, 55, 0.5);
     border-radius: 999px;
-    background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%);
+    background: #ffc107;
     color: #070A10;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     display: grid;

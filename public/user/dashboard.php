@@ -322,7 +322,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                         </div>
                     <?php endif; ?>
 
-                    <button class="btn btn-warning w-100 rounded-pill py-2 font-serif fw-bold text-dark shadow" type="submit" <?= !$isCurrentRoomAvailable ? 'disabled style="opacity: 0.5; cursor: not-allowed; background: #64748B; border: none;"' : 'style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); border: none;"' ?>>
+                    <button class="btn btn-warning w-100 rounded-pill py-2 font-serif fw-bold text-dark shadow" type="submit" <?= !$isCurrentRoomAvailable ? 'disabled style="opacity: 0.5; cursor: not-allowed; background: #64748B; border: none;"' : 'style="background: #ffc107; border: none;"' ?>>
                         <i class="bi bi-check-circle-fill me-2"></i><?= !$isCurrentRoomAvailable ? 'Room Reserved for Selected Dates' : 'Confirm & Submit Reservation' ?>
                     </button>
                 </div>

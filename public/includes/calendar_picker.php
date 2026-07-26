@@ -387,7 +387,7 @@ function handleInlineCalendarSearch() {
 }
 
 .calendar-day-btn.is-selected {
-    background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important;
+    background: #ffc107 !important;
     color: #070A10 !important;
     border: none !important;
     font-weight: 900 !important;
@@ -522,7 +522,7 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
             <h4 class="font-serif fw-bold m-0 calendar-widget-title"><i class="bi bi-calendar-range me-2"></i>Select Stay Dates</h4>
             <p class="calendar-widget-subtitle text-xs m-0 fw-semibold">Click check-in and check-out dates on the grid below.</p>
         </div>
-        <div id="inlineStayDurationBadge" class="badge bg-gold text-dark fs-6 px-3 py-2 fw-bold rounded-pill shadow stay-duration-badge" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important; color: #070A10 !important; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
+        <div id="inlineStayDurationBadge" class="badge bg-gold text-dark fs-6 px-3 py-2 fw-bold rounded-pill shadow stay-duration-badge" style="background: #ffc107 !important; color: #070A10 !important; box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);">
             Select dates below
         </div>
     </div>
@@ -538,7 +538,7 @@ function renderInlineCalendarWidget(string $checkInVal = '', string $checkOutVal
                 <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning fw-bold py-2 calendar-date-input" value="<?= e($checkOut) ?>" min="<?= $today->modify('+1 day')->format('Y-m-d') ?>">
             </div>
             <div class="col-12 col-sm-2 col-lg-2 mt-2 mt-sm-0">
-                <button type="button" class="btn btn-sm w-100 rounded-pill py-2 font-serif fw-bold shadow" onclick="handleInlineCalendarSearch()" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10; border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
+                <button type="button" class="btn btn-sm w-100 rounded-pill py-2 font-serif fw-bold shadow" onclick="handleInlineCalendarSearch()" style="background: #ffc107; color: #070A10; border: none; box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);">
                     <i class="bi bi-search me-1"></i>Search
                 </button>
             </div>

@@ -218,7 +218,7 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
             <h4 class="m-0 font-serif fw-bold map-title"><i class="bi bi-diagram-3-fill me-2 text-warning"></i>Rooms Availability Information</h4>
             <small class="text-muted opacity-90 fw-semibold" id="mapActiveRangeSubtitle">
                 <?php if (!empty($checkIn) && !empty($checkOut)): ?>
-                    <span class="badge bg-gold text-dark px-2 py-1 me-1" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;"><i class="bi bi-calendar-check me-1"></i><?= e($checkIn) ?> to <?= e($checkOut) ?></span> Live availability for stay dates.
+                    <span class="badge bg-gold text-dark px-2 py-1 me-1" style="background: #ffc107; color: #070A10;"><i class="bi bi-calendar-check me-1"></i><?= e($checkIn) ?> to <?= e($checkOut) ?></span> Live availability for stay dates.
                 <?php else: ?>
                     Click any room block to inspect details or select for booking
                 <?php endif; ?>
@@ -365,16 +365,16 @@ body.light-mode .floor-tab-btn:not(.active) {
 }
 
 .floor-tab-btn.active {
-    background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%) !important;
+    background: #ffc107 !important;
     color: #070A10 !important;
     border: none !important;
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4) !important;
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4) !important;
 }
 
 body.light-mode .floor-tab-btn.active {
-    background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%) !important;
+    background: #f59e0b !important;
     color: #ffffff !important;
-    box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3) !important;
 }
 
 /* Room Map Cards */
@@ -641,7 +641,7 @@ window.updateHotelMapAvailability = async function updateHotelMapAvailability(ch
 
         const activeSub = document.getElementById('mapActiveRangeSubtitle');
         if (activeSub) {
-            activeSub.innerHTML = `<span class="badge bg-gold text-dark px-2 py-1 me-1" style="background: linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color: #070A10;"><i class="bi bi-calendar-check me-1"></i>${checkIn} to ${checkOut}</span> Showing live room availability for stay dates.`;
+            activeSub.innerHTML = `<span class="badge bg-gold text-dark px-2 py-1 me-1" style="background: #ffc107; color: #070A10;"><i class="bi bi-calendar-check me-1"></i>${checkIn} to ${checkOut}</span> Showing live room availability for stay dates.`;
         }
     } catch (err) {
         console.error("Map availability update failed:", err);
