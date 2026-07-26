@@ -111,6 +111,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('messages.php');
         }
 
+        if ($action === 'sync_gmail') {
+            $syncResult = syncGmailReplies($db);
+            if ($syncResult['success']) {
+                setFlash('success', $syncResult['message']);
+            } else {
+                setFlash('info', 'ℹ️ ' . $syncResult['message']);
+            }
+            redirect('messages.php');
+        }
+
         if ($action === 'delete') {
             $messageId = (int) ($_POST['message_id'] ?? 0);
             $contactMessageModel->delete($messageId);
@@ -180,8 +190,14 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
                 <h3 class="mb-0">Customer Inquiries & Messages</h3>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge-soft"><?php echo e($messageData['total']); ?> message(s)</span>
-                <button type="button" class="btn btn-sm btn-warning font-serif fw-semibold" data-bs-toggle="modal" data-bs-target="#composeEmailModal">
+                <span class="badge-soft me-1"><?php echo e($messageData['total']); ?> message(s)</span>
+                <form method="post" action="messages.php" class="d-inline">
+                    <input type="hidden" name="action" value="sync_gmail">
+                    <button type="submit" class="btn btn-sm btn-outline-warning font-serif fw-semibold" title="Fetch incoming Gmail email replies into database">
+                        <i class="bi bi-arrow-repeat me-1"></i>Sync Gmail Replies
+                    </button>
+                </form>
+                <button type="button" class="btn btn-sm btn-warning font-serif fw-semibold text-dark" data-bs-toggle="modal" data-bs-target="#composeEmailModal">
                     <i class="bi bi-pencil-square me-1"></i>Compose Direct Email
                 </button>
             </div>
