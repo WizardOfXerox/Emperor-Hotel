@@ -472,17 +472,39 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    // Global Modal Safety Handler: ensures modals reside on document.body for Bootstrap 5 native toggles
+    // Global Emperor Modal Opening Engine: ensures clean DOM placement and fresh Bootstrap instances
+    window.openEmperorModal = function(modalSelector) {
+        const selector = modalSelector.startsWith('#') ? modalSelector : '#' + modalSelector;
+        const modalEl = document.querySelector(selector);
+        if (!modalEl) {
+            console.warn("Emperor Modal element not found:", selector);
+            return;
+        }
+        if (modalEl.parentNode !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            try {
+                const existing = bootstrap.Modal.getInstance(modalEl);
+                if (existing) {
+                    existing.dispose();
+                }
+            } catch (err) {}
+            const modal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+            modal.show();
+        }
+    };
+
+    // Global Modal Safety Interceptor for data-bs-toggle="modal"
     document.addEventListener("click", (e) => {
         const btn = e.target.closest('[data-bs-toggle="modal"]');
         if (!btn) return;
         const targetSelector = btn.getAttribute('data-bs-target') || btn.getAttribute('href');
         if (!targetSelector || !targetSelector.startsWith('#')) return;
 
-        const modalEl = document.querySelector(targetSelector);
-        if (modalEl && modalEl.parentNode !== document.body) {
-            document.body.appendChild(modalEl);
-        }
+        e.preventDefault();
+        e.stopPropagation();
+        window.openEmperorModal(targetSelector);
     }, true);
 
     window.handleDynamicFetch = handleDynamicFetch;
