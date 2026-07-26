@@ -79,6 +79,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             redirect('reservations.php');
         }
+
+        if ($action === 'notify_guest') {
+            $reservationId = (int) ($_POST['reservation_id'] ?? 0);
+            $emailSubject = trim((string) ($_POST['email_subject'] ?? ''));
+            $noticeMessage = trim((string) ($_POST['notice_message'] ?? ''));
+
+            $targetRes = $reservationModel->find($reservationId);
+            if (!$targetRes) {
+                throw new RuntimeException('Reservation not found.');
+            }
+
+            if ($emailSubject === '' || $noticeMessage === '') {
+                throw new RuntimeException('Email subject and message body are required.');
+            }
+
+            $guestEmail = $targetRes['email'];
+            $guestName = $targetRes['first_name'] . ' ' . $targetRes['last_name'];
+
+            $html = "
+            <div style='background: #020617; color: #f8fafc; font-family: sans-serif; padding: 40px 20px; text-align: center;'>
+                <div style='max-width: 580px; margin: 0 auto; background: #0b1120; border: 1px solid #d4af37; border-radius: 16px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: left;'>
+                    <div style='text-align: center; margin-bottom: 25px;'>
+                        <h1 style='color: #ffdf73; font-family: serif; margin: 0; font-size: 24px; letter-spacing: 2px; text-transform: uppercase;'>THE EMPEROR HOTEL</h1>
+                        <p style='color: #94a3b8; font-size: 12px; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;'>Booking Notice & Concierge Alert</p>
+                    </div>
+                    <div style='border-top: 1px solid rgba(212,175,55,0.3); border-bottom: 1px solid rgba(212,175,55,0.3); padding: 20px 0; margin-bottom: 20px;'>
+                        <p style='color: #cbd5e1; font-size: 15px; margin-bottom: 15px;'>Dear <strong>" . e($guestName) . "</strong>,</p>
+                        <div style='background: rgba(253,215,0,0.08); border: 1px solid rgba(253,215,0,0.3); border-radius: 10px; padding: 18px; font-size: 14px; color: #fffdf0; line-height: 1.6;'>
+                            " . nl2br(e($noticeMessage)) . "
+                        </div>
+                    </div>
+                    <p style='color: #64748b; font-size: 12px; margin: 0; text-align: center;'>Front Desk Concierge Desk | Royal Bay Boulevard, Metro Manila, Philippines</p>
+                </div>
+            </div>
+            ";
+
+            sendSmtpEmail($guestEmail, $emailSubject, $html);
+
+            // Log in contact_messages
+            $contactMsgModel = new ContactMessage($db);
+            $contactMsgModel->create([
+                'user_id' => $targetRes['user_id'] ?? null,
+                'full_name' => $guestName,
+                'email' => $guestEmail,
+                'phone' => $targetRes['phone'] ?? null,
+                'inquiry_type' => 'Front Desk Booking Notice',
+                'subject' => $emailSubject,
+                'message' => "[Admin Email Notice for Booking #{$reservationId}]\n\n" . $noticeMessage,
+            ]);
+
+            setFlash('success', "Email notice dispatched to {$guestName} ({$guestEmail}).");
+            redirect('reservations.php');
+        }
     } catch (Throwable $exception) {
         setFlash('error', $exception->getMessage());
         redirect('reservations.php');
@@ -527,6 +580,61 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
                                 </div>
                             </div>
                         <?php endif; ?>
+
+                        <!-- Direct Email Notification Section -->
+                        <div class="reservation-modal-section border border-warning border-opacity-30 rounded-4 p-3 my-3 bg-dark" style="box-shadow: 0 8px 25px rgba(0,0,0,0.5);">
+                            <div class="d-flex align-items-center gap-2 pb-2 mb-3 border-bottom border-warning border-opacity-25">
+                                <i class="bi bi-envelope-exclamation-fill text-warning fs-5"></i>
+                                <h6 class="text-warning font-serif fw-bold m-0">Send Direct Email Notice to Guest</h6>
+                            </div>
+                            <form method="post" action="reservations.php">
+                                <input type="hidden" name="action" value="notify_guest">
+                                <input type="hidden" name="reservation_id" value="<?php echo e($reservationId); ?>">
+
+                                <div class="row g-2 mb-2">
+                                    <div class="col-12 col-md-7">
+                                        <label class="form-label text-xs text-light">Email Subject</label>
+                                        <input type="text" name="email_subject" class="form-control form-control-sm bg-dark text-light border-secondary text-xs" value="👑 [The Emperor Hotel] Important Booking Notice regarding Reservation #<?php echo e($reservationId); ?>" required>
+                                    </div>
+                                    <div class="col-12 col-md-5">
+                                        <label class="form-label text-xs text-light">Message Category</label>
+                                        <select class="form-select form-select-sm bg-dark text-light border-secondary text-xs" onchange="
+                                            const textarea = document.getElementById('notice_msg_<?php echo e($reservationId); ?>');
+                                            const val = this.value;
+                                            if (val === 'conflict') {
+                                                textarea.value = 'Dear <?php echo e($reservation['first_name']); ?>,\n\nWe are writing to notify you regarding an operational schedule update for your upcoming stay reservation #<?php echo e($reservationId); ?> (Room #<?php echo e($reservation['room_number']); ?>). Please contact our front desk concierge team at your earliest convenience to review your booking preferences.\n\nWarm regards,\nEmperor Hotel Concierge Desk';
+                                            } else if (val === 'payment') {
+                                                textarea.value = 'Dear <?php echo e($reservation['first_name']); ?>,\n\nThis is a friendly notice regarding the balance due for your reservation #<?php echo e($reservationId); ?> (Room #<?php echo e($reservation['room_number']); ?>). Outstanding balance: <?php echo formatMoney($balanceDue); ?>. Kindly settle this balance via your guest dashboard or at front desk check-in.\n\nThank you,\nEmperor Hotel Guest Relations';
+                                            } else if (val === 'transfer') {
+                                                textarea.value = 'Dear <?php echo e($reservation['first_name']); ?>,\n\nWe have updated your suite allocation for reservation #<?php echo e($reservationId); ?> to enhance your luxury stay experience. Please log into your guest dashboard to view your suite details.\n\nWarm regards,\nEmperor Hotel Guest Relations';
+                                            }
+                                        ">
+                                            <option value="conflict">⚠️ Booking Issue / Schedule Adjustment</option>
+                                            <option value="payment">💳 Payment & Balance Reminder</option>
+                                            <option value="transfer">🔄 Room Suite Update / Transfer Notice</option>
+                                            <option value="custom">📝 Custom Instruction</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label text-xs text-light">Message Content</label>
+                                    <textarea name="notice_message" id="notice_msg_<?php echo e($reservationId); ?>" rows="4" class="form-control form-control-sm bg-dark text-light border-warning rounded-3 text-xs" placeholder="Type custom message to guest..." required>Dear <?php echo e($reservation['first_name']); ?>,
+
+We are writing to notify you regarding an operational schedule update for your upcoming stay reservation #<?php echo e($reservationId); ?> (Room #<?php echo e($reservation['room_number']); ?>). Please contact our front desk concierge team at your earliest convenience to review your booking preferences.
+
+Warm regards,
+Emperor Hotel Concierge Desk</textarea>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted text-xs"><i class="bi bi-send-check text-warning me-1"></i>Sends instant SMTP email to <?php echo e($reservation['email']); ?></small>
+                                    <button type="submit" class="btn btn-sm btn-warning font-serif fw-bold px-3 shadow-sm">
+                                        <i class="bi bi-send-fill me-1"></i>Send Email Notice to Guest
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
 
                         <div class="reservation-modal-section reservation-modal-section--danger">
                             <h6>Danger Zone</h6>

@@ -68,6 +68,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('messages.php');
         }
 
+        if ($action === 'send_direct_email') {
+            $recipientEmail = trim((string) ($_POST['recipient_email'] ?? ''));
+            $recipientName = trim((string) ($_POST['recipient_name'] ?? 'Guest'));
+            $emailSubject = trim((string) ($_POST['email_subject'] ?? ''));
+            $emailBody = trim((string) ($_POST['email_body'] ?? ''));
+
+            if ($recipientEmail === '' || $emailSubject === '' || $emailBody === '') {
+                throw new RuntimeException('Recipient email, subject, and message content are required.');
+            }
+
+            $html = "
+            <div style='background: #020617; color: #f8fafc; font-family: sans-serif; padding: 40px 20px; text-align: center;'>
+                <div style='max-width: 580px; margin: 0 auto; background: #0b1120; border: 1px solid #d4af37; border-radius: 16px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: left;'>
+                    <div style='text-align: center; margin-bottom: 25px;'>
+                        <h1 style='color: #ffdf73; font-family: serif; margin: 0; font-size: 24px; letter-spacing: 2px; text-transform: uppercase;'>THE EMPEROR HOTEL</h1>
+                        <p style='color: #94a3b8; font-size: 12px; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;'>Guest Relations & Concierge Notice</p>
+                    </div>
+                    <div style='border-top: 1px solid rgba(212,175,55,0.3); border-bottom: 1px solid rgba(212,175,55,0.3); padding: 25px 0; margin-bottom: 25px;'>
+                        <p style='color: #cbd5e1; font-size: 15px; margin-bottom: 15px;'>Dear <strong>" . e($recipientName) . "</strong>,</p>
+                        <div style='background: rgba(253,215,0,0.08); border: 1px solid rgba(253,215,0,0.3); border-radius: 10px; padding: 18px; margin: 20px 0; font-size: 14px; color: #fffdf0; line-height: 1.6;'>
+                            " . nl2br(e($emailBody)) . "
+                        </div>
+                    </div>
+                    <p style='color: #64748b; font-size: 12px; margin: 0; text-align: center;'>Royal Bay Boulevard, Metro Manila, Philippines | Front Desk Concierge Desk 24/7</p>
+                </div>
+            </div>
+            ";
+
+            sendSmtpEmail($recipientEmail, $emailSubject, $html);
+
+            // Log as outbound notification in contact_messages
+            $contactMessageModel->create([
+                'full_name' => $recipientName,
+                'email' => $recipientEmail,
+                'inquiry_type' => 'Admin Direct Email Notice',
+                'subject' => $emailSubject,
+                'message' => "[Outbound Direct Email Notice]\n\n" . $emailBody,
+            ]);
+
+            setFlash('success', "Direct email notice dispatched to {$recipientName} ({$recipientEmail}).");
+            redirect('messages.php');
+        }
+
         if ($action === 'delete') {
             $messageId = (int) ($_POST['message_id'] ?? 0);
             $contactMessageModel->delete($messageId);
@@ -105,6 +148,9 @@ $filters = [
     'inquiry_type' => $inquiryFilter,
 ];
 
+$userModel = new User($db);
+$registeredUsers = $userModel->all();
+
 $messageData = $contactMessageModel->paginated($filters, $page, $perPage);
 $messages = $messageData['rows'];
 $summary = $contactMessageModel->statusSummary();
@@ -133,7 +179,12 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
                 <p class="eyebrow mb-1">Guest Concierge Inbox</p>
                 <h3 class="mb-0">Customer Inquiries & Messages</h3>
             </div>
-            <span class="badge-soft"><?php echo e($messageData['total']); ?> message(s)</span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge-soft"><?php echo e($messageData['total']); ?> message(s)</span>
+                <button type="button" class="btn btn-sm btn-warning font-serif fw-semibold" data-bs-toggle="modal" data-bs-target="#composeEmailModal">
+                    <i class="bi bi-pencil-square me-1"></i>Compose Direct Email
+                </button>
+            </div>
         </div>
 
         <!-- Filter & Search Bar -->
@@ -300,4 +351,76 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
 
     <?php renderPaginationControl($messageData['total'], $messageData['page'], $messageData['per_page']); ?>
 </section>
+
+<!-- COMPOSE DIRECT EMAIL MODAL -->
+<div class="modal fade" id="composeEmailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark text-light border-gold-glow rounded-4 p-3 shadow-lg" style="background: rgba(15, 23, 42, 0.98) !important; border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+            <div class="modal-header border-secondary">
+                <div>
+                    <p class="eyebrow mb-1 text-warning"><i class="bi bi-envelope-plus-fill me-1"></i>Outbound Concierge Email</p>
+                    <h5 class="modal-title font-serif text-white fw-bold">Compose Direct Email to Guest</h5>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="messages.php">
+                <input type="hidden" name="action" value="send_direct_email">
+                <div class="modal-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-xs text-light fw-bold mb-1">Select Registered Guest (Optional)</label>
+                            <select class="form-select form-select-sm bg-dark text-light border-secondary text-xs" onchange="
+                                const selectedOpt = this.options[this.selectedIndex];
+                                if (selectedOpt.value) {
+                                    document.getElementById('compose_email').value = selectedOpt.dataset.email || '';
+                                    document.getElementById('compose_name').value = selectedOpt.dataset.name || '';
+                                }
+                            ">
+                                <option value="">-- Choose from Registered Accounts --</option>
+                                <?php foreach ($registeredUsers as $u): ?>
+                                    <option value="<?php echo e($u['user_id']); ?>" data-email="<?php echo e($u['email']); ?>" data-name="<?php echo e($u['full_name']); ?>">
+                                        <?php echo e($u['full_name']); ?> (<?php echo e($u['email']); ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-xs text-light fw-bold mb-1">Guest Full Name <span class="text-danger">*</span></label>
+                            <input type="text" name="recipient_name" id="compose_name" class="form-control form-control-sm bg-dark text-light border-secondary text-xs" placeholder="e.g. Jane Smith" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-xs text-light fw-bold mb-1">Recipient Email Address <span class="text-danger">*</span></label>
+                            <input type="email" name="recipient_email" id="compose_email" class="form-control form-control-sm bg-dark text-light border-secondary text-xs" placeholder="guest@example.com" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-xs text-light fw-bold mb-1">Email Subject <span class="text-danger">*</span></label>
+                            <input type="text" name="email_subject" class="form-control form-control-sm bg-dark text-light border-secondary text-xs" value="👑 [The Emperor Hotel] Important Concierge Notice regarding Your Booking" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-xs text-light fw-bold mb-1">Message Content <span class="text-danger">*</span></label>
+                        <textarea name="email_body" rows="5" class="form-control form-control-sm bg-dark text-light border-warning text-xs rounded-3" placeholder="Type custom email message to guest..." required>Dear Guest,
+
+We are writing from The Emperor Hotel Front Desk & Concierge Services regarding your stay reservation.
+
+Please contact our concierge team at your earliest convenience if you require any assistance.
+
+Warm regards,
+Emperor Hotel Guest Relations</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-sm btn-warning rounded-pill px-4 font-serif fw-bold text-dark shadow">
+                        <i class="bi bi-send-fill me-1"></i>Send Direct Email Notice
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <?php renderAdminLayoutEnd(); ?>
