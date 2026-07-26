@@ -617,7 +617,7 @@ window.onHotelMapRoomClick = async function onHotelMapRoomClick(roomId, roomNumb
 window.updateHotelMapAvailability = async function updateHotelMapAvailability(checkIn, checkOut) {
     if (!checkIn || !checkOut) return;
     try {
-        let endpoint = 'map_availability.php';
+        let endpoint = 'site/map_availability.php';
         if (window.location.pathname.includes('/admin/')) {
             endpoint = '../site/map_availability.php';
         } else if (window.location.pathname.includes('/site/')) {
@@ -630,23 +630,39 @@ window.updateHotelMapAvailability = async function updateHotelMapAvailability(ch
         data.rooms.forEach(r => {
             const card = document.querySelector(`.room-map-card[data-room-id="${r.room_id}"]`);
             if (card) {
+                const statusLower = r.status.toLowerCase();
+                const statusClass = `room-map-card--${statusLower}`;
                 card.setAttribute('data-room-status', r.status);
-                card.className = `card h-100 room-map-card room-map-card--${r.status.toLowerCase()} rounded-4 p-2 transition-all shadow`;
+                
+                // Cleanly replace old status class with new status class
+                card.className = card.className
+                    .replace(/\broom-map-card--(available|reserved|occupied|cleaning|maintenance)\b/g, '')
+                    .trim() + ` ${statusClass}`;
+                
                 const badge = card.querySelector('.room-status-badge');
                 if (badge) {
                     badge.textContent = r.status;
                 }
+
+                const roomNum = card.getAttribute('data-room-number') || r.room_number;
+                const roomType = card.getAttribute('data-room-type') || r.room_type || '';
+                const roomPrice = card.getAttribute('data-room-price') || r.price_per_night || '';
+                card.onclick = function() {
+                    if (typeof onHotelMapRoomClick === 'function') {
+                        onHotelMapRoomClick(r.room_id, roomNum, roomType, roomPrice, r.status, 'public');
+                    }
+                };
             }
         });
 
         const activeSub = document.getElementById('mapActiveRangeSubtitle');
         if (activeSub) {
-            activeSub.innerHTML = `<span class="badge bg-gold text-dark px-2 py-1 me-1" style="background: #ffc107; color: #070A10;"><i class="bi bi-calendar-check me-1"></i>${checkIn} to ${checkOut}</span> Showing live room availability for stay dates.`;
+            activeSub.innerHTML = `<span class="badge bg-gold text-dark px-2 py-1 me-1" style="background: #ffc107; color: #070A10;"><i class="bi bi-calendar-check me-1"></i>${checkIn} to ${checkOut}</span> Live availability for stay dates.`;
         }
     } catch (err) {
         console.error("Map availability update failed:", err);
     }
-}
+};
 
 (function autoRelocateHotelMapModals() {
     function relocate() {

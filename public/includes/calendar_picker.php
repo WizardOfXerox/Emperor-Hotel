@@ -95,6 +95,7 @@ function formatLocalDate(d) {
 
 function initCalendarApp() {
     const checkInVal = (document.getElementById('modalCheckInInput') || document.querySelector('input[name="check_in"]'))?.value;
+    const checkOutVal = (document.getElementById('modalCheckOutInput') || document.querySelector('input[name="check_out"]'))?.value;
     if (checkInVal) {
         const d = parseLocalDate(checkInVal);
         if (d && !isNaN(d)) {
@@ -107,16 +108,18 @@ function initCalendarApp() {
 
     document.querySelectorAll('#modalCheckInInput, input[name="check_in"]').forEach(el => {
         el.addEventListener('change', () => {
-            updateStayDurationBadge();
-            renderVisualCalendarGrid();
+            handleAutoCalendarDateUpdate();
         });
     });
     document.querySelectorAll('#modalCheckOutInput, input[name="check_out"]').forEach(el => {
         el.addEventListener('change', () => {
-            updateStayDurationBadge();
-            renderVisualCalendarGrid();
+            handleAutoCalendarDateUpdate();
         });
     });
+
+    if (checkInVal && checkOutVal && typeof updateHotelMapAvailability === 'function') {
+        updateHotelMapAvailability(checkInVal, checkOutVal);
+    }
 }
 
 if (document.readyState === 'loading') {
@@ -222,9 +225,15 @@ function selectCalendarCellDate(dateStr) {
 }
 
 function handleAutoCalendarDateUpdate() {
-    const checkIn = (document.getElementById('modalCheckInInput') || document.querySelector('input[name="check_in"]'))?.value;
-    const checkOut = (document.getElementById('modalCheckOutInput') || document.querySelector('input[name="check_out"]'))?.value;
+    const checkInInputs = document.querySelectorAll('input[name="check_in"], #modalCheckInInput');
+    const checkOutInputs = document.querySelectorAll('input[name="check_out"], #modalCheckOutInput');
+    
+    const checkIn = checkInInputs[0]?.value;
+    const checkOut = checkOutInputs[0]?.value;
     if (!checkIn || !checkOut) return;
+
+    checkInInputs.forEach(i => { if (i.value !== checkIn) i.value = checkIn; });
+    checkOutInputs.forEach(i => { if (i.value !== checkOut) i.value = checkOut; });
 
     updateStayDurationBadge();
 

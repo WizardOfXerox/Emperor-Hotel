@@ -8,6 +8,9 @@ header('Content-Type: application/json');
 
 try {
     $db = Database::connect();
+    $reservationModel = new Reservation($db);
+    $reservationModel->syncAllRoomStatuses();
+
     $checkIn = trim((string) ($_GET['check_in'] ?? ''));
     $checkOut = trim((string) ($_GET['check_out'] ?? ''));
 
@@ -44,6 +47,8 @@ try {
         $response[] = [
             'room_id' => $rId,
             'room_number' => $room['room_number'],
+            'room_type' => $room['room_type'],
+            'price_per_night' => $room['price_per_night'],
             'status' => $status,
         ];
     }
