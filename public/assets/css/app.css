@@ -1644,9 +1644,10 @@ body.light-mode .rooms {
 }
 
 body.light-mode .rooms .content h1 {
-    background: linear-gradient(135deg, #0f172a 30%, #b45309 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #fdd700 !important;
+    color: #fdd700 !important;
 }
 
 body.light-mode .rooms .content h2 {

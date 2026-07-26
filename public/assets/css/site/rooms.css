@@ -266,9 +266,10 @@ body.rooms-showcase-page .rooms-hero__content a:hover {
 
 .rooms .content h1 {
     margin: 0 0 12px 0 !important;
-    background: linear-gradient(135deg, #FFF 30%, #D4AF37 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #fdd700 !important;
+    color: #fdd700 !important;
     font-size: clamp(32px, 4vw, 46px) !important;
     line-height: 1.15 !important;
     font-family: 'DM Serif Display', serif !important;
