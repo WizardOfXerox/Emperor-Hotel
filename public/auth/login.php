@@ -12,6 +12,10 @@ if (isLoggedIn()) {
 
 $userModel = new User(Database::connect());
 
+if (!empty($_GET['redirect'])) {
+    $_SESSION['redirect_after_login'] = trim((string)$_GET['redirect']);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim((string) ($_POST['email'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
@@ -36,7 +40,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     loginUser($user);
     setFlash('success', 'Welcome back, ' . $user['full_name'] . '!');
-    $target = $_SESSION['redirect_after_login'] ?? ($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php');
+
+    $defaultUserTarget = '../user/dashboard.php';
+    if (!empty($_SESSION['selected_check_in']) && !empty($_SESSION['selected_check_out'])) {
+        $params = [
+            'check_in' => $_SESSION['selected_check_in'],
+            'check_out' => $_SESSION['selected_check_out'],
+        ];
+        if (!empty($_SESSION['selected_room_id'])) {
+            $params['selected_room'] = $_SESSION['selected_room_id'];
+        }
+        $defaultUserTarget = '../user/dashboard.php?' . http_build_query($params);
+    }
+
+    $target = $_SESSION['redirect_after_login'] ?? ($user['role'] === 'admin' ? '../admin/dashboard.php' : $defaultUserTarget);
     unset($_SESSION['redirect_after_login']);
     redirect($target);
 }

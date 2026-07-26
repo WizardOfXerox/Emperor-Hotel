@@ -174,10 +174,27 @@ function renderRoomShowcaseSection(): void
         }
         echo '</div>';
 
+        $itemReservationHref = $reservationHref;
+        $checkIn = $_SESSION['selected_check_in'] ?? ($_GET['check_in'] ?? '');
+        $checkOut = $_SESSION['selected_check_out'] ?? ($_GET['check_out'] ?? '');
+        $dateParams = ($checkIn !== '' && $checkOut !== '') ? '&check_in=' . urlencode($checkIn) . '&check_out=' . urlencode($checkOut) : '';
+
+        if (!$user) {
+            $redirectQuery = ['selected_room' => $inspectRoomId];
+            if ($checkIn !== '') $redirectQuery['check_in'] = $checkIn;
+            if ($checkOut !== '') $redirectQuery['check_out'] = $checkOut;
+            $itemReservationHref = '../auth/login.php?redirect=' . urlencode('../user/dashboard.php?' . http_build_query($redirectQuery));
+        } elseif ($user && $user['role'] !== 'admin') {
+            $userQuery = ['selected_room' => $inspectRoomId];
+            if ($checkIn !== '') $userQuery['check_in'] = $checkIn;
+            if ($checkOut !== '') $userQuery['check_out'] = $checkOut;
+            $itemReservationHref = '../user/dashboard.php?' . http_build_query($userQuery);
+        }
+
         // 5. Action Buttons (Positioned at the very bottom of feature cards!)
         echo '<div class="room-actions d-flex flex-wrap gap-2 align-items-center justify-content-center mt-3 mb-1">';
-        echo '<a class="btn room-price room-price--booking rounded-pill px-4 py-2 fw-bold font-serif" href="' . e($reservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
-        echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=' . $inspectRoomId . '"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
+        echo '<a class="btn room-price room-price--booking rounded-pill px-4 py-2 fw-bold font-serif" href="' . e($itemReservationHref) . '" aria-label="' . e($reservationLabel . ' - ' . $roomType . ' from ' . $priceText) . '">' . e($priceText) . '</a>';
+        echo '<a class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold font-serif" href="room-detail.php?id=' . $inspectRoomId . $dateParams . '"><i class="bi bi-eye-fill me-1"></i>Inspect Suite Details & Reviews</a>';
         echo '</div>';
 
         echo '</section>';

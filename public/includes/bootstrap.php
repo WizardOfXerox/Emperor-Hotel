@@ -79,3 +79,17 @@ function isFeatureMapEnabled(): bool
     $clean = strtolower(trim((string) $val));
     return !in_array($clean, ['false', '0', 'off', 'no', 'disabled'], true);
 }
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!empty($_GET['check_in']) && !empty($_GET['check_out'])) {
+    $_SESSION['selected_check_in'] = trim((string)$_GET['check_in']);
+    $_SESSION['selected_check_out'] = trim((string)$_GET['check_out']);
+}
+if (!empty($_GET['selected_room'])) {
+    $_SESSION['selected_room_id'] = (int)$_GET['selected_room'];
+} else if (!empty($_GET['id']) && str_contains($_SERVER['SCRIPT_NAME'] ?? '', 'room-detail.php')) {
+    $_SESSION['selected_room_id'] = (int)$_GET['id'];
+}

@@ -164,9 +164,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $rooms = $roomModel->all();
-$selectedRoomId = isset($_GET['selected_room']) ? (int) $_GET['selected_room'] : (isset($_GET['room_id']) ? (int) $_GET['room_id'] : null);
-$checkIn = trim((string) ($_GET['check_in'] ?? ''));
-$checkOut = trim((string) ($_GET['check_out'] ?? ''));
+$selectedRoomId = isset($_GET['selected_room']) ? (int) $_GET['selected_room'] : (isset($_GET['room_id']) ? (int) $_GET['room_id'] : ($_SESSION['selected_room_id'] ?? null));
+$checkIn = trim((string) ($_GET['check_in'] ?? ($_SESSION['selected_check_in'] ?? '')));
+$checkOut = trim((string) ($_GET['check_out'] ?? ($_SESSION['selected_check_out'] ?? '')));
 
 if ($checkIn === '') $checkIn = (new DateTimeImmutable('today'))->format('Y-m-d');
 if ($checkOut === '') $checkOut = (new DateTimeImmutable('today'))->modify('+1 day')->format('Y-m-d');

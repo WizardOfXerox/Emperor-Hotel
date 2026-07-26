@@ -182,7 +182,7 @@ renderHeader('Rooms Directory | Emperor Hotel', ['../assets/css/site/home.css'],
                     $rmType = $rm['room_type'];
                     $rmInfo = $catalog[$rmType] ?? null;
                     $heroImg = $rmInfo['hero'] ?? '../assets/images/rooms/imperial-deluxe/hero.jpg';
-                    $maxCap = (int)($rm['capacity'] ?? ($rmInfo['max_capacity'] ?? 2));
+                    $maxCap = (int)($rm['max_capacity'] ?? ($rm['capacity'] ?? ($rmInfo['max_capacity'] ?? 2)));
                     $isAvail = $reservationModel->roomIsAvailable((int)$rm['room_id'], $checkIn, $checkOut);
                     $perks = $rmInfo['included_perks'] ?? ['Complimentary breakfast', 'Priority Wi-Fi'];
                     
