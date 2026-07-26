@@ -233,7 +233,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
             <span class="badge-soft"><?php echo e($filterActiveCount); ?> active filter(s)</span>
             <a class="btn btn-outline-light btn-sm" href="rooms.php">Clear Filters</a>
             <a class="btn btn-outline-warning btn-sm fw-semibold" href="rooms.php?export=xml">Export XML</a>
-            <button class="btn btn-warning btn-sm fw-semibold" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+            <button class="btn btn-warning btn-sm fw-semibold" type="button" onclick="openCreateRoomModal()">
                 <i class="bi bi-plus-circle me-1"></i>New Room
             </button>
         </div>
@@ -819,6 +819,22 @@ window.onSimpleSuiteSelectChange = function onSimpleSuiteSelectChange(selectEl) 
         } else {
             priceInput.placeholder = 'e.g. 4500.00';
         }
+    }
+};
+
+window.openCreateRoomModal = function() {
+    const modalEl = document.getElementById('createRoomModal');
+    if (!modalEl) return;
+    if (modalEl.parentNode !== document.body) {
+        document.body.appendChild(modalEl);
+    }
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        try {
+            const existing = bootstrap.Modal.getInstance(modalEl);
+            if (existing) existing.dispose();
+        } catch (e) {}
+        const modal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+        modal.show();
     }
 };
 

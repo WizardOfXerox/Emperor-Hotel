@@ -472,6 +472,29 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    // Global Modal Safety Handler: ensures modals reside on document.body and have valid Bootstrap instances
+    document.addEventListener("click", (e) => {
+        const btn = e.target.closest('[data-bs-toggle="modal"]');
+        if (!btn) return;
+        const targetSelector = btn.getAttribute('data-bs-target') || btn.getAttribute('href');
+        if (!targetSelector || !targetSelector.startsWith('#')) return;
+
+        const modalEl = document.querySelector(targetSelector);
+        if (modalEl) {
+            if (modalEl.parentNode !== document.body) {
+                document.body.appendChild(modalEl);
+            }
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                try {
+                    const existing = bootstrap.Modal.getInstance(modalEl);
+                    if (existing) {
+                        existing.dispose();
+                    }
+                } catch (err) {}
+            }
+        }
+    }, true);
+
     window.handleDynamicFetch = handleDynamicFetch;
 
     // Global Toast Notification Helper
