@@ -316,40 +316,51 @@ class SupportAssistant
         $revenueThisMonth = $this->paymentModel->revenueThisMonth();
         $monthlyPerformance = $this->reservationModel->monthlyPerformance();
 
-        $lines = [
-            'Admin overview:',
-            sprintf('- Customers this month: %d', (int) $dashboardSummary['customers_this_month']),
-            sprintf('- Pending reservations: %d', (int) $dashboardSummary['pending_reservations']),
-            sprintf('- Upcoming check-outs: %d', (int) $dashboardSummary['upcoming_checkouts']),
-            sprintf('- Available rooms: %d', (int) $roomSummary['available']),
-            sprintf('- Rooms not available: %d', (int) $roomSummary['not_available']),
-            sprintf('- Confirmed revenue this month: %s', formatMoney($revenueThisMonth)),
-            '',
-            'Monthly sales graph data:',
+        $custCount = (int) $dashboardSummary['customers_this_month'];
+        $pendingCount = (int) $dashboardSummary['pending_reservations'];
+        $checkoutCount = (int) $dashboardSummary['upcoming_checkouts'];
+        $availCount = (int) $roomSummary['available'];
+        $unavailCount = (int) $roomSummary['not_available'];
+        $formattedRev = formatMoney($revenueThisMonth);
+
+        $html = "
+        <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 10px; padding: 10px 12px;'>
+            <div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;'>
+                <span>📊 Executive Admin Overview</span>
+                <span style='font-size:11px; background:rgba(212,175,55,0.15); color:#ffdf73; padding:2px 8px; border-radius:99px; border:1px solid rgba(212,175,55,0.3);'>Live Sync</span>
+            </div>
+
+            <!-- KPI Tiles Grid -->
+            <div style='display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;'>
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px 8px; border-radius:6px;'>
+                    <span style='color:#94a3b8; font-size:10px; display:block;'>Monthly Revenue</span>
+                    <strong style='color:#4ade80; font-size:13px;'>{$formattedRev}</strong>
+                </div>
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px 8px; border-radius:6px;'>
+                    <span style='color:#94a3b8; font-size:10px; display:block;'>Active Guests</span>
+                    <strong style='color:#ffdf73; font-size:13px;'>{$custCount} Guests</strong>
+                </div>
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px 8px; border-radius:6px;'>
+                    <span style='color:#94a3b8; font-size:10px; display:block;'>Pending Action</span>
+                    <strong style='color:#fbbf24; font-size:13px;'>{$pendingCount} Pending</strong>
+                </div>
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px 8px; border-radius:6px;'>
+                    <span style='color:#94a3b8; font-size:10px; display:block;'>Room Vacancy</span>
+                    <strong style='color:#38bdf8; font-size:13px;'>{$availCount} Avail / {$unavailCount} Booked</strong>
+                </div>
+            </div>";
+
+        // Append Monthly Revenue Visual Graph
+        $html .= $this->buildVisualSalesBarChart($monthlyPerformance);
+
+        $html .= "<a href='../admin/dashboard.php' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:5px 10px; border-radius:6px; text-decoration:none; margin-top:8px; font-size:11px;'>Open Executive Dashboard &rarr;</a>";
+        $html .= "</div>";
+
+        return [
+            'text' => $html,
+            'kind' => 'admin-overview',
+            'quick_chips' => ['📈 Monthly Sales', '📊 Executive Forecast', '🧹 Dirty Rooms', '🚨 Pending Risks'],
         ];
-
-        foreach ($monthlyPerformance as $row) {
-            $lines[] = sprintf(
-                '- %s | bookings: %d | income: %s',
-                $row['month_label'],
-                (int) $row['rooms_booked'],
-                formatMoney((float) $row['income'])
-            );
-        }
-
-        if ($range) {
-            $report = $this->paymentModel->revenueReport($range['start'], $range['end']);
-            $trend = $this->reservationModel->reservationTrendReport($range['start'], $range['end']);
-            $occupancy = $this->reservationModel->occupancyReport($range['start'], $range['end']);
-
-            $lines[] = '';
-            $lines[] = sprintf('Report range %s to %s:', $range['start'], $range['end']);
-            $lines[] = sprintf('- Confirmed revenue: %s', formatMoney((float) $report['total_revenue']));
-            $lines[] = sprintf('- Reservations created: %d', (int) $trend['total_reservations']);
-            $lines[] = sprintf('- Occupancy rate: %s', number_format((float) $occupancy['occupancy_rate'], 1) . '%');
-        }
-
-        return $this->reply($lines, 'admin-overview');
     }
 
     private function adminStatisticsReply(string $text, array $range): array
@@ -362,76 +373,62 @@ class SupportAssistant
         $trendReport = $this->reservationModel->reservationTrendReport($range['start'], $range['end']);
         $occupancyReport = $this->reservationModel->occupancyReport($range['start'], $range['end']);
 
-        $topRoomType = null;
-        $topRevenue = 0.0;
+        $totalRevenue = formatMoney((float) $revenueReport['total_revenue']);
+        $totalRes = (int) $trendReport['total_reservations'];
+        $occPct = number_format((float) $occupancyReport['occupancy_rate'], 1);
 
-        foreach ($revenueReport['by_room_type'] as $row) {
-            $revenue = (float) $row['confirmed_revenue'];
-            if ($revenue > $topRevenue) {
-                $topRevenue = $revenue;
-                $topRoomType = (string) $row['room_type'];
-            }
+        $html = "
+        <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 10px; padding: 10px 12px;'>
+            <div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:14px; margin-bottom:8px;'>📈 Analytical Performance Statistics</div>
+
+            <!-- Occupancy Visual Gauge Bar -->
+            <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:8px; border-radius:8px; margin-bottom:8px;'>
+                <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:11px;'>
+                    <span style='color:#cbd5e1; font-weight:600;'>Occupancy Rate ({$range['start']} to {$range['end']})</span>
+                    <strong style='color:#ffdf73; font-size:13px;'>{$occPct}%</strong>
+                </div>
+                <div style='width:100%; height:8px; background:rgba(255,255,255,0.08); border-radius:99px; overflow:hidden;'>
+                    <div style='width:{$occPct}%; height:100%; background:linear-gradient(90deg, #38bdf8, #4ade80, #ffdf73); border-radius:99px;'></div>
+                </div>
+                <div style='display:flex; justify-content:space-between; font-size:10px; color:#94a3b8; margin-top:4px;'>
+                    <span>Revenue: <strong style='color:#4ade80;'>{$totalRevenue}</strong></span>
+                    <span>Bookings: <strong style='color:#ffdf73;'>{$totalRes}</strong></span>
+                </div>
+            </div>";
+
+        // Room Type Inventory Visual Breakdown
+        $html .= "<div style='margin-bottom:8px;'>";
+        $html .= "<div style='color:#cbd5e1; font-weight:bold; font-size:11px; margin-bottom:4px;'>Room Inventory Availability:</div>";
+        foreach ($typeSummary as $rType => $s) {
+            $t = (int) $s['total'];
+            $a = (int) $s['available'];
+            $booked = max(0, $t - $a);
+            $pct = $t > 0 ? (int) round(($booked / $t) * 100) : 0;
+            $priceStr = formatMoney((float) $s['lowest_price']);
+
+            $html .= "<div style='background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:5px 8px; border-radius:6px; margin-bottom:4px;'>";
+            $html .= "<div style='display:flex; justify-content:space-between; font-size:10px; margin-bottom:2px;'>";
+            $html .= "<span style='color:#f8fafc; font-weight:600;'>{$rType} <small style='color:#94a3b8;'>({$priceStr}/nt)</small></span>";
+            $html .= "<span style='color:#cbd5e1;'><strong>{$a}</strong> free / {$t} total ({$pct}% occ)</span>";
+            $html .= "</div>";
+            $html .= "<div style='width:100%; height:5px; background:rgba(255,255,255,0.08); border-radius:99px; overflow:hidden;'>";
+            $html .= "<div style='width:{$pct}%; height:100%; background:linear-gradient(90deg, #4ade80, #ffdf73); border-radius:99px;'></div>";
+            $html .= "</div>";
+            $html .= "</div>";
         }
+        $html .= "</div>";
 
-        $lines = [
-            'Admin statistics:',
-            sprintf('- Customers this month: %d', (int) $dashboardSummary['customers_this_month']),
-            sprintf('- Pending reservations: %d', (int) $dashboardSummary['pending_reservations']),
-            sprintf('- Available rooms: %d', (int) $roomSummary['available']),
-            sprintf('- Rooms not available: %d', (int) $roomSummary['not_available']),
-            sprintf('- Confirmed revenue for range: %s', formatMoney((float) $revenueReport['total_revenue'])),
-            sprintf('- Reservations created for range: %d', (int) $trendReport['total_reservations']),
-            sprintf('- Occupancy rate for range: %s', number_format((float) $occupancyReport['occupancy_rate'], 1) . '%'),
+        // Append Visual Bar Graph for Monthly Trend
+        $html .= $this->buildVisualSalesBarChart($monthlyPerformance);
+
+        $html .= "<a href='../admin/reports.php' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:5px 10px; border-radius:6px; text-decoration:none; margin-top:8px; font-size:11px;'>Detailed Analytics & Reports &rarr;</a>";
+        $html .= "</div>";
+
+        return [
+            'text' => $html,
+            'kind' => 'admin-statistics',
+            'quick_chips' => ['📈 Monthly Sales', '📊 Executive Forecast', '🏆 Room Rankings', '🧹 Dirty Rooms'],
         ];
-
-        if ($topRoomType !== null) {
-            $lines[] = sprintf('- Top room type by revenue: %s (%s)', $topRoomType, formatMoney($topRevenue));
-        }
-
-        $lines[] = '';
-        $lines[] = 'Room inventory by type:';
-        $lines[] = '| Type | Total rooms | Available | Lowest price |';
-        $lines[] = '| --- | --- | --- | --- |';
-
-        foreach ($typeSummary as $roomType => $summary) {
-            $lines[] = sprintf(
-                '| %s | %d | %d | %s |',
-                $roomType,
-                (int) $summary['total'],
-                (int) $summary['available'],
-                formatMoney((float) $summary['lowest_price']) . ' / night'
-            );
-        }
-
-        $lines[] = '';
-        $lines[] = 'Monthly performance snapshot:';
-        foreach ($monthlyPerformance as $row) {
-            $lines[] = sprintf(
-                '- %s | bookings: %d | income: %s',
-                $row['month_label'],
-                (int) $row['rooms_booked'],
-                formatMoney((float) $row['income'])
-            );
-        }
-
-        if ($this->matchesAny($text, ['today', 'today statistics', 'daily statistics', 'today revenue'])) {
-            $today = new DateTimeImmutable('today');
-            $todayRange = [
-                'start' => $today->format('Y-m-d'),
-                'end' => $today->format('Y-m-d'),
-            ];
-            $todayRevenue = $this->paymentModel->revenueReport($todayRange['start'], $todayRange['end']);
-            $todayTrend = $this->reservationModel->reservationTrendReport($todayRange['start'], $todayRange['end']);
-            $todayOccupancy = $this->reservationModel->occupancyReport($todayRange['start'], $todayRange['end']);
-
-            $lines[] = '';
-            $lines[] = 'Today statistics:';
-            $lines[] = sprintf('- Revenue today: %s', formatMoney((float) $todayRevenue['total_revenue']));
-            $lines[] = sprintf('- Reservations today: %d', (int) $todayTrend['total_reservations']);
-            $lines[] = sprintf('- Occupancy today: %s', number_format((float) $todayOccupancy['occupancy_rate'], 1) . '%');
-        }
-
-        return $this->reply($lines, 'admin-statistics');
     }
 
     private function adminSalesReply(array $range): array
@@ -443,26 +440,49 @@ class SupportAssistant
         $report = $this->paymentModel->revenueReport($range['start'], $range['end']);
         $trend = $this->reservationModel->reservationTrendReport($range['start'], $range['end']);
         $occupancy = $this->reservationModel->occupancyReport($range['start'], $range['end']);
+        $monthlyPerformance = $this->reservationModel->monthlyPerformance();
 
-        $lines = [
-            sprintf('Sales report for %s to %s:', $range['start'], $range['end']),
-            sprintf('- Confirmed revenue: %s', formatMoney((float) $report['total_revenue'])),
-            sprintf('- Reservations created: %d', (int) $trend['total_reservations']),
-            sprintf('- Occupancy rate: %s', number_format((float) $occupancy['occupancy_rate'], 1) . '%'),
-            '',
-            'Revenue by room type:',
+        $totRev = formatMoney((float) $report['total_revenue']);
+        $totRes = (int) $trend['total_reservations'];
+        $occPct = number_format((float) $occupancy['occupancy_rate'], 1);
+
+        $html = "
+        <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 10px; padding: 10px 12px;'>
+            <div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:14px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;'>
+                <span>💰 Sales & Revenue Report</span>
+                <span style='font-size:10px; color:#94a3b8;'>{$range['start']} to {$range['end']}</span>
+            </div>
+
+            <!-- Summary Badges -->
+            <div style='display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:8px; text-align:center;'>
+                <div style='background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); padding:5px; border-radius:6px;'>
+                    <span style='color:#94a3b8; font-size:9px; display:block;'>Total Revenue</span>
+                    <strong style='color:#4ade80; font-size:12px;'>{$totRev}</strong>
+                </div>
+                <div style='background:rgba(255,223,115,0.1); border:1px solid rgba(255,223,115,0.3); padding:5px; border-radius:6px;'>
+                    <span style='color:#94a3b8; font-size:9px; display:block;'>Reservations</span>
+                    <strong style='color:#ffdf73; font-size:12px;'>{$totRes} Bookings</strong>
+                </div>
+                <div style='background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); padding:5px; border-radius:6px;'>
+                    <span style='color:#94a3b8; font-size:9px; display:block;'>Occupancy</span>
+                    <strong style='color:#38bdf8; font-size:12px;'>{$occPct}%</strong>
+                </div>
+            </div>";
+
+        // Visual Revenue Bars per Room Type
+        $html .= $this->buildRoomTypeDistributionBars($report['by_room_type']);
+
+        // Visual Monthly Sales Bar Graph
+        $html .= $this->buildVisualSalesBarChart($monthlyPerformance);
+
+        $html .= "<a href='../admin/reports.php' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:5px 10px; border-radius:6px; text-decoration:none; margin-top:8px; font-size:11px;'>Full Sales Reports &rarr;</a>";
+        $html .= "</div>";
+
+        return [
+            'text' => $html,
+            'kind' => 'admin-sales',
+            'quick_chips' => ['📊 Executive Forecast', '🏆 Room Rankings', '🧹 Dirty Rooms', '🚨 Pending Risks'],
         ];
-
-        foreach ($report['by_room_type'] as $row) {
-            $lines[] = sprintf(
-                '- %s | payments: %d | revenue: %s',
-                $row['room_type'],
-                (int) $row['payment_count'],
-                formatMoney((float) $row['confirmed_revenue'])
-            );
-        }
-
-        return $this->reply($lines, 'admin-sales');
     }
 
     private function adminOperationsReply(array $range): array
@@ -472,31 +492,128 @@ class SupportAssistant
         $occupancy = $this->reservationModel->occupancyReport($reportRange['start'], $reportRange['end']);
         $trend = $this->reservationModel->reservationTrendReport($reportRange['start'], $reportRange['end']);
 
-        $lines = [
-            'Admin operations:',
-            sprintf('- Overdue check-outs: %d', count($alerts['overdue_checkouts'])),
-            sprintf('- Overbooking conflicts: %d', count($alerts['overbooking_conflicts'])),
-            sprintf('- Reservations in range: %d', (int) $trend['total_reservations']),
-            sprintf('- Occupancy rate in range: %s', number_format((float) $occupancy['occupancy_rate'], 1) . '%'),
-            '',
-            'Recent alerts:',
+        $overdueCount = count($alerts['overdue_checkouts']);
+        $conflictCount = count($alerts['overbooking_conflicts']);
+        $totalRes = (int) $trend['total_reservations'];
+        $occPct = number_format((float) $occupancy['occupancy_rate'], 1);
+
+        $html = "
+        <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 10px; padding: 10px 12px;'>
+            <div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;'>
+                <span>⚙️ Front Desk Operations Watch</span>
+                <span style='font-size:10px; color:#94a3b8;'>Realtime Alerts</span>
+            </div>
+
+            <!-- Risk Badges Grid -->
+            <div style='display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;'>
+                <div style='background: " . ($overdueCount > 0 ? "rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4);" : "rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3);") . " padding:6px 8px; border-radius:6px;'>
+                    <span style='color:#94a3b8; font-size:10px; display:block;'>Overdue Check-Outs</span>
+                    <strong style='color:" . ($overdueCount > 0 ? "#f87171" : "#4ade80") . "; font-size:13px;'>{$overdueCount} Overdue</strong>
+                </div>
+                <div style='background: " . ($conflictCount > 0 ? "rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4);" : "rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3);") . " padding:6px 8px; border-radius:6px;'>
+                    <span style='color:#94a3b8; font-size:10px; display:block;'>Booking Conflicts</span>
+                    <strong style='color:" . ($conflictCount > 0 ? "#f87171" : "#4ade80") . "; font-size:13px;'>{$conflictCount} Conflicts</strong>
+                </div>
+            </div>";
+
+        if ($alerts['overdue_checkouts']) {
+            $html .= "<div style='font-size:11px; font-weight:bold; color:#f87171; margin-bottom:4px;'>⚠️ Overdue Guests List:</div>";
+            $html .= "<div style='display:flex; flex-direction:column; gap:4px; margin-bottom:8px;'>";
+            foreach ($alerts['overdue_checkouts'] as $row) {
+                $num = htmlspecialchars((string) $row['room_number']);
+                $gName = htmlspecialchars((string) ($row['first_name'] . ' ' . $row['last_name']));
+                $outDate = htmlspecialchars((string) $row['check_out']);
+
+                $html .= "<div style='background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); padding:4px 8px; border-radius:6px; display:flex; justify-content:space-between; font-size:11px;'>";
+                $html .= "<span style='color:#f8fafc;'><strong>Room #{$num}</strong> &bull; {$gName}</span>";
+                $html .= "<span style='color:#f87171; font-weight:bold;'>Due {$outDate}</span>";
+                $html .= "</div>";
+            }
+            $html .= "</div>";
+        } else {
+            $html .= "<div style='background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); padding:6px; border-radius:6px; font-size:11px; color:#4ade80; text-align:center; margin-bottom:8px;'>";
+            $html .= "✓ No overdue check-outs. All guest departures on schedule.";
+            $html .= "</div>";
+        }
+
+        $html .= "<a href='../admin/reservations.php' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:5px 10px; border-radius:6px; text-decoration:none; margin-top:6px; font-size:11px;'>Manage Front Desk Reservations &rarr;</a>";
+        $html .= "</div>";
+
+        return [
+            'text' => $html,
+            'kind' => 'admin-operations',
+            'quick_chips' => ['📈 Monthly Sales', '📊 Executive Forecast', '🧹 Dirty Rooms', '🏆 Room Rankings'],
         ];
+    }
 
-        foreach ($alerts['overdue_checkouts'] as $row) {
-            $lines[] = sprintf(
-                '- Overdue room %s | %s %s | due %s',
-                $row['room_number'],
-                $row['first_name'],
-                $row['last_name'],
-                $row['check_out']
-            );
+    private function buildVisualSalesBarChart(array $monthlyPerformance): string
+    {
+        $maxIncome = 1.0;
+        foreach ($monthlyPerformance as $row) {
+            $inc = (float) ($row['income'] ?? 0);
+            if ($inc > $maxIncome) {
+                $maxIncome = $inc;
+            }
         }
 
-        if (!$alerts['overdue_checkouts']) {
-            $lines[] = '- No overdue check-outs right now.';
+        $html = "<div style='background:rgba(2,6,23,0.85); border:1px solid rgba(212,175,55,0.3); border-radius:8px; padding:8px 10px; margin-top:6px; margin-bottom:6px;'>";
+        $html .= "<div style='color:#ffdf73; font-weight:bold; font-size:11px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;'>";
+        $html .= "<span>📈 Monthly Revenue Trend</span>";
+        $html .= "<span style='color:#94a3b8; font-weight:normal; font-size:10px;'>6-Month Chart</span>";
+        $html .= "</div>";
+
+        $html .= "<div style='display:flex; align-items:flex-end; gap:6px; height:85px; padding-top:8px; border-bottom:1px solid rgba(255,255,255,0.1);'>";
+        foreach ($monthlyPerformance as $row) {
+            $inc = (float) ($row['income'] ?? 0);
+            $heightPct = max(8, min(100, (int) round(($inc / $maxIncome) * 100)));
+            $shortMonth = htmlspecialchars(substr((string) $row['month_label'], 0, 3));
+            $formattedInc = '₱' . number_format($inc / 1000, 0) . 'k';
+
+            $html .= "<div style='flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; height:100%; justify-content:flex-end;'>";
+            $html .= "<span style='font-size:9px; color:#ffdf73; font-weight:bold;'>{$formattedInc}</span>";
+            $html .= "<div style='width:100%; max-width:22px; height:{$heightPct}%; background:linear-gradient(180deg, #FFDF73 0%, #D4AF37 60%, #996515 100%); border-radius:4px 4px 0 0;'></div>";
+            $html .= "<span style='font-size:9px; color:#94a3b8; text-transform:uppercase;'>{$shortMonth}</span>";
+            $html .= "</div>";
+        }
+        $html .= "</div>";
+        $html .= "</div>";
+
+        return $html;
+    }
+
+    private function buildRoomTypeDistributionBars(array $byRoomType): string
+    {
+        $maxRev = 1.0;
+        foreach ($byRoomType as $row) {
+            $rev = (float) ($row['confirmed_revenue'] ?? 0);
+            if ($rev > $maxRev) {
+                $maxRev = $rev;
+            }
         }
 
-        return $this->reply($lines, 'admin-operations');
+        $html = "<div style='margin-top:6px; margin-bottom:6px; display:flex; flex-direction:column; gap:4px;'>";
+        $html .= "<div style='color:#cbd5e1; font-weight:bold; font-size:11px;'>Revenue Share by Suite Category:</div>";
+
+        foreach ($byRoomType as $row) {
+            $type = htmlspecialchars((string) $row['room_type']);
+            $rev = (float) ($row['confirmed_revenue'] ?? 0);
+            $cnt = (int) ($row['payment_count'] ?? 0);
+            $pct = max(5, min(100, (int) round(($rev / $maxRev) * 100)));
+            $formattedRev = formatMoney($rev);
+
+            $html .= "<div style='background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:5px 8px; border-radius:6px;'>";
+            $html .= "<div style='display:flex; justify-content:space-between; font-size:10px; margin-bottom:2px;'>";
+            $html .= "<span style='color:#f8fafc; font-weight:600;'>{$type} <small style='color:#94a3b8;'>({$cnt} stays)</small></span>";
+            $html .= "<strong style='color:#4ade80;'>{$formattedRev}</strong>";
+            $html .= "</div>";
+            $html .= "<div style='width:100%; height:5px; background:rgba(255,255,255,0.08); border-radius:99px; overflow:hidden;'>";
+            $html .= "<div style='width:{$pct}%; height:100%; background:linear-gradient(90deg, #D4AF37, #FFDF73); border-radius:99px;'></div>";
+            $html .= "</div>";
+            $html .= "</div>";
+        }
+        $html .= "</div>";
+
+        return $html;
     }
 
     private function reply(array $lines, string $kind): array
