@@ -200,12 +200,12 @@ foreach ($reservations as $reservation) {
 
 renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/dashboard.css?v=20260527-layout']);
 ?>
-<section class="card rounded-4 p-4 shadow-lg border mb-5" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+<section class="card rounded-4 p-4 shadow-lg border mb-5 dashboard-main-card">
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mb-4 pb-3 border-bottom border-secondary">
         <div>
             <h6 class="text-uppercase tracking-wider text-warning font-serif fw-bold m-0 mb-1"><i class="bi bi-bookmark-check-fill me-2"></i>Express Suite Reservation</h6>
-            <h2 class="h3 font-serif fw-bold text-white mb-1">Confirm Your Reservation Details</h2>
-            <p class="text-light opacity-75 text-xs m-0">Review your selected stay dates, guest information, and payment route below.</p>
+            <h2 class="h3 font-serif fw-bold dashboard-title mb-1">Confirm Your Reservation Details</h2>
+            <p class="dashboard-subtitle text-xs m-0">Review your selected stay dates, guest information, and payment route below.</p>
         </div>
         <span class="badge rounded-pill px-3 py-2 text-xs fw-bold" style="background: rgba(212, 175, 55, 0.2); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.4);">
             <i class="bi bi-shield-lock-fill me-1"></i>Secure Booking Checkout
@@ -219,7 +219,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
         <div class="row g-4">
             <!-- Left Column: Guest Details & Payment Route -->
             <div class="col-12 col-lg-7 col-xl-7">
-                <div class="p-3 rounded-4 border mb-4" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+                <div class="p-3 rounded-4 border mb-4 dashboard-inner-box">
                     <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
                         <h5 class="font-serif fw-bold text-warning m-0 text-sm"><i class="bi bi-person-bounding-box me-2"></i>Guest Account Details</h5>
                         <span class="badge rounded-pill text-xs fw-semibold" style="background: rgba(212, 175, 55, 0.2); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.3);">
@@ -228,16 +228,16 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label text-xs text-light opacity-75 fw-bold mb-1" for="full_name">Full Name</label>
-                        <input class="form-control form-control-sm bg-dark text-white border-secondary rounded-3 text-xs fw-bold" id="full_name" name="full_name" type="text" value="<?= e($userFullName) ?>" required>
+                        <label class="form-label text-xs dashboard-label fw-bold mb-1" for="full_name">Full Name</label>
+                        <input class="form-control form-control-sm dashboard-input rounded-3 text-xs fw-bold" id="full_name" name="full_name" type="text" value="<?= e($userFullName) ?>" required>
                     </div>
 
                     <!-- Embedded In-Place Interactive Calendar Picker -->
-                    <div class="p-3 rounded-3 border mb-3" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+                    <div class="p-3 rounded-3 border mb-3 dashboard-sub-box">
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div>
                                 <span class="text-xs text-uppercase tracking-wider text-warning font-serif fw-bold d-block"><i class="bi bi-calendar-range-fill me-1"></i>Selected Stay Dates</span>
-                                <span class="fs-6 font-serif fw-bold text-white me-2">
+                                <span class="fs-6 font-serif fw-bold dashboard-title me-2">
                                     <?= date('M d, Y', strtotime($checkIn)) ?> &ndash; <?= date('M d, Y', strtotime($checkOut)) ?>
                                 </span>
                             </div>
@@ -249,32 +249,32 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                         <!-- Date Inputs Row -->
                         <div class="row g-2 mb-3 align-items-end">
                             <div class="col-12 col-sm-6">
-                                <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
-                                <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= (new DateTimeImmutable('today'))->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);" onchange="handleAutoCalendarDateUpdate()">
+                                <label class="form-label text-xs text-uppercase tracking-wider dashboard-label fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-warning me-1"></i>Check-In</label>
+                                <input type="date" name="check_in" id="modalCheckInInput" class="form-control form-control-sm dashboard-input fw-bold py-2" value="<?= e($checkIn) ?>" min="<?= (new DateTimeImmutable('today'))->format('Y-m-d') ?>" onchange="handleAutoCalendarDateUpdate()">
                             </div>
                             <div class="col-12 col-sm-6">
-                                <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-90 fw-bold mb-1"><i class="bi bi-box-arrow-right text-warning me-1"></i>Check-Out</label>
-                                <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm border-warning text-light fw-bold py-2" value="<?= e($checkOut) ?>" min="<?= (new DateTimeImmutable('today'))->modify('+1 day')->format('Y-m-d') ?>" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(212, 175, 55, 0.5);" onchange="handleAutoCalendarDateUpdate()">
+                                <label class="form-label text-xs text-uppercase tracking-wider dashboard-label fw-bold mb-1"><i class="bi bi-box-arrow-right text-warning me-1"></i>Check-Out</label>
+                                <input type="date" name="check_out" id="modalCheckOutInput" class="form-control form-control-sm dashboard-input fw-bold py-2" value="<?= e($checkOut) ?>" min="<?= (new DateTimeImmutable('today'))->modify('+1 day')->format('Y-m-d') ?>" onchange="handleAutoCalendarDateUpdate()">
                             </div>
                         </div>
 
                         <!-- Visible 7-Column Interactive Calendar Grid -->
-                        <div id="calendarVisualGrid" class="p-3 rounded-4 border shadow-inner" style="width: 100%; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+                        <div id="calendarVisualGrid" class="p-3 rounded-4 border shadow-inner" style="width: 100%;">
                             <div class="d-flex align-items-center justify-content-between mb-3">
                                 <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(-1)" style="width: 32px; height: 32px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-left"></i></button>
-                                <h6 class="m-0 font-serif fw-bold text-center" id="calendarMonthTitle" style="color: #FFDF73; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">July 2026</h6>
+                                <h6 class="m-0 font-serif fw-bold text-center calendar-month-title" id="calendarMonthTitle">July 2026</h6>
                                 <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" onclick="shiftCalendarMonth(1)" style="width: 32px; height: 32px; color: #FFDF73; border-color: rgba(212, 175, 55, 0.5);"><i class="bi bi-chevron-right"></i></button>
                             </div>
                             
                             <!-- 7-Column Weekday Header -->
                             <div class="calendar-grid-header mb-2 text-center font-serif fw-bold text-uppercase text-xs">
-                                <div style="color: #FBBF24;">Sun</div>
-                                <div style="color: #F8FAFC;">Mon</div>
-                                <div style="color: #F8FAFC;">Tue</div>
-                                <div style="color: #F8FAFC;">Wed</div>
-                                <div style="color: #F8FAFC;">Thu</div>
-                                <div style="color: #F8FAFC;">Fri</div>
-                                <div style="color: #FBBF24;">Sat</div>
+                                <div>Sun</div>
+                                <div>Mon</div>
+                                <div>Tue</div>
+                                <div>Wed</div>
+                                <div>Thu</div>
+                                <div>Fri</div>
+                                <div>Sat</div>
                             </div>
                             
                             <!-- Days Grid -->
@@ -284,12 +284,12 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
 
                     <div class="row g-2">
                         <div class="col-6">
-                            <label class="form-label text-xs text-light opacity-75 fw-bold mb-1" for="phone"><i class="bi bi-telephone-fill text-warning me-1"></i>Contact Phone <span class="text-danger">*</span></label>
-                            <input class="form-control form-control-sm bg-dark text-white border-secondary rounded-3 text-xs fw-bold" id="phone" name="phone" type="tel" value="<?= e($userPhone) ?>" placeholder="+63 917 123 4567" required>
+                            <label class="form-label text-xs dashboard-label fw-bold mb-1" for="phone"><i class="bi bi-telephone-fill text-warning me-1"></i>Contact Phone <span class="text-danger">*</span></label>
+                            <input class="form-control form-control-sm dashboard-input rounded-3 text-xs fw-bold" id="phone" name="phone" type="tel" value="<?= e($userPhone) ?>" placeholder="+63 917 123 4567" required>
                         </div>
                         <div class="col-6">
-                            <label class="form-label text-xs text-light opacity-75 fw-bold mb-1"><i class="bi bi-people-fill text-warning me-1"></i>Suite Capacity</label>
-                            <div class="p-2 rounded-3 text-xs fw-bold d-flex align-items-center justify-content-between" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(212, 175, 55, 0.35); color: #FFDF73;">
+                            <label class="form-label text-xs dashboard-label fw-bold mb-1"><i class="bi bi-people-fill text-warning me-1"></i>Suite Capacity</label>
+                            <div class="p-2 rounded-3 text-xs fw-bold d-flex align-items-center justify-content-between dashboard-sub-box" style="color: #FFDF73;">
                                 <span>Up to <?= $selectedCapacity ?> Guests Max</span>
                                 <span class="badge rounded-pill text-xs fw-bold px-2 py-1" style="background: rgba(212, 175, 55, 0.25); color: #FFDF73; border: 1px solid #D4AF37;">Room #<?= e($selectedRoomObj['room_number'] ?? '') ?></span>
                             </div>
@@ -298,17 +298,17 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                 </div>
 
                 <!-- Payment Route -->
-                <div class="p-3 rounded-4 border" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+                <div class="p-3 rounded-4 border mb-4 dashboard-inner-box">
                     <h5 class="font-serif fw-bold text-warning mb-2 text-sm"><i class="bi bi-credit-card-2-front me-2"></i>Select Payment Method</h5>
-                    <label class="form-label text-xs text-light opacity-75 fw-bold mb-2">How would you like to settle your reservation?</label>
+                    <label class="form-label text-xs dashboard-label fw-bold mb-2">How would you like to settle your reservation?</label>
                     
-                    <select class="form-select form-select-sm bg-dark text-white border-warning rounded-3 text-xs fw-bold mb-2" id="payment_method" name="payment_method">
+                    <select class="form-select form-select-sm dashboard-input rounded-3 text-xs fw-bold mb-2" id="payment_method" name="payment_method">
                         <?php foreach (Payment::methods() as $method): ?>
                             <option value="<?= e($method) ?>"><?= e($method) ?></option>
                         <?php endforeach; ?>
                     </select>
                     
-                    <small class="text-light opacity-75 text-xs d-block mb-3">
+                    <small class="dashboard-subtitle text-xs d-block mb-3">
                         <i class="bi bi-info-circle text-warning me-1"></i>Cash creates a pending reservation reference to present at front desk check-in. Credit card or online methods will route to immediate simulated processing.
                     </small>
 
@@ -330,7 +330,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
 
             <!-- Right Column: Selected Room Summary & Cost Breakdown -->
             <div class="col-12 col-lg-5 col-xl-5">
-                <div class="p-3 rounded-4 border h-100 d-flex flex-column justify-content-between" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.35) !important;">
+                <div class="p-3 rounded-4 border h-100 d-flex flex-column justify-content-between dashboard-inner-box">
                     <div>
                         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary">
                             <h5 class="font-serif fw-bold text-warning m-0 text-sm"><i class="bi bi-door-open-fill me-2"></i>Selected Suite</h5>
@@ -340,7 +340,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                                 <button type="button" class="btn btn-xs btn-outline-warning rounded-pill px-3 py-1 text-xs font-serif dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bi bi-arrow-repeat me-1"></i>Switch Room
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-dark shadow-lg rounded-3 p-2 border" style="max-height: 300px; overflow-y: auto; background: rgba(15, 23, 42, 0.98); min-width: 270px;">
+                                <div class="dropdown-menu dropdown-menu-dark shadow-lg rounded-3 p-2 border" style="max-height: 300px; overflow-y: auto; min-width: 270px;">
                                     <?php foreach ($rooms as $rm):
                                         $rmAvail = $reservationModel->roomIsAvailable((int)$rm['room_id'], $checkIn, $checkOut);
                                     ?>
@@ -365,7 +365,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                             $selCatalog = $catalog[$selectedRoomType] ?? null;
                             $selImg = $selCatalog['hero'] ?? '../assets/images/rooms/imperial-deluxe/hero.jpg';
                         ?>
-                            <div class="rounded-4 overflow-hidden mb-3 border position-relative" style="border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+                            <div class="rounded-4 overflow-hidden mb-3 border position-relative dashboard-room-preview">
                                 <img src="<?= e($selImg) ?>" alt="<?= e($selectedRoomType) ?>" class="w-100 object-fit-cover" style="height: 160px;">
                                 <div class="position-absolute top-0 start-0 p-2">
                                     <span class="badge bg-gold text-dark font-serif fw-bold px-2 py-1 text-xs">Floor <?= e($selectedRoomObj['floor']) ?></span>
@@ -373,8 +373,8 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                                 <div class="position-absolute top-0 end-0 p-2">
                                     <span class="badge bg-dark bg-opacity-75 text-warning font-serif fw-bold px-2 py-1 border border-warning text-xs">Room #<?= e($selectedRoomObj['room_number']) ?></span>
                                 </div>
-                                <div class="p-3 bg-dark">
-                                    <h6 class="font-serif fw-bold text-white mb-1"><?= e($selectedRoomType) ?></h6>
+                                <div class="p-3 dashboard-room-preview-info">
+                                    <h6 class="font-serif fw-bold dashboard-title mb-1"><?= e($selectedRoomType) ?></h6>
                                     <span class="text-xs text-warning fw-bold">₱<?= number_format((float)$selectedRoomObj['price_per_night']) ?> / night</span>
                                 </div>
                             </div>
@@ -383,18 +383,18 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                         <?php endif; ?>
 
                         <!-- Cost Tracker -->
-                        <div class="p-3 rounded-3 border mb-3" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(212, 175, 55, 0.25) !important;">
+                        <div class="p-3 rounded-3 border mb-3 dashboard-sub-box">
                             <h6 class="font-serif fw-bold text-warning mb-2 text-xs text-uppercase tracking-wider"><i class="bi bi-calculator me-1"></i>Cost Breakdown</h6>
-                            <div class="d-flex align-items-center justify-content-between text-xs text-light opacity-90 mb-1">
+                            <div class="d-flex align-items-center justify-content-between text-xs dashboard-text-muted mb-1">
                                 <span>Stay Duration:</span>
-                                <span class="fw-bold text-white"><?= $calcNights ?> Night<?= $calcNights > 1 ? 's' : '' ?></span>
+                                <span class="fw-bold dashboard-title"><?= $calcNights ?> Night<?= $calcNights > 1 ? 's' : '' ?></span>
                             </div>
-                            <div class="d-flex align-items-center justify-content-between text-xs text-light opacity-90 mb-2">
+                            <div class="d-flex align-items-center justify-content-between text-xs dashboard-text-muted mb-2">
                                 <span>Rate / Night:</span>
-                                <span class="fw-bold text-white">₱<?= number_format((float)($selectedRoomObj['price_per_night'] ?? 0)) ?></span>
+                                <span class="fw-bold dashboard-title">₱<?= number_format((float)($selectedRoomObj['price_per_night'] ?? 0)) ?></span>
                             </div>
                             <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary">
-                                <strong class="font-serif fw-bold" style="color: #FFDF73;">Estimated Total:</strong>
+                                <strong class="font-serif fw-bold text-warning">Estimated Total:</strong>
                                 <strong class="fs-5 text-warning font-serif">₱<?= number_format($calcTotal) ?></strong>
                             </div>
                         </div>
@@ -403,9 +403,9 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                         <?php 
                             $selPerks = $selCatalog['included_perks'] ?? ['Complimentary breakfast set', 'High-speed priority Wi-Fi', 'Nespresso Machine & Premium Teas'];
                         ?>
-                        <div class="p-3 rounded-3 border mb-1" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(212, 175, 55, 0.2) !important;">
+                        <div class="p-3 rounded-3 border mb-1 dashboard-sub-box">
                             <h6 class="font-serif fw-bold text-warning mb-2 text-xs text-uppercase tracking-wider"><i class="bi bi-gift-fill me-1"></i>Suite Inclusions</h6>
-                            <ul class="list-unstyled text-xs text-light opacity-90 mb-0">
+                            <ul class="list-unstyled text-xs dashboard-text-muted mb-0">
                                 <?php foreach ($selPerks as $pk): ?>
                                     <li class="mb-1 d-flex align-items-center"><i class="bi bi-check-circle-fill me-2 text-warning"></i><?= e($pk) ?></li>
                                 <?php endforeach; ?>
@@ -418,11 +418,11 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
     </form>
 </section>
 
-<section class="card rounded-4 p-4 shadow-lg border" style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(25px); border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+<section class="card rounded-4 p-4 shadow-lg border dashboard-main-card">
     <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary">
         <div>
             <h6 class="text-uppercase tracking-wider text-warning font-serif fw-bold m-0 mb-1"><i class="bi bi-clock-history me-2"></i>My Reservations</h6>
-            <h2 class="h3 font-serif fw-bold text-white mb-0">Booking History</h2>
+            <h2 class="h3 font-serif fw-bold dashboard-title mb-0">Booking History</h2>
         </div>
         <span class="badge rounded-pill px-3 py-2 text-xs fw-bold" style="background: rgba(212, 175, 55, 0.2); color: #FFDF73; border: 1px solid rgba(212, 175, 55, 0.4);">
             <?= count($reservations) ?> Bookings Total
@@ -431,7 +431,7 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
 
     <div class="d-flex flex-column gap-3">
         <?php if (!$reservations): ?>
-            <div class="text-center py-4 text-light opacity-75">
+            <div class="text-center py-4 dashboard-text-muted">
                 <i class="bi bi-calendar-x fs-1 text-warning opacity-50 d-block mb-2"></i>
                 <p class="m-0 text-sm">You have no reservations yet. Select a room suite above to book your stay!</p>
             </div>
@@ -457,10 +457,10 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                     default => 'background: rgba(245, 158, 11, 0.35); border: 1px solid #F59E0B; color: #FDE68A;',
                 };
             ?>
-            <article class="p-3 rounded-4 border" style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(212, 175, 55, 0.3) !important;">
+            <article class="p-3 rounded-4 border dashboard-history-item">
                 <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-3 pb-2 border-bottom border-secondary">
                     <div>
-                        <strong class="font-serif text-white fs-6 me-2">Room #<?= e($reservation['room_number']) ?></strong>
+                        <strong class="font-serif dashboard-title fs-6 me-2">Room #<?= e($reservation['room_number']) ?></strong>
                         <span class="text-xs text-warning font-serif fw-bold">&mdash; <?= e($reservation['room_type']) ?></span>
                     </div>
                     <span class="badge rounded-pill text-xs px-3 py-1 fw-bold" style="<?= $statusBadgeStyle ?>"><?= e($reservation['status']) ?></span>
@@ -468,20 +468,20 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
 
                 <div class="row g-3 align-items-center">
                     <div class="col-6 col-md-3">
-                        <small class="text-light opacity-75 text-xs d-block mb-1">Stay Range</small>
-                        <strong class="text-white text-xs d-block"><?= date('M d, Y', strtotime($reservation['check_in'])) ?> &rarr; <?= date('M d, Y', strtotime($checkOut)) ?></strong>
+                        <small class="dashboard-text-muted text-xs d-block mb-1">Stay Range</small>
+                        <strong class="dashboard-title text-xs d-block"><?= date('M d, Y', strtotime($reservation['check_in'])) ?> &rarr; <?= date('M d, Y', strtotime($reservation['check_out'])) ?></strong>
                     </div>
 
                     <div class="col-6 col-md-3">
-                        <small class="text-light opacity-75 text-xs d-block mb-1">Total Amount</small>
+                        <small class="dashboard-text-muted text-xs d-block mb-1">Total Amount</small>
                         <strong class="text-warning text-sm d-block font-mono">₱<?= number_format($reservationTotal) ?></strong>
                     </div>
 
                     <div class="col-6 col-md-3">
-                        <small class="text-light opacity-75 text-xs d-block mb-1">Payment Status</small>
-                        <strong class="text-white text-xs d-block"><?= $balanceDue <= 0.01 ? 'Paid in Full' : 'Balance: ₱' . number_format($balanceDue) ?></strong>
+                        <small class="dashboard-text-muted text-xs d-block mb-1">Payment Status</small>
+                        <strong class="dashboard-title text-xs d-block"><?= $balanceDue <= 0.01 ? 'Paid in Full' : 'Balance: ₱' . number_format($balanceDue) ?></strong>
                         <?php if ($latestPayment): ?>
-                            <small class="text-light opacity-50 text-xs d-block">Ref: <?= e($latestPayment['transaction_reference']) ?></small>
+                            <small class="dashboard-text-muted opacity-75 text-xs d-block">Ref: <?= e($latestPayment['transaction_reference']) ?></small>
                         <?php endif; ?>
                     </div>
 

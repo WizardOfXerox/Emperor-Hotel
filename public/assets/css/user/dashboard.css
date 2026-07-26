@@ -203,3 +203,174 @@
         border-bottom: 0;
     }
 }
+
+/* ==========================================================================
+   USER DASHBOARD LIGHT & DARK MODE STYLES
+   ========================================================================== */
+
+/* --- Default / Dark Mode Base Classes --- */
+.dashboard-main-card {
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(212, 175, 55, 0.45) !important;
+    color: #ffffff;
+}
+
+.dashboard-inner-box {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+.dashboard-sub-box {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+}
+
+.dashboard-room-preview {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+.dashboard-history-item {
+    background: rgba(30, 41, 59, 0.65);
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+.dashboard-title {
+    color: #ffffff;
+}
+
+.dashboard-subtitle,
+.dashboard-text-muted {
+    color: #cbd5e1;
+}
+
+.dashboard-label {
+    color: #f8fafc;
+}
+
+.dashboard-input {
+    background: rgba(15, 23, 42, 0.9) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(212, 175, 55, 0.4) !important;
+}
+
+.dashboard-input:focus {
+    background: rgba(15, 23, 42, 1) !important;
+    color: #ffffff !important;
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.25) !important;
+}
+
+/* ==========================================================================
+   LIGHT MODE OVERRIDES FOR USER DASHBOARD
+   ========================================================================== */
+body.light-mode .dashboard-main-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.28) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .dashboard-inner-box {
+    background: #f8f6f0 !important;
+    border: 1px solid rgba(180, 140, 60, 0.22) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .dashboard-sub-box {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.2) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .dashboard-room-preview {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.22) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .dashboard-room-preview .p-3.bg-dark,
+body.light-mode .dashboard-room-preview-info {
+    background: #f8f6f0 !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .dashboard-history-item {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.25) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .dashboard-title {
+    color: #0f172a !important;
+}
+
+body.light-mode .dashboard-subtitle,
+body.light-mode .dashboard-text-muted {
+    color: #475569 !important;
+    opacity: 1 !important;
+}
+
+body.light-mode .dashboard-label {
+    color: #1e293b !important;
+    opacity: 1 !important;
+}
+
+body.light-mode .dashboard-input {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+body.light-mode .dashboard-input:focus {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #d97706 !important;
+    box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.2) !important;
+}
+
+body.light-mode .dashboard-main-card h2,
+body.light-mode .dashboard-main-card h3,
+body.light-mode .dashboard-main-card h4,
+body.light-mode .dashboard-main-card h5,
+body.light-mode .dashboard-main-card h6,
+body.light-mode .dashboard-main-card .text-white,
+body.light-mode .dashboard-history-item strong,
+body.light-mode .dashboard-history-item span {
+    color: #0f172a !important;
+}
+
+body.light-mode .dashboard-main-card .text-warning,
+body.light-mode .dashboard-history-item .text-warning {
+    color: #b45309 !important;
+}
+
+body.light-mode .dashboard-main-card .border-secondary,
+body.light-mode .dashboard-history-item .border-secondary {
+    border-color: rgba(180, 140, 60, 0.2) !important;
+}
+
+body.light-mode .dashboard-main-card .text-light,
+body.light-mode .dashboard-history-item .text-light {
+    color: #475569 !important;
+    opacity: 1 !important;
+}
+
+body.light-mode .dropdown-menu-dark {
+    background: #ffffff !important;
+    border: 1px solid rgba(180, 140, 60, 0.25) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+    color: #0f172a !important;
+}
+
+body.light-mode .dropdown-menu-dark .dropdown-item {
+    color: #1e293b !important;
+}
+
+body.light-mode .dropdown-menu-dark .dropdown-item:hover {
+    background: #fef08a !important;
+    color: #0f172a !important;
+}
