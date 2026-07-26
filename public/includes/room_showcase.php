@@ -184,7 +184,12 @@ function renderRoomShowcaseSection(): void
             if ($checkIn !== '') $redirectQuery['check_in'] = $checkIn;
             if ($checkOut !== '') $redirectQuery['check_out'] = $checkOut;
             $itemReservationHref = '../auth/login.php?redirect=' . urlencode('../user/dashboard.php?' . http_build_query($redirectQuery));
-        } elseif ($user && $user['role'] !== 'admin') {
+        } elseif ($user && $user['role'] === 'admin') {
+            $adminQuery = ['selected_room' => $inspectRoomId];
+            if ($checkIn !== '') $adminQuery['check_in'] = $checkIn;
+            if ($checkOut !== '') $adminQuery['check_out'] = $checkOut;
+            $itemReservationHref = '../admin/create-reservation.php?' . http_build_query($adminQuery);
+        } else {
             $userQuery = ['selected_room' => $inspectRoomId];
             if ($checkIn !== '') $userQuery['check_in'] = $checkIn;
             if ($checkOut !== '') $userQuery['check_out'] = $checkOut;

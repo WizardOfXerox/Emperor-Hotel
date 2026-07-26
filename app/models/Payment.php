@@ -278,12 +278,13 @@ class Payment
             return false;
         }
 
-        // Check if any payment for this reservation is Refunded
+        // Issue #2 Fix: Only auto-cancel if ALL confirmed money has been refunded (confirmed_amount <= 0)
+        // A partial refund (e.g. refunding a duplicate charge) should NOT cancel the reservation.
         $refundCheck = $this->db->prepare("SELECT COUNT(*) FROM payments WHERE reservation_id = :res_id AND payment_status = 'Refunded'");
         $refundCheck->execute(['res_id' => $reservationId]);
         $hasRefund = ((int) $refundCheck->fetchColumn()) > 0;
 
-        if ($hasRefund && in_array($reservation['status'], ['Pending', 'Confirmed'], true)) {
+        if ($hasRefund && (float) $totals['confirmed_amount'] <= 0 && in_array($reservation['status'], ['Pending', 'Confirmed'], true)) {
             $updateReservation = $this->db->prepare(
                 "UPDATE reservations SET status = 'Cancelled' WHERE reservation_id = :reservation_id"
             );
@@ -299,11 +300,20 @@ class Payment
             return $updated;
         }
 
-        if ((float) $totals['confirmed_amount'] <= 0) {
+        // Issue #1 Fix: Only auto-promote Pending → Confirmed when FULLY paid (confirmed >= total)
+        // A small partial payment (e.g. ₱500 on a ₱20,000 stay) should NOT confirm the reservation.
+        $reservationTotal = (float) ($totals['reservation_total'] ?? 0);
+        $confirmedAmount = (float) $totals['confirmed_amount'];
+
+        if ($confirmedAmount <= 0 || $reservationTotal <= 0) {
             return false;
         }
 
         if ($reservation['status'] !== 'Pending') {
+            return false;
+        }
+
+        if ($confirmedAmount < $reservationTotal - 0.01) {
             return false;
         }
 

@@ -170,10 +170,14 @@ function renderVisualCalendarGrid() {
             const inTime = checkInDate.getTime();
             const outTime = checkOutDate.getTime();
 
-            if (cellTime === inTime || cellTime === outTime) {
-                cellClass += ' is-selected';
+            if (cellTime === inTime && cellTime === outTime) {
+                cellClass += ' is-selected is-start-date is-end-date';
+            } else if (cellTime === inTime) {
+                cellClass += ' is-selected is-start-date';
+            } else if (cellTime === outTime) {
+                cellClass += ' is-selected is-end-date';
             } else if (cellTime > inTime && cellTime < outTime) {
-                cellClass += ' in-range';
+                cellClass += ' in-range is-in-range';
             }
         }
 
@@ -245,11 +249,7 @@ function handleAutoCalendarDateUpdate() {
     urlParams.set('check_in', checkIn);
     urlParams.set('check_out', checkOut);
 
-    if (window.location.pathname.includes('dashboard.php') || window.location.pathname.includes('room-detail.php')) {
-        window.location.search = urlParams.toString();
-    } else {
-        window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
-    }
+    window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
     renderVisualCalendarGrid();
 }
 
@@ -398,15 +398,19 @@ function handleInlineCalendarSearch() {
 .calendar-day-btn.is-selected {
     background: #ffc107 !important;
     color: #070A10 !important;
-    border: none !important;
+    border: 2px solid #ffd54f !important;
     font-weight: 900 !important;
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.6) !important;
+    box-shadow: 0 4px 18px rgba(255, 193, 7, 0.6) !important;
 }
 
-.calendar-day-btn.in-range {
-    background: rgba(212, 175, 55, 0.25) !important;
-    border: 1px solid rgba(212, 175, 55, 0.5) !important;
-    color: #FFDF73 !important;
+.calendar-day-btn.in-range,
+.calendar-day-btn.is-in-range {
+    background: rgba(255, 193, 7, 0.4) !important;
+    border: 1px solid rgba(255, 193, 7, 0.85) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    box-shadow: inset 0 0 12px rgba(255, 193, 7, 0.4), 0 0 12px rgba(255, 193, 7, 0.3) !important;
+    border-radius: 8px !important;
 }
 
 .calendar-day-btn.is-disabled {

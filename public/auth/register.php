@@ -35,6 +35,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('register.php');
     }
 
+    // Issue #20 Fix: Server-side password length validation
+    if (strlen($password) < 6) {
+        setFlash('error', 'Password must be at least 6 characters long.');
+        redirect('register.php');
+    }
+
+    // Email format validation
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        setFlash('error', 'Please enter a valid email address.');
+        redirect('register.php');
+    }
+
+    // DNS MX record check — verify the domain can actually receive emails (skip when offline)
+    $emailDomain = substr(strrchr($email, '@'), 1);
+    if (isInternetConnected() && !checkdnsrr($emailDomain, 'MX')) {
+        setFlash('error', 'The email domain "' . e($emailDomain) . '" does not appear to accept emails. Please use a valid email address.');
+        redirect('register.php');
+    }
+
     if ($userModel->findByEmail($email)) {
         setFlash('error', 'That email is already registered.');
         redirect('register.php');
@@ -222,7 +241,7 @@ renderHeader('Create Account - Emperor Hotel', ['../assets/css/site/home.css'], 
                         </button>
 
                         <div class="text-center mt-3 font-serif small">
-                            <span class="opacity-75">Already have an account?</span>
+                            <span class="text-white-50">Already have an account?</span>
                             <a href="login.php" class="text-warning font-serif fw-bold text-decoration-none ms-1">Log In Here</a>
                         </div>
                     </form>

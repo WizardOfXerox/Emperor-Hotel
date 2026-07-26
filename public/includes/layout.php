@@ -54,6 +54,42 @@ function renderHeader(string $title, array $extraStylesheets = [], string $bodyC
                 btn.classList.toggle('btn-outline-warning', !isLight);
             });
         }
+        function openEmperorModal(modalSelector) {
+            const selector = modalSelector.startsWith('#') ? modalSelector : '#' + modalSelector;
+            const modalEl = document.querySelector(selector);
+            if (!modalEl) {
+                console.warn("Emperor Modal element not found:", selector);
+                return;
+            }
+            if (document.body && modalEl.parentNode !== document.body) {
+                document.body.appendChild(modalEl);
+            }
+            try {
+                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl, { backdrop: true, keyboard: true });
+                    modal.show();
+                    return;
+                }
+                if (window.jQuery && typeof jQuery.fn.modal === 'function') {
+                    jQuery(modalEl).modal('show');
+                    return;
+                }
+            } catch (err) {
+                console.warn("Bootstrap/jQuery modal show failed, using fallback:", err);
+            }
+
+            modalEl.classList.add('show');
+            modalEl.style.display = 'block';
+            modalEl.removeAttribute('aria-hidden');
+            modalEl.setAttribute('aria-modal', 'true');
+            let backdrop = document.querySelector('.modal-backdrop');
+            if (!backdrop && document.body) {
+                backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                document.body.appendChild(backdrop);
+            }
+        }
+        window.openEmperorModal = openEmperorModal;
         document.addEventListener('DOMContentLoaded', () => {
             const isLight = localStorage.getItem('emperor_theme') === 'light';
             if (isLight) {
@@ -332,7 +368,58 @@ function renderAdminLayoutEnd(): void
     echo '<script src="../assets/js/admin-notifications.js" defer></script>';
     echo <<<'HTML'
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+// Global Emperor Modal Opening Engine: available immediately in window scope
+window.openEmperorModal = function(modalSelector) {
+    const selector = modalSelector.startsWith('#') ? modalSelector : '#' + modalSelector;
+    const modalEl = document.querySelector(selector);
+    if (!modalEl) {
+        console.warn("Emperor Modal element not found:", selector);
+        return;
+    }
+    if (modalEl.parentNode !== document.body) {
+        document.body.appendChild(modalEl);
+    }
+    
+    try {
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl, { backdrop: true, keyboard: true });
+            modal.show();
+            return;
+        }
+        if (window.jQuery && typeof jQuery.fn.modal === 'function') {
+            jQuery(modalEl).modal('show');
+            return;
+        }
+    } catch (err) {
+        console.warn("Bootstrap/jQuery modal show failed, using fallback:", err);
+    }
+
+    // Native CSS Fallback Guarantee
+    modalEl.classList.add('show');
+    modalEl.style.display = 'block';
+    modalEl.removeAttribute('aria-hidden');
+    modalEl.setAttribute('aria-modal', 'true');
+    let backdrop = document.querySelector('.modal-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+};
+
+// Global Modal Safety Interceptor for data-bs-toggle="modal"
+document.addEventListener("click", (e) => {
+    const btn = e.target.closest('[data-bs-toggle="modal"]');
+    if (!btn) return;
+    const targetSelector = btn.getAttribute('data-bs-target') || btn.getAttribute('href');
+    if (!targetSelector || !targetSelector.startsWith('#')) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    window.openEmperorModal(targetSelector);
+}, true);
+
+const initEmperorPage = () => {
     setTimeout(() => {
         document.querySelectorAll(".alert").forEach((alertEl) => {
             alertEl.classList.remove("show");
@@ -472,41 +559,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    // Global Emperor Modal Opening Engine: ensures clean DOM placement and fresh Bootstrap instances
-    window.openEmperorModal = function(modalSelector) {
-        const selector = modalSelector.startsWith('#') ? modalSelector : '#' + modalSelector;
-        const modalEl = document.querySelector(selector);
-        if (!modalEl) {
-            console.warn("Emperor Modal element not found:", selector);
-            return;
-        }
-        if (modalEl.parentNode !== document.body) {
-            document.body.appendChild(modalEl);
-        }
-        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-            try {
-                const existing = bootstrap.Modal.getInstance(modalEl);
-                if (existing) {
-                    existing.dispose();
-                }
-            } catch (err) {}
-            const modal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
-            modal.show();
-        }
-    };
-
-    // Global Modal Safety Interceptor for data-bs-toggle="modal"
-    document.addEventListener("click", (e) => {
-        const btn = e.target.closest('[data-bs-toggle="modal"]');
-        if (!btn) return;
-        const targetSelector = btn.getAttribute('data-bs-target') || btn.getAttribute('href');
-        if (!targetSelector || !targetSelector.startsWith('#')) return;
-
-        e.preventDefault();
-        e.stopPropagation();
-        window.openEmperorModal(targetSelector);
-    }, true);
-
     window.handleDynamicFetch = handleDynamicFetch;
 
     // Global Toast Notification Helper
@@ -583,7 +635,13 @@ document.addEventListener("DOMContentLoaded", () => {
         handleDynamicFetch(window.location.href);
         updateSidebarActiveState(window.location.href);
     });
-});
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", initEmperorPage);
+} else {
+    initEmperorPage();
+}
 </script>
 HTML;
     echo '</body></html>';

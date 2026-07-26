@@ -68,10 +68,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $amount = max(0.01, (float) ($resObj['total_amount'] ?? 0) - (float) ($totals['confirmed_amount'] ?? 0));
         }
 
+        // Issue #21 Fix: Use actual payment method from form instead of hardcoded Cash
+        $paymentMethodInput = (string) ($_POST['payment_method'] ?? 'Cash');
+        if (!in_array($paymentMethodInput, Payment::methods(), true)) {
+            $paymentMethodInput = 'Cash';
+        }
+
         $paymentModel->create([
             'reservation_id' => $reservationId,
             'amount' => $amount,
-            'payment_method' => 'Cash',
+            'payment_method' => $paymentMethodInput,
             'payment_status' => $paymentStatus,
             'is_simulated' => false,
         ]);
@@ -197,13 +203,16 @@ renderAdminLayoutStart('Payments', 'payments', $currentAdmin, ['../assets/css/ad
                     <p class="muted-copy small mb-0">Confirmed payments reduce the balance. Pending payments reserve part of the balance until reviewed.</p>
                 </div>
 
-                <div class="panel-card p-3">
-                    <p class="eyebrow mb-1">Transaction Reference ID</p>
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-hash text-warning fs-5"></i>
-                        <code class="fs-6 fw-bold text-warning text-break" data-payment-reference>Choose a reservation</code>
-                    </div>
+                <!-- Issue #21 Fix: Payment Method Selector -->
+                <div class="panel-card p-3 mb-2">
+                    <label class="eyebrow mb-1 d-block" for="payment_method_select">Payment Method</label>
+                    <select class="form-select form-select-sm" id="payment_method_select" name="payment_method">
+                        <?php foreach (Payment::methods() as $method): ?>
+                            <option value="<?= e($method) ?>"><?= e($method) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
+
                 <div class="d-flex gap-2 align-items-center mt-1">
                     <button class="btn btn-success fw-bold flex-grow-1 py-2" type="submit" name="payment_status" value="Confirmed" data-payment-btn-confirm <?php echo !$reservations ? 'disabled' : ''; ?>>
                         <i class="bi bi-check-circle-fill me-1"></i>Confirm Payment
@@ -458,7 +467,7 @@ document.querySelectorAll("[data-payment-cost-tracker]").forEach((tracker) => {
         const confirmedAmount = Number(option.dataset.confirmed || 0);
 
         if (confirmBtn) {
-            confirmBtn.disabled = isConfirmedOrPaid || isCancelled || (balance <= 0 && pending <= 0);
+            confirmBtn.disabled = isCancelled || (balance <= 0 && pending <= 0);
         }
         if (refundBtn) {
             refundBtn.disabled = isCancelled || confirmedAmount <= 0;

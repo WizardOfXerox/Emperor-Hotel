@@ -24,13 +24,13 @@ class Review
             throw new RuntimeException('Invalid review parameters.');
         }
 
-        // Verify that the user has a valid completed or checked-out stay for this reservation
+        // Verify that the user has a completed (Checked-out) stay for this reservation
         $checkStmt = $this->db->prepare(
             "SELECT COUNT(*) FROM reservations 
              WHERE reservation_id = :res_id 
                AND user_id = :user_id 
                AND room_id = :room_id 
-               AND status IN ('Checked-out', 'Confirmed')"
+               AND status = 'Checked-out'"
         );
         $checkStmt->execute([
             'res_id' => $reservationId,

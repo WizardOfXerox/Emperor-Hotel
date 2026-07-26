@@ -65,12 +65,12 @@ $totalRevenueAllTime = 0.0;
 // Query Peak Month with exact guest counts (Safe SQL mode compliant)
 try {
     $peakMonthStmt = $db->query("
-        SELECT DATE_FORMAT(r.created_at, '%b %Y') AS month_label,
+        SELECT DATE_FORMAT(r.check_in, '%b %Y') AS month_label,
                COUNT(r.reservation_id) AS total_bookings,
                COUNT(DISTINCT r.guest_id) AS unique_guests
         FROM reservations r
         WHERE r.status != 'Cancelled'
-        GROUP BY DATE_FORMAT(r.created_at, '%Y-%m'), DATE_FORMAT(r.created_at, '%b %Y')
+        GROUP BY DATE_FORMAT(r.check_in, '%Y-%m'), DATE_FORMAT(r.check_in, '%b %Y')
         ORDER BY total_bookings DESC, unique_guests DESC
         LIMIT 1
     ");
@@ -94,7 +94,7 @@ try {
     $topRoomStmt = $db->query("
         SELECT rm.room_type,
                COUNT(DISTINCT r.reservation_id) AS total_bookings,
-               COALESCE(AVG(rv.rating), 4.9) AS avg_rating
+               COALESCE(AVG(rv.rating), 0) AS avg_rating
         FROM rooms rm
         LEFT JOIN reservations r ON r.room_id = rm.room_id AND r.status != 'Cancelled'
         LEFT JOIN reviews rv ON rv.room_id = rm.room_id
@@ -106,7 +106,9 @@ try {
 
     if ($topRoomData && !empty($topRoomData['room_type'])) {
         $bestRecommendedSuite = (string) $topRoomData['room_type'];
-        $bestSuiteRating = number_format((float) ($topRoomData['avg_rating'] ?? 4.9), 1);
+        $bestSuiteRating = ((float) ($topRoomData['avg_rating'] ?? 0)) > 0
+            ? number_format((float) $topRoomData['avg_rating'], 1)
+            : 'No reviews';
         $bestSuiteBookings = (int) ($topRoomData['total_bookings'] ?? 0);
     }
 } catch (Throwable) {
@@ -126,6 +128,29 @@ $revpar = $totalRevenueAllTime / $totalRoomsCount;
 
 renderAdminLayoutStart('Dashboard', 'dashboard', $currentAdmin, ['../assets/css/admin/dashboard.css?v=chart-size-1']);
 ?>
+
+<?php // Issue #9 Fix: Render operational alerts banner when alerts exist ?>
+<?php if ($totalAlertCount > 0): ?>
+<div class="alert alert-warning border-warning shadow-sm mb-4 d-flex align-items-center gap-3 px-4 py-3" style="background: rgba(255,193,7,0.12); border-left: 4px solid #ffc107 !important;">
+    <i class="bi bi-exclamation-triangle-fill fs-4 text-warning"></i>
+    <div class="flex-grow-1">
+        <strong class="text-warning">⚠️ <?= $totalAlertCount ?> Operational Alert<?= $totalAlertCount > 1 ? 's' : '' ?> Require Attention</strong>
+        <div class="small mt-1 opacity-75">
+            <?php if (count($operationalAlerts['overdue_checkouts']) > 0): ?>
+                <span class="me-3"><i class="bi bi-clock-history me-1"></i><?= count($operationalAlerts['overdue_checkouts']) ?> overdue check-out<?= count($operationalAlerts['overdue_checkouts']) > 1 ? 's' : '' ?></span>
+            <?php endif; ?>
+            <?php if (count($operationalAlerts['overbooking_conflicts']) > 0): ?>
+                <span class="me-3"><i class="bi bi-calendar-x me-1"></i><?= count($operationalAlerts['overbooking_conflicts']) ?> booking conflict<?= count($operationalAlerts['overbooking_conflicts']) > 1 ? 's' : '' ?></span>
+            <?php endif; ?>
+            <?php if (count($failedPayments) > 0): ?>
+                <span><i class="bi bi-credit-card me-1"></i><?= count($failedPayments) ?> failed payment<?= count($failedPayments) > 1 ? 's' : '' ?></span>
+            <?php endif; ?>
+        </div>
+    </div>
+    <a href="reservations.php" class="btn btn-sm btn-outline-warning rounded-pill px-3">Review Now</a>
+</div>
+<?php endif; ?>
+
 <section class="stats-grid mb-4">
     <article class="stat-tile bg-gold-subtle border-gold shadow-sm" style="border: 1px solid rgba(212, 175, 55, 0.6) !important; background: rgba(212, 175, 55, 0.08);">
         <p class="eyebrow mb-1 text-gold"><i class="bi bi-trophy-fill me-1"></i>Most Booked Month</p>

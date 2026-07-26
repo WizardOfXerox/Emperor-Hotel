@@ -25,11 +25,20 @@ $error = null;
 
 // Handle Resend OTP Code
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'resend_otp') {
+    // Issue #26 Fix: Enforce 60-second cooldown between OTP resends
+    $lastResend = (int) ($_SESSION['last_otp_resend'] ?? 0);
+    if (time() - $lastResend < 60) {
+        $remaining = 60 - (time() - $lastResend);
+        setFlash('warning', "Please wait {$remaining} seconds before requesting another code.");
+        redirect('verify-otp.php');
+    }
+
     $newOtp = sprintf('%06d', random_int(100000, 999999));
     $newExpiresAt = date('Y-m-d H:i:s', time() + 900);
     $db->prepare("UPDATE users SET otp_code = :otp, otp_expires_at = :exp WHERE user_id = :uid")
        ->execute(['otp' => $newOtp, 'exp' => $newExpiresAt, 'uid' => $pendingUserId]);
 
+    $_SESSION['last_otp_resend'] = time();
     sendRegistrationOtpEmail($pendingUser['email'], $pendingUser['full_name'], $newOtp);
     setFlash('info', "📩 Fresh 6-digit verification code sent to <strong>" . e($pendingUser['email']) . "</strong>.");
     redirect('verify-otp.php');
@@ -208,5 +217,61 @@ renderHeader('Verify Email OTP - Emperor Hotel', ['../assets/css/site/home.css']
         </div>
     </div>
 </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const otpContainer = document.querySelector('form div.d-flex');
+    if (!otpContainer) return;
+
+    const inputs = Array.from(otpContainer.querySelectorAll('input[name^="d"]'));
+
+    inputs.forEach((input, index) => {
+        // Auto-advance to next box on typing a digit
+        input.addEventListener('input', function(e) {
+            const digit = this.value.replace(/\D/g, '');
+            this.value = digit.slice(-1);
+            if (this.value && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+                inputs[index + 1].select();
+            }
+        });
+
+        // Smart Backspace & Arrow Key Navigation
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace') {
+                if (!this.value && index > 0) {
+                    inputs[index - 1].focus();
+                    inputs[index - 1].value = '';
+                    e.preventDefault();
+                }
+            } else if (e.key === 'ArrowLeft' && index > 0) {
+                inputs[index - 1].focus();
+                e.preventDefault();
+            } else if (e.key === 'ArrowRight' && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+                e.preventDefault();
+            }
+        });
+
+        // Paste Handler for Full 6-Digit OTP Codes (e.g., "280238")
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const clipboardData = (e.clipboardData || window.clipboardData).getData('text');
+            const digits = clipboardData.replace(/\D/g, '').slice(0, 6).split('');
+            
+            if (digits.length > 0) {
+                digits.forEach((digit, i) => {
+                    if (inputs[i]) {
+                        inputs[i].value = digit;
+                    }
+                });
+
+                const focusIndex = Math.min(digits.length, inputs.length - 1);
+                inputs[focusIndex].focus();
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>

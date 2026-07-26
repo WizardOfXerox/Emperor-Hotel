@@ -197,33 +197,53 @@ class Reservation
         $this->validateGuestId((int) ($data['guest_id'] ?? 0));
         $this->validateTotalAmount((float) ($data['total_amount'] ?? 0));
 
-        if (!$this->roomIsAvailable((int) $data['room_id'], $data['check_in'], $data['check_out'])) {
-            throw new RuntimeException('The selected room is not available for those dates.');
+        // Issue #6 Fix: Wrap in transaction with row lock to prevent race condition double-bookings.
+        $this->db->beginTransaction();
+        try {
+            // Lock the room row to prevent concurrent bookings
+            $lockStmt = $this->db->prepare('SELECT room_id FROM rooms WHERE room_id = :room_id FOR UPDATE');
+            $lockStmt->execute(['room_id' => (int) $data['room_id']]);
+
+            if (!$this->roomIsAvailable((int) $data['room_id'], $data['check_in'], $data['check_out'])) {
+                $this->db->rollBack();
+                throw new RuntimeException('The selected room is not available for those dates.');
+            }
+
+            // SQL: Creates a reservation after validating dates, room availability, guest, status, and total amount.
+            $statement = $this->db->prepare(
+                'INSERT INTO reservations (user_id, guest_id, room_id, check_in, check_out, total_amount, status)
+                 VALUES (:user_id, :guest_id, :room_id, :check_in, :check_out, :total_amount, :status)'
+            );
+
+            $saved = $statement->execute([
+                'user_id' => $data['user_id'] ?? null,
+                'guest_id' => (int) $data['guest_id'],
+                'room_id' => (int) $data['room_id'],
+                'check_in' => $data['check_in'],
+                'check_out' => $data['check_out'],
+                'total_amount' => (float) $data['total_amount'],
+                'status' => $data['status'],
+            ]);
+
+            $reservationId = $saved ? (int) $this->db->lastInsertId() : 0;
+
+            if ($saved) {
+                $this->syncRoomStatus((int) $data['room_id']);
+            }
+
+            $this->db->commit();
+            return $reservationId;
+        } catch (RuntimeException $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw new RuntimeException('Failed to create reservation: ' . $e->getMessage());
         }
-
-        // SQL: Creates a reservation after validating dates, room availability, guest, status, and total amount.
-        $statement = $this->db->prepare(
-            'INSERT INTO reservations (user_id, guest_id, room_id, check_in, check_out, total_amount, status)
-             VALUES (:user_id, :guest_id, :room_id, :check_in, :check_out, :total_amount, :status)'
-        );
-
-        $saved = $statement->execute([
-            'user_id' => $data['user_id'] ?? null,
-            'guest_id' => (int) $data['guest_id'],
-            'room_id' => (int) $data['room_id'],
-            'check_in' => $data['check_in'],
-            'check_out' => $data['check_out'],
-            'total_amount' => (float) $data['total_amount'],
-            'status' => $data['status'],
-        ]);
-
-        $reservationId = $saved ? (int) $this->db->lastInsertId() : 0;
-
-        if ($saved) {
-            $this->syncRoomStatus((int) $data['room_id']);
-        }
-
-        return $reservationId;
     }
 
     public function update(int $reservationId, array $data): bool
@@ -289,15 +309,14 @@ class Reservation
             throw new RuntimeException('Cannot delete an active Checked-in reservation. Please process Check-Out first.');
         }
 
-        // SQL: Deletes one reservation by primary key. Payment logs cascade through the database relationship.
-        $statement = $this->db->prepare('DELETE FROM reservations WHERE reservation_id = :reservation_id');
-        $deleted = $statement->execute(['reservation_id' => $reservationId]);
-
-        if ($deleted) {
-            $this->syncRoomStatus((int) $existing['room_id']);
+        // Issue #22 Fix: Soft-delete by setting status to Cancelled instead of DELETE.
+        // This preserves the payment audit trail and booking history.
+        if ($existing['status'] === 'Cancelled') {
+            // Already cancelled — nothing to do
+            return true;
         }
 
-        return $deleted;
+        return $this->updateStatus($reservationId, 'Cancelled');
     }
 
     public function updateStatus(int $reservationId, string $status): bool
@@ -320,11 +339,12 @@ class Reservation
         if ($saved) {
             $this->syncRoomStatus((int) $existing['room_id']);
 
-            if (in_array($status, ['Confirmed', 'Checked-in', 'Checked-out'], true)) {
-                $paymentStmt = $this->db->prepare("UPDATE payments SET payment_status = 'Confirmed' WHERE reservation_id = :reservation_id AND payment_status = 'Pending'");
-                $paymentStmt->execute(['reservation_id' => $reservationId]);
-            } elseif ($status === 'Cancelled') {
-                // If payment was Confirmed (they paid), automatically process a Refund!
+            // Issue #4 Fix: Do NOT auto-confirm pending payments on status transition.
+            // Payments should only be confirmed explicitly by admin in the Payments page.
+            // This prevents unverified cash payments from being silently marked as received.
+
+            if ($status === 'Cancelled') {
+                // Issue #7: Refund confirmed payments and fail pending ones on cancellation
                 $refundStmt = $this->db->prepare("UPDATE payments SET payment_status = 'Refunded' WHERE reservation_id = :reservation_id AND payment_status = 'Confirmed'");
                 $refundStmt->execute(['reservation_id' => $reservationId]);
 
@@ -394,6 +414,17 @@ class Reservation
             'reservation_id' => $reservationId,
         ]);
 
+        if ($additionalAmount > 0) {
+            $paymentModel = new Payment($this->db);
+            $paymentModel->create([
+                'reservation_id' => $reservationId,
+                'amount' => $additionalAmount,
+                'payment_method' => 'Cash',
+                'payment_status' => 'Pending',
+                'is_simulated' => false,
+            ]);
+        }
+
         $this->syncRoomStatus((int) $reservation['room_id']);
 
         return [
@@ -402,6 +433,88 @@ class Reservation
             'extra_nights' => $extraNights,
             'additional_amount' => $additionalAmount,
             'new_total' => $newTotal,
+        ];
+    }
+
+    /**
+     * Issue #12: Adjust reservation dates (both check-in and check-out).
+     * Allows shortening stays, changing arrival dates, or any date modification.
+     * Recalculates total amount and creates adjustment payment if needed.
+     */
+    public function adjustDates(int $reservationId, string $newCheckIn, string $newCheckOut): array
+    {
+        $reservation = $this->find($reservationId);
+        if (!$reservation) {
+            throw new RuntimeException('Reservation not found.');
+        }
+
+        if (in_array($reservation['status'], ['Cancelled', 'Checked-out'], true)) {
+            throw new RuntimeException('Cannot adjust dates for cancelled or checked-out reservations.');
+        }
+
+        // Validate new dates
+        $this->validateDates($newCheckIn, $newCheckOut);
+
+        $oldCheckIn = (string) $reservation['check_in'];
+        $oldCheckOut = (string) $reservation['check_out'];
+
+        if ($newCheckIn === $oldCheckIn && $newCheckOut === $oldCheckOut) {
+            throw new RuntimeException('New dates are the same as current dates.');
+        }
+
+        // For checked-in reservations, check-in date cannot be changed
+        if ($reservation['status'] === 'Checked-in' && $newCheckIn !== $oldCheckIn) {
+            throw new RuntimeException('Cannot change check-in date for a checked-in reservation. Only check-out date can be adjusted.');
+        }
+
+        $roomId = (int) $reservation['room_id'];
+
+        // Check room availability for the new date range (excluding this reservation)
+        if (!$this->roomIsAvailable($roomId, $newCheckIn, $newCheckOut, $reservationId)) {
+            throw new RuntimeException('Room is not available for the new requested dates.');
+        }
+
+        // Recalculate total
+        $room = $this->assertRoomExists($roomId);
+        $newCheckInDate = new DateTimeImmutable($newCheckIn);
+        $newCheckOutDate = new DateTimeImmutable($newCheckOut);
+        $newNights = max(1, (int) round(($newCheckOutDate->getTimestamp() - $newCheckInDate->getTimestamp()) / 86400));
+        $oldTotal = (float) $reservation['total_amount'];
+        $newTotal = $newNights * (float) $room['price_per_night'];
+
+        $stmt = $this->db->prepare(
+            'UPDATE reservations SET check_in = :check_in, check_out = :check_out, total_amount = :total_amount WHERE reservation_id = :reservation_id'
+        );
+        $stmt->execute([
+            'check_in' => $newCheckIn,
+            'check_out' => $newCheckOut,
+            'total_amount' => $newTotal,
+            'reservation_id' => $reservationId,
+        ]);
+
+        // Create adjustment payment if total increased
+        $priceDifference = $newTotal - $oldTotal;
+        if ($priceDifference > 0.01) {
+            $paymentModel = new Payment($this->db);
+            $paymentModel->create([
+                'reservation_id' => $reservationId,
+                'amount' => $priceDifference,
+                'payment_method' => 'Cash',
+                'payment_status' => 'Pending',
+                'is_simulated' => false,
+            ]);
+        }
+
+        $this->syncRoomStatus($roomId);
+
+        return [
+            'old_check_in' => $oldCheckIn,
+            'old_check_out' => $oldCheckOut,
+            'new_check_in' => $newCheckIn,
+            'new_check_out' => $newCheckOut,
+            'old_total' => $oldTotal,
+            'new_total' => $newTotal,
+            'price_difference' => $priceDifference,
         ];
     }
 
@@ -432,6 +545,7 @@ class Reservation
         $checkIn = new DateTimeImmutable((string) $reservation['check_in']);
         $checkOut = new DateTimeImmutable((string) $reservation['check_out']);
         $nights = max(1, (int) round(($checkOut->getTimestamp() - $checkIn->getTimestamp()) / 86400));
+        $oldTotal = (float) $reservation['total_amount'];
         $newTotal = $nights * (float) $newRoom['price_per_night'];
 
         $stmt = $this->db->prepare(
@@ -446,6 +560,24 @@ class Reservation
             'reservation_id' => $reservationId,
         ]);
 
+        // Issue #3 Fix: Create adjustment payment record for the price difference
+        $priceDifference = $newTotal - $oldTotal;
+        if (abs($priceDifference) > 0.01) {
+            $paymentModel = new Payment($this->db);
+            if ($priceDifference > 0) {
+                // More expensive room — create pending payment for the difference
+                $paymentModel->create([
+                    'reservation_id' => $reservationId,
+                    'amount' => $priceDifference,
+                    'payment_method' => 'Cash',
+                    'payment_status' => 'Pending',
+                    'is_simulated' => false,
+                ]);
+            }
+            // Note: If cheaper room, the overpayment is tracked via balance_due going negative.
+            // Admin can process a manual refund from the Payments page.
+        }
+
         // Sync status of both old and new rooms
         $this->syncRoomStatus($oldRoomId);
         $this->syncRoomStatus($newRoomId);
@@ -455,7 +587,9 @@ class Reservation
             'new_room_id' => $newRoomId,
             'new_room_number' => (string) $newRoom['room_number'],
             'new_room_type' => (string) $newRoom['room_type'],
+            'old_total' => $oldTotal,
             'new_total' => $newTotal,
+            'price_difference' => $priceDifference,
         ];
     }
 
@@ -554,11 +688,14 @@ class Reservation
             return false;
         }
 
-        // SQL: Counts active overlapping reservations. Zero means the room is free for the requested dates.
+        // Issue #15 Fix: Align with roomHasActiveOverlap() — unpaid Pending reservations
+        // older than 24 hours no longer block availability. This prevents stale abandoned
+        // bookings from permanently locking rooms.
         $sql = "SELECT COUNT(*)
                 FROM reservations
                 WHERE room_id = :room_id
                   AND status NOT IN ('Cancelled', 'Checked-out')
+                  AND (status IN ('Confirmed', 'Checked-in', 'Conflict') OR (status = 'Pending' AND created_at >= NOW() - INTERVAL 24 HOUR))
                   AND NOT (check_out <= :check_in OR check_in >= :check_out)";
 
         $params = [
@@ -992,20 +1129,21 @@ class Reservation
 
     public function syncRoomStatus(int $roomId): void
     {
-        // Auto-promote Pending reservations that already have confirmed payments.
+        // Auto-promote Pending reservations that are fully paid.
         // This catches cases where payments were inserted directly (e.g. seeder, XML import)
         // bypassing Payment::create() which normally calls syncFullyPaidReservation().
         $pendingWithPayments = $this->db->prepare(
             "SELECT r.reservation_id
              FROM reservations r
+             INNER JOIN (
+                 SELECT reservation_id, SUM(amount) AS total_confirmed
+                 FROM payments
+                 WHERE payment_status IN ('Confirmed', 'Paid')
+                 GROUP BY reservation_id
+             ) p ON p.reservation_id = r.reservation_id
              WHERE r.room_id = :room_id
                AND r.status = 'Pending'
-               AND EXISTS (
-                   SELECT 1 FROM payments p
-                   WHERE p.reservation_id = r.reservation_id
-                     AND p.payment_status = 'Confirmed'
-                     AND p.amount > 0
-               )"
+               AND p.total_confirmed >= (r.total_amount - 0.01)"
         );
         $pendingWithPayments->execute(['room_id' => $roomId]);
         $pendingIds = $pendingWithPayments->fetchAll(PDO::FETCH_COLUMN);

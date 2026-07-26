@@ -2290,7 +2290,7 @@ body:not(.light-mode) .calendar-visual-grid .calendar-grid-header {
     color: rgba(226, 232, 240, 0.75) !important;
 }
 
-body:not(.light-mode) .calendar-visual-grid .calendar-day-btn:not(.is-selected):not(.is-in-range) {
+body:not(.light-mode) .calendar-visual-grid .calendar-day-btn:not(.is-selected):not(.in-range):not(.is-in-range) {
     background: rgba(15, 23, 42, 0.6) !important;
     color: #f8fafc !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;

@@ -234,7 +234,7 @@ function renderHotelFloorMap(PDO $db, string $mode = 'public', ?int $selectedRoo
                 <span class="badge px-3 py-2 rounded-pill shadow-sm fw-bold map-legend-maintenance"><i class="bi bi-circle-fill me-1"></i>Maintenance</span>
             </div>
             <?php if ($mode === 'admin'): ?>
-                <button class="btn btn-warning btn-sm fw-bold px-3 text-nowrap shadow-sm" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+                <button class="btn btn-warning btn-sm fw-bold px-3 text-nowrap shadow-sm" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal" onclick="openEmperorModal('#createRoomModal')">
                     <i class="bi bi-plus-circle-fill me-1"></i>Create New Room
                 </button>
             <?php endif; ?>
@@ -679,5 +679,8 @@ window.updateHotelMapAvailability = async function updateHotelMapAvailability(ch
 })();
 </script>
 <?php
+if ($mode === 'admin') {
+    require_once __DIR__ . '/create_room_modal.php';
+}
 }
 ?>

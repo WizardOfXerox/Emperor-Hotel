@@ -35,7 +35,7 @@ renderAdminLayoutStart('Interactive Hotel Map', 'map', $currentAdmin, ['../asset
         </div>
         <div class="d-flex flex-wrap gap-2 align-items-center">
             <span class="badge-soft"><?php echo count($allRooms); ?> Total Rooms</span>
-            <button class="btn btn-warning btn-sm fw-semibold" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+            <button class="btn btn-warning btn-sm fw-semibold" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal" onclick="openEmperorModal('#createRoomModal')">
                 <i class="bi bi-plus-circle me-1"></i>New Room
             </button>
         </div>
@@ -63,5 +63,7 @@ renderAdminLayoutStart('Interactive Hotel Map', 'map', $currentAdmin, ['../asset
     <?php renderStandalone2DMap($db, 'admin', $checkIn, $checkOut); ?>
 </section>
 
+<!-- CREATE ROOM MODAL -->
 <?php
+require_once __DIR__ . '/../includes/create_room_modal.php';
 renderAdminLayoutEnd();

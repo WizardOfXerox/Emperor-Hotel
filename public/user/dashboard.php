@@ -9,6 +9,11 @@ require_once __DIR__ . '/../includes/room_selection.php';
 require_once __DIR__ . '/../includes/calendar_picker.php';
 
 requireAuth('../auth/login.php');
+$currentUser = currentUser();
+if ($currentUser && ($currentUser['role'] ?? '') === 'admin') {
+    $queryString = !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '';
+    redirect('../admin/create-reservation.php' . $queryString);
+}
 requireRole('user', '../admin/dashboard.php');
 
 $user = currentUser();
@@ -65,14 +70,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($action === 'submit_review') {
             $reviewModel = new Review($db);
+            $reviewReservationId = (int) ($_POST['reservation_id'] ?? 0);
+            $reviewRoomId = (int) ($_POST['room_id'] ?? 0);
+
+            // Issue #11 Fix: Only allow reviews for completed (Checked-out) stays
+            $reviewReservation = $reservationModel->find($reviewReservationId);
+            if (!$reviewReservation || $reviewReservation['status'] !== 'Checked-out') {
+                setFlash('warning', 'Reviews can only be submitted for completed stays.');
+                redirect('dashboard.php');
+            }
+
+            // Issue #10 Fix: Prevent duplicate reviews for the same reservation
+            $existingReview = $db->prepare(
+                'SELECT COUNT(*) FROM reviews WHERE reservation_id = :rid AND user_id = :uid'
+            );
+            $existingReview->execute(['rid' => $reviewReservationId, 'uid' => (int) $user['user_id']]);
+            if ((int) $existingReview->fetchColumn() > 0) {
+                setFlash('info', 'You have already submitted a review for this stay.');
+                redirect('dashboard.php');
+            }
+
             $reviewModel->create([
-                'reservation_id' => (int) ($_POST['reservation_id'] ?? 0),
+                'reservation_id' => $reviewReservationId,
                 'user_id' => (int) $user['user_id'],
-                'room_id' => (int) ($_POST['room_id'] ?? 0),
+                'room_id' => $reviewRoomId,
                 'rating' => (int) ($_POST['rating'] ?? 5),
                 'comment' => trim((string) ($_POST['comment'] ?? '')),
             ]);
             setFlash('success', 'Thank you for your rating and review!');
+            redirect('dashboard.php');
+        }
+
+        if ($action === 'extend_stay') {
+            $reservationId = (int) ($_POST['reservation_id'] ?? 0);
+            $reservation = $reservationModel->find($reservationId);
+
+            if (!$reservation || (int) $reservation['user_id'] !== (int) $user['user_id']) {
+                throw new RuntimeException('Reservation not found for this account.');
+            }
+
+            $extension = $reservationModel->extendStay(
+                $reservationId,
+                (string) ($_POST['new_check_out'] ?? '')
+            );
+
+            setFlash(
+                'success',
+                'Stay extended to ' . $extension['new_check_out']
+                . '. Added ' . $extension['extra_nights'] . ' night(s), additional balance '
+                . formatMoney((float) $extension['additional_amount'])
+                . '. You can pay the new balance directly on your dashboard.'
+            );
             redirect('dashboard.php');
         }
 
@@ -510,6 +558,12 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                             <i class="bi bi-receipt me-1"></i>Receipt
                         </a>
 
+                        <?php if (in_array($reservation['status'], ['Pending', 'Confirmed', 'Checked-in'], true)): ?>
+                            <button class="btn btn-xs btn-outline-info rounded-pill px-3 fw-bold font-serif" type="button" data-bs-toggle="modal" data-bs-target="#extendStayModal<?= $reservationId ?>">
+                                <i class="bi bi-calendar-plus me-1"></i>Extend Stay
+                            </button>
+                        <?php endif; ?>
+
                         <?php if ($activeBalanceDue > 0.01 && in_array($reservation['status'], ['Pending', 'Confirmed', 'Checked-in'], true)): ?>
                             <a class="btn btn-xs btn-warning rounded-pill px-3 fw-bold font-serif text-dark" href="payment.php?reservation_id=<?= $reservationId ?>&payment_method=Online%20Payment"><i class="bi bi-credit-card me-1"></i>Pay Balance (₱<?= number_format($activeBalanceDue) ?>)</a>
                         <?php endif; ?>
@@ -529,6 +583,41 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                         <?php endif; ?>
                     </div>
                 </div>
+
+                <!-- Extend Stay Modal -->
+                <?php if (in_array($reservation['status'], ['Pending', 'Confirmed', 'Checked-in'], true)): ?>
+                    <div class="modal fade" id="extendStayModal<?= $reservationId ?>" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content bg-dark text-light border-gold-glow rounded-4 p-3 shadow-lg" style="background: rgba(15, 23, 42, 0.96) !important; border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+                                <div class="modal-header border-secondary">
+                                    <h5 class="modal-title font-serif text-warning fw-bold"><i class="bi bi-calendar-plus me-2"></i>Extend Stay (Room #<?= e($reservation['room_number']) ?>)</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="POST" action="dashboard.php">
+                                    <div class="modal-body">
+                                        <input type="hidden" name="action" value="extend_stay">
+                                        <input type="hidden" name="reservation_id" value="<?= $reservationId ?>">
+
+                                        <div class="mb-3">
+                                            <label class="form-label text-xs text-uppercase tracking-wider text-light opacity-75">Current Check-Out</label>
+                                            <input type="text" class="form-control form-control-sm bg-dark text-light border-secondary fw-bold" value="<?= e($reservation['check_out']) ?>" readonly>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label text-xs text-uppercase tracking-wider text-warning fw-bold">New Extended Check-Out Date</label>
+                                            <input type="date" name="new_check_out" class="form-control form-control-sm bg-dark text-warning border-warning fw-bold" min="<?= date('Y-m-d', strtotime($reservation['check_out'] . ' + 1 day')) ?>" value="<?= date('Y-m-d', strtotime($reservation['check_out'] . ' + 1 day')) ?>" required>
+                                            <small class="text-muted text-xs d-block mt-1">Select a date after <?= e($reservation['check_out']) ?>. The system will verify room availability before confirming.</small>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer border-secondary">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-sm btn-warning rounded-pill fw-bold font-serif text-dark"><i class="bi bi-check-circle-fill me-1"></i>Confirm Extension</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <!-- Review Modal for this reservation -->
                 <div class="modal fade" id="reviewModal<?= $reservationId ?>" tabindex="-1" aria-hidden="true">

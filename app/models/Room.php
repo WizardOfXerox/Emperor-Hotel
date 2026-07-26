@@ -155,8 +155,8 @@ class Room
 
         // SQL: Inserts a new room record after validating type, status, floor, and price.
         $statement = $this->db->prepare(
-            'INSERT INTO rooms (room_number, room_type, floor, price_per_night, base_price_per_night, status, bed_type, max_capacity, view_type, image_url)
-             VALUES (:room_number, :room_type, :floor, :price_per_night, :base_price_per_night, :status, :bed_type, :max_capacity, :view_type, :image_url)'
+            'INSERT INTO rooms (room_number, room_type, floor, price_per_night, status, bed_type, max_capacity, view_type, image_url)
+             VALUES (:room_number, :room_type, :floor, :price_per_night, :status, :bed_type, :max_capacity, :view_type, :image_url)'
         );
 
         return $statement->execute([
@@ -164,7 +164,6 @@ class Room
             'room_type' => $data['room_type'],
             'floor' => (int) $data['floor'],
             'price_per_night' => $pricePerNight,
-            'base_price_per_night' => $pricePerNight,
             'status' => $data['status'],
             'bed_type' => $bedType,
             'max_capacity' => $maxCapacity,
@@ -195,10 +194,21 @@ class Room
         $imageUrl = isset($data['image_url']) ? trim((string) $data['image_url']) : null;
 
         if ($data['status'] === 'Maintenance') {
-            $checkedInStmt = $this->db->prepare("SELECT COUNT(*) FROM reservations WHERE room_id = :room_id AND status = 'Checked-in'");
-            $checkedInStmt->execute(['room_id' => $roomId]);
-            if (((int) $checkedInStmt->fetchColumn()) > 0) {
-                throw new RuntimeException('Cannot set Room #' . trim($data['room_number']) . ' to Maintenance while a guest is currently Checked-In.');
+            // Issue #8 Fix: Check for BOTH currently checked-in AND future confirmed/pending reservations
+            $activeStmt = $this->db->prepare(
+                "SELECT COUNT(*) FROM reservations
+                 WHERE room_id = :room_id
+                   AND status IN ('Checked-in', 'Confirmed', 'Pending')
+                   AND check_out > CURRENT_DATE()"
+            );
+            $activeStmt->execute(['room_id' => $roomId]);
+            $activeCount = (int) $activeStmt->fetchColumn();
+            if ($activeCount > 0) {
+                throw new RuntimeException(
+                    'Cannot set Room #' . trim($data['room_number']) . ' to Maintenance — '
+                    . $activeCount . ' active or upcoming reservation(s) exist. '
+                    . 'Please cancel or reassign them first.'
+                );
             }
         }
 
@@ -281,29 +291,17 @@ class Room
             if ($adjustmentValue <= 0) {
                 throw new RuntimeException('Price per night must be greater than zero.');
             }
-            if ($saveAsBase) {
-                $sql = "UPDATE rooms SET price_per_night = :new_price, base_price_per_night = :new_price {$whereClause}";
-            } else {
-                $sql = "UPDATE rooms SET price_per_night = :new_price {$whereClause}";
-            }
+            $sql = "UPDATE rooms SET price_per_night = :new_price {$whereClause}";
             $params['new_price'] = $adjustmentValue;
         } elseif ($adjustmentMode === 'percentage') {
             $multiplier = 1 + ($adjustmentValue / 100);
             if ($multiplier <= 0) {
                 throw new RuntimeException('Percentage reduction would result in negative or zero price.');
             }
-            if ($saveAsBase) {
-                $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night * :multiplier, 2)), base_price_per_night = GREATEST(1.00, ROUND(base_price_per_night * :multiplier, 2)) {$whereClause}";
-            } else {
-                $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night * :multiplier, 2)) {$whereClause}";
-            }
+            $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night * :multiplier, 2)) {$whereClause}";
             $params['multiplier'] = $multiplier;
         } elseif ($adjustmentMode === 'offset') {
-            if ($saveAsBase) {
-                $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night + :offset, 2)), base_price_per_night = GREATEST(1.00, ROUND(base_price_per_night + :offset, 2)) {$whereClause}";
-            } else {
-                $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night + :offset, 2)) {$whereClause}";
-            }
+            $sql = "UPDATE rooms SET price_per_night = GREATEST(1.00, ROUND(price_per_night + :offset, 2)) {$whereClause}";
             $params['offset'] = $adjustmentValue;
         } else {
             throw new RuntimeException('Invalid price adjustment mode.');
@@ -317,18 +315,22 @@ class Room
 
     public function getSuiteBaseRates(): array
     {
-        $stmt = $this->db->query("
-            SELECT room_type, 
-                   MIN(COALESCE(base_price_per_night, price_per_night)) as base_price,
-                   MIN(price_per_night) as current_min_price,
-                   MAX(price_per_night) as current_max_price,
-                   COUNT(*) as total_rooms
-            FROM rooms
-            WHERE room_type IS NOT NULL AND TRIM(room_type) != ''
-            GROUP BY room_type
-            ORDER BY room_type ASC
-        ");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->db->query("
+                SELECT room_type, 
+                       MIN(price_per_night) as base_price,
+                       MIN(price_per_night) as current_min_price,
+                       MAX(price_per_night) as current_max_price,
+                       COUNT(*) as total_rooms
+                FROM rooms
+                WHERE room_type IS NOT NULL AND TRIM(room_type) != ''
+                GROUP BY room_type
+                ORDER BY room_type ASC
+            ");
+            return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+        } catch (Throwable $e) {
+            return [];
+        }
     }
 
     public function resetToStandardPrices(?string $roomType = null): int

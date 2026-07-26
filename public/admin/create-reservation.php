@@ -81,21 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $reservationId = $reservationModel->createAndGetId($payload);
 
-        $guestEmail = (string) ($_POST['email'] ?? '');
-        if (!empty($guestEmail)) {
-            $resOtpCode = sprintf('%06d', random_int(100000, 999999));
-            sendReservationOtpEmail(
-                $guestEmail,
-                $fullName,
-                $resOtpCode,
-                [
-                    'room_type' => $room['room_type'],
-                    'check_in' => $checkIn,
-                    'check_out' => $checkOut,
-                    'total_amount' => number_format((float)$payload['total_amount'], 2),
-                ]
-            );
-        }
+        // Issue #13 Fix: Skip OTP email for admin-created reservations.
+        // Admin reservations don't require guest OTP verification.
+        // The guest will receive their booking confirmation through normal channels.
 
         if ($paymentMethod === 'Cash') {
             $paymentId = $paymentModel->createAndGetId([
@@ -119,6 +107,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]));
     } catch (Throwable $exception) {
         setFlash('error', $exception->getMessage());
+        // Issue #14 Fix: Preserve form data in session so admin doesn't re-type everything
+        $_SESSION['create_res_form'] = [
+            'full_name' => $_POST['full_name'] ?? '',
+            'phone' => $_POST['phone'] ?? '',
+            'email' => $_POST['email'] ?? '',
+            'check_in' => $_POST['check_in'] ?? '',
+            'check_out' => $_POST['check_out'] ?? '',
+            'room_id' => $_POST['room_id'] ?? '',
+            'status' => $_POST['status'] ?? 'Pending',
+            'payment_method' => $_POST['payment_method'] ?? 'Cash',
+        ];
         redirect('create-reservation.php');
     }
 }
@@ -131,7 +130,11 @@ $rooms = $availabilityDatesValid
     ? $reservationModel->roomsWithDateAvailability($availabilityCheckIn, $availabilityCheckOut)
     : $roomModel->all();
 
-$selectedRoomId = isset($_GET['room_id']) ? (int) $_GET['room_id'] : null;
+$selectedRoomId = isset($_GET['selected_room']) ? (int) $_GET['selected_room'] : (isset($_GET['room_id']) ? (int) $_GET['room_id'] : null);
+
+// Issue #14 Fix: Retrieve preserved form data after validation error redirect
+$savedForm = $_SESSION['create_res_form'] ?? [];
+unset($_SESSION['create_res_form']);
 
 renderAdminLayoutStart('Create Reservation', 'create-reservation', $currentAdmin, ['../assets/css/admin/reservations.css?v=20260530-create-only']);
 ?>
@@ -155,15 +158,15 @@ renderAdminLayoutStart('Create Reservation', 'create-reservation', $currentAdmin
                             <div class="row g-3">
                                 <div class="col-12">
                                     <label class="form-label fw-bold small text-muted" for="full_name">Full Name</label>
-                                    <input class="form-control" id="full_name" name="full_name" type="text" value="<?php echo e(trim((string) (($prefillGuest['first_name'] ?? '') . ' ' . ($prefillGuest['last_name'] ?? '')))); ?>" placeholder="e.g. John Doe" required>
+                                    <input class="form-control" id="full_name" name="full_name" type="text" value="<?php echo e($savedForm['full_name'] ?? trim((string) (($prefillGuest['first_name'] ?? '') . ' ' . ($prefillGuest['last_name'] ?? '')))); ?>" placeholder="e.g. John Doe" required>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-bold small text-muted" for="phone">Phone Number</label>
-                                    <input class="form-control" id="phone" name="phone" type="tel" value="<?php echo e($prefillGuest['phone'] ?? ''); ?>" placeholder="+63 912 345 6789">
+                                    <input class="form-control" id="phone" name="phone" type="tel" value="<?php echo e($savedForm['phone'] ?? $prefillGuest['phone'] ?? ''); ?>" placeholder="+63 912 345 6789">
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-bold small text-muted" for="email">Email Address</label>
-                                    <input class="form-control" id="email" name="email" type="email" value="<?php echo e($prefillGuest['email'] ?? ''); ?>" placeholder="guest@example.com">
+                                    <input class="form-control" id="email" name="email" type="email" value="<?php echo e($savedForm['email'] ?? $prefillGuest['email'] ?? ''); ?>" placeholder="guest@example.com">
                                 </div>
                             </div>
                         </div>

@@ -14,12 +14,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($step === 1) {
         $email = trim((string) ($_POST['email'] ?? ''));
         try {
+            // Issue #17 Fix: Rate limit password reset requests
+            $rateLimitKey = 'reset_' . $email;
+            if (!checkRateLimit($rateLimitKey, 3, 300)) {
+                throw new RuntimeException('Too many reset requests. Please wait 5 minutes before trying again.');
+            }
+            recordAttempt($rateLimitKey, 300);
+
             $stmt = $db->prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
             $stmt->execute(['email' => $email]);
             $user = $stmt->fetch();
 
+            // Issue #18 Fix: Always show success message to prevent email enumeration
             if (!$user) {
-                throw new RuntimeException('No account found with that email address.');
+                setFlash('info', "📩 If an account with that email exists, a reset code has been sent.");
+                redirect('forgot-password.php');
             }
 
             $otp = (string) random_int(100000, 999999);
@@ -37,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $html = "<h3>Password Reset Code</h3><p>Your 6-digit verification code is: <strong>{$otp}</strong></p><p>This code expires in 15 minutes.</p>";
             sendSmtpEmail($email, $subject, $html, $otp);
 
-            setFlash('info', "📩 Verification code sent to {$email}. Please enter your 6-digit code below.");
+            setFlash('info', "📩 Verification code sent. Please enter your 6-digit code below.");
         } catch (Exception $ex) {
             $error = $ex->getMessage();
         }

@@ -14,7 +14,11 @@ $db = Database::connect();
 $userModel = new User($db);
 
 if (!empty($_GET['redirect'])) {
-    $_SESSION['redirect_after_login'] = trim((string)$_GET['redirect']);
+    $redirectUrl = trim((string)$_GET['redirect']);
+    // Issue #19 Fix: Validate redirect URL to prevent open redirects
+    if (isInternalRedirect($redirectUrl)) {
+        $_SESSION['redirect_after_login'] = $redirectUrl;
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -26,12 +30,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('login.php');
     }
 
+    // Issue #17 Fix: Rate limiting on login attempts
+    $rateLimitKey = 'login_' . $email;
+    if (!checkRateLimit($rateLimitKey, 5, 300)) {
+        setFlash('error', 'Too many login attempts. Please wait 5 minutes before trying again.');
+        redirect('login.php');
+    }
+
     $user = $userModel->authenticate($email, $password);
 
     if (!$user) {
+        recordAttempt($rateLimitKey, 300);
         setFlash('error', 'Invalid login credentials.');
         redirect('login.php');
     }
+
+    clearRateLimit($rateLimitKey);
 
     if (isset($user['email_verified']) && (int)$user['email_verified'] === 0) {
         $_SESSION['pending_otp_user_id'] = (int)$user['user_id'];
@@ -181,7 +195,7 @@ renderHeader('Log In - Emperor Hotel', ['../assets/css/site/home.css'], '');
                         </button>
 
                         <div class="text-center mt-3 font-serif small">
-                            <span class="opacity-75">Don't have an account yet?</span>
+                            <span class="text-white-50">Don't have an account yet?</span>
                             <a href="register.php" class="text-warning font-serif fw-bold text-decoration-none ms-1">Create Account</a>
                         </div>
                     </form>

@@ -109,3 +109,71 @@ function splitFullName(string $fullName): array
         'last_name' => count($parts) > 1 ? implode(' ', array_slice($parts, 1)) : 'Guest',
     ];
 }
+
+// ──── Issue #16 Fix: CSRF Token Protection ────
+
+function csrfToken(): string
+{
+    if (empty($_SESSION['_csrf_token'])) {
+        $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['_csrf_token'];
+}
+
+function csrfField(): string
+{
+    return '<input type="hidden" name="_csrf_token" value="' . e(csrfToken()) . '">';
+}
+
+function validateCsrf(): bool
+{
+    $token = $_POST['_csrf_token'] ?? '';
+    return $token !== '' && hash_equals(csrfToken(), $token);
+}
+
+// ──── Issue #17 Fix: Session-Based Rate Limiting ────
+
+function checkRateLimit(string $key, int $maxAttempts = 5, int $windowSeconds = 300): bool
+{
+    $rateLimits = $_SESSION['_rate_limits'] ?? [];
+    $entry = $rateLimits[$key] ?? ['count' => 0, 'expires' => 0];
+
+    if (time() > $entry['expires']) {
+        return true; // Window expired, allow
+    }
+
+    return $entry['count'] < $maxAttempts;
+}
+
+function recordAttempt(string $key, int $windowSeconds = 300): void
+{
+    $rateLimits = $_SESSION['_rate_limits'] ?? [];
+    $entry = $rateLimits[$key] ?? ['count' => 0, 'expires' => 0];
+
+    if (time() > $entry['expires']) {
+        $entry = ['count' => 1, 'expires' => time() + $windowSeconds];
+    } else {
+        $entry['count']++;
+    }
+
+    $rateLimits[$key] = $entry;
+    $_SESSION['_rate_limits'] = $rateLimits;
+}
+
+function clearRateLimit(string $key): void
+{
+    unset($_SESSION['_rate_limits'][$key]);
+}
+
+// ──── Issue #19 Fix: Redirect URL Validation ────
+
+function isInternalRedirect(string $url): bool
+{
+    // Only allow relative paths (starting with ../ or /) — block external URLs
+    $url = trim($url);
+    if ($url === '') return false;
+    if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://') || str_starts_with($url, '//')) {
+        return false;
+    }
+    return str_starts_with($url, '../') || str_starts_with($url, '/') || str_starts_with($url, './');
+}

@@ -316,7 +316,12 @@ renderHeader('Room #' . e($room['room_number']) . ' - ' . e($roomType), ['../ass
                     <!-- Express Booking CTA -->
                     <div class="pt-3 border-top border-secondary">
                         <?php if ($isAvailable): ?>
-                            <?php if ($user): ?>
+                            <?php if ($user && $user['role'] === 'admin'): ?>
+                                <a href="../admin/create-reservation.php?selected_room=<?= (int)$room['room_id'] ?>&check_in=<?= e($checkIn) ?>&check_out=<?= e($checkOut) ?>" 
+                                   class="btn w-100 rounded-pill py-3 font-serif fw-bold fs-6 shadow text-uppercase tracking-wider" style="background: #ffc107; color: #070A10; border: none; box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);">
+                                    <i class="bi bi-plus-circle-fill me-2"></i>Create Reservation for Room #<?= e($room['room_number']) ?>
+                                </a>
+                            <?php elseif ($user): ?>
                                 <a href="../user/dashboard.php?selected_room=<?= (int)$room['room_id'] ?>&check_in=<?= e($checkIn) ?>&check_out=<?= e($checkOut) ?>" 
                                    class="btn w-100 rounded-pill py-3 font-serif fw-bold fs-6 shadow text-uppercase tracking-wider" style="background: #ffc107; color: #070A10; border: none; box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);">
                                     <i class="bi bi-lightning-charge-fill me-2"></i>Reserve Room #<?= e($room['room_number']) ?> Now
