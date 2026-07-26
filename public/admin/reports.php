@@ -358,22 +358,22 @@ $trendFormattedDates = array_map(static function($dateStr) {
     return $ts ? date('M j', $ts) : (string) $dateStr;
 }, array_column($trendReport['rows'], 'reservation_date'));
 $trendDates = json_encode($trendFormattedDates);
-$trendActive = json_encode(array_column($trendReport['rows'], 'active_reservations'));
-$trendCancelled = json_encode(array_column($trendReport['rows'], 'cancelled_reservations'));
+$trendActive = json_encode(array_map('intval', array_column($trendReport['rows'], 'active_reservations')));
+$trendCancelled = json_encode(array_map('intval', array_column($trendReport['rows'], 'cancelled_reservations')));
 
 $roomTypes = json_encode(array_column($occupancyReport['by_room_type'], 'room_type'));
-$bookedNights = json_encode(array_column($occupancyReport['by_room_type'], 'booked_room_nights'));
+$bookedNights = json_encode(array_map('intval', array_column($occupancyReport['by_room_type'], 'booked_room_nights')));
 
-$paymentMethods = json_encode(array_column($revenueReport['by_payment_method'], 'payment_method'));
-$paymentRevenues = json_encode(array_column($revenueReport['by_payment_method'], 'confirmed_revenue'));
+$paymentMethods = json_encode(array_map(fn($item) => !empty($item['payment_method']) ? $item['payment_method'] : 'E-Wallet', $revenueReport['by_payment_method']));
+$paymentRevenues = json_encode(array_map(fn($item) => (float)$item['confirmed_revenue'], $revenueReport['by_payment_method']));
 
 $ratingTypes = json_encode(array_keys($ratingsPerType));
 $ratingScores = json_encode(array_map(fn($item) => (float)$item['avg_rating'], array_values($ratingsPerType)));
 
 // Additional JSON arrays for lower breakdown charts
 $roomNightsTypes = json_encode(array_column($occupancyReport['by_room_type'], 'room_type'));
-$roomNightsBooked = json_encode(array_column($occupancyReport['by_room_type'], 'booked_room_nights'));
-$roomNightsAvailable = json_encode(array_column($occupancyReport['by_room_type'], 'available_room_nights'));
+$roomNightsBooked = json_encode(array_map('intval', array_column($occupancyReport['by_room_type'], 'booked_room_nights')));
+$roomNightsAvailable = json_encode(array_map('intval', array_column($occupancyReport['by_room_type'], 'available_room_nights')));
 
 $revenueTypeNames = json_encode(array_column($revenueReport['by_room_type'], 'room_type'));
 $revenueTypeValues = json_encode(array_map(fn($item) => (float)$item['confirmed_revenue'], $revenueReport['by_room_type']));
@@ -411,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // High-Contrast Pill Badge Renderer for Chart Labels
     const drawPillBadge = (ctx, text, x, y, bgColor, textColor) => {
+        if (isNaN(x) || isNaN(y)) return;
         ctx.save();
         ctx.font = '700 10px "Outfit", "Segoe UI", system-ui, sans-serif';
         const metrics = ctx.measureText(text);
@@ -444,43 +445,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const emperorValuePlugin = {
         id: 'emperorValueLabels',
         afterDatasetsDraw(chart) {
-            const { ctx, chartArea } = chart;
-            if (!chartArea) return;
-            const isLight = document.documentElement.classList.contains('light-mode');
+            try {
+                const { ctx, chartArea } = chart;
+                if (!chartArea) return;
+                const isLight = document.documentElement.classList.contains('light-mode');
 
-            chart.data.datasets.forEach((dataset, datasetIndex) => {
-                const meta = chart.getDatasetMeta(datasetIndex);
-                if (meta.hidden) return;
+                chart.data.datasets.forEach((dataset, datasetIndex) => {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    if (!meta || meta.hidden) return;
 
-                meta.data.forEach((element, index) => {
-                    const value = dataset.data[index];
-                    if (value === null || value === undefined || value === 0) return;
+                    meta.data.forEach((element, index) => {
+                        if (!element || isNaN(element.x) || isNaN(element.y)) return;
+                        const rawVal = dataset.data[index];
+                        const numVal = Number(rawVal || 0);
+                        if (isNaN(numVal) || numVal === 0) return;
 
-                    if (chart.config.type === 'line') {
-                        const text = String(value);
-                        const x = element.x;
-                        const yOffset = datasetIndex === 0 ? -14 : 14;
-                        const y = Math.max(chartArea.top + 12, Math.min(chartArea.bottom - 12, element.y + yOffset));
-                        const bgColor = datasetIndex === 0 ? '#fdd700' : '#ef4444';
-                        const textColor = datasetIndex === 0 ? '#020617' : '#ffffff';
-                        drawPillBadge(ctx, text, x, y, bgColor, textColor);
-                    } else if (chart.config.type === 'bar') {
-                        if (chart.options.indexAxis === 'y') {
-                            const text = typeof value === 'number' && value >= 1000 
-                                ? '₱' + Math.round(value / 1000) + 'k' 
-                                : (typeof value === 'number' && value < 6 ? value.toFixed(1) + ' ★' : String(value));
-                            const x = Math.min(element.x + 24, chartArea.right - 18);
-                            const y = element.y;
-                            drawPillBadge(ctx, text, x, y, isLight ? '#0284c7' : '#38bdf8', '#020617');
-                        } else {
-                            const text = typeof value === 'number' ? value.toLocaleString() : String(value);
+                        if (chart.config.type === 'line') {
+                            const text = String(numVal);
                             const x = element.x;
-                            const y = Math.max(chartArea.top + 14, element.y - 12);
-                            drawPillBadge(ctx, text, x, y, isLight ? '#b45309' : '#fdd700', '#020617');
+                            const yOffset = datasetIndex === 0 ? -14 : 14;
+                            const y = Math.max(chartArea.top + 12, Math.min(chartArea.bottom - 12, element.y + yOffset));
+                            const bgColor = datasetIndex === 0 ? '#fdd700' : '#ef4444';
+                            const textColor = datasetIndex === 0 ? '#020617' : '#ffffff';
+                            drawPillBadge(ctx, text, x, y, bgColor, textColor);
+                        } else if (chart.config.type === 'bar') {
+                            if (chart.options.indexAxis === 'y') {
+                                const text = numVal >= 1000 
+                                    ? '₱' + Math.round(numVal / 1000) + 'k' 
+                                    : (numVal < 6 ? numVal.toFixed(1) + ' ★' : String(numVal));
+                                const x = Math.min(element.x + 24, chartArea.right - 18);
+                                const y = element.y;
+                                drawPillBadge(ctx, text, x, y, isLight ? '#0284c7' : '#38bdf8', '#020617');
+                            } else {
+                                const text = numVal.toLocaleString();
+                                const x = element.x;
+                                const y = Math.max(chartArea.top + 14, element.y - 12);
+                                drawPillBadge(ctx, text, x, y, isLight ? '#b45309' : '#fdd700', '#020617');
+                            }
                         }
-                    }
+                    });
                 });
-            });
+            } catch (e) { }
         }
     };
 
@@ -488,26 +493,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const emperorDoughnutPlugin = {
         id: 'emperorDoughnutLabels',
         afterDatasetsDraw(chart) {
-            if (chart.config.type !== 'doughnut' && chart.config.type !== 'pie') return;
-            const { ctx } = chart;
-            const dataset = chart.data.datasets[0];
-            if (!dataset || !dataset.data) return;
+            try {
+                if (chart.config.type !== 'doughnut' && chart.config.type !== 'pie') return;
+                const { ctx } = chart;
+                const dataset = chart.data.datasets[0];
+                if (!dataset || !dataset.data) return;
 
-            const total = dataset.data.reduce((a, b) => a + Number(b || 0), 0);
-            const meta = chart.getDatasetMeta(0);
-            if (meta.hidden) return;
+                const total = dataset.data.reduce((a, b) => a + Number(b || 0), 0);
+                const meta = chart.getDatasetMeta(0);
+                if (!meta || meta.hidden) return;
 
-            meta.data.forEach((element, index) => {
-                const value = Number(dataset.data[index] || 0);
-                if (!value || total <= 0) return;
+                meta.data.forEach((element, index) => {
+                    if (!element) return;
+                    const value = Number(dataset.data[index] || 0);
+                    if (!value || total <= 0) return;
 
-                const percent = Math.round((value / total) * 100);
-                if (percent < 4) return;
+                    const percent = Math.round((value / total) * 100);
+                    if (percent < 4) return;
 
-                const position = element.tooltipPosition();
-                const text = percent + '%';
-                drawPillBadge(ctx, text, position.x, position.y, 'rgba(2, 6, 23, 0.88)', '#ffffff');
-            });
+                    const position = element.tooltipPosition();
+                    if (!position || isNaN(position.x) || isNaN(position.y)) return;
+                    const text = percent + '%';
+                    drawPillBadge(ctx, text, position.x, position.y, 'rgba(2, 6, 23, 0.88)', '#ffffff');
+                });
+            } catch (e) { }
         }
     };
 

@@ -1507,6 +1507,15 @@ body.light-mode main[style*="background:#070A10"] {
     color: #F8FAFC;
 }
 
+@keyframes emperorSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.spin {
+    display: inline-block;
+    animation: emperorSpin 0.8s linear infinite;
+}
+
 /* ===== LIGHT MODE OVERRIDES FOR ROOM DIRECTORY ===== */
 body.light-mode .rooms-page-banner {
     background: #ffffff !important;

@@ -111,8 +111,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('messages.php');
         }
 
-        if ($action === 'sync_gmail') {
+        if ($action === 'sync_gmail' || isset($_GET['ajax_sync'])) {
             $syncResult = syncGmailReplies($db);
+            $summary = $contactMessageModel->statusSummary();
+
+            if (isset($_GET['ajax_sync']) || (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => $syncResult['success'],
+                    'synced_count' => $syncResult['synced_count'],
+                    'unread_count' => (int) $summary['unread'],
+                    'message' => $syncResult['message'],
+                ]);
+                exit;
+            }
+
             if ($syncResult['success']) {
                 setFlash('success', $syncResult['message']);
             } else {
@@ -191,10 +204,10 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
             </div>
             <div class="d-flex align-items-center gap-2">
                 <span class="badge-soft me-1"><?php echo e($messageData['total']); ?> message(s)</span>
-                <form method="post" action="messages.php" class="d-inline">
+                <form method="post" action="messages.php" class="d-inline" id="form-sync-gmail">
                     <input type="hidden" name="action" value="sync_gmail">
-                    <button type="submit" class="btn btn-sm btn-outline-warning font-serif fw-semibold" title="Fetch incoming Gmail email replies into database">
-                        <i class="bi bi-arrow-repeat me-1"></i>Sync Gmail Replies
+                    <button type="submit" id="btn-sync-gmail" class="btn btn-sm btn-outline-warning font-serif fw-semibold" title="Fetch incoming Gmail email replies into database">
+                        <i class="bi bi-arrow-repeat me-1" id="icon-sync-gmail"></i>Sync Gmail Replies
                     </button>
                 </form>
                 <button type="button" class="btn btn-sm btn-warning font-serif fw-semibold text-dark" data-bs-toggle="modal" data-bs-target="#composeEmailModal">
@@ -466,8 +479,46 @@ Emperor Hotel Guest Relations</textarea>
     </div>
 </div>
 <script>
-document.querySelectorAll(".modal").forEach((m) => {
-    document.body.appendChild(m);
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".modal").forEach((m) => {
+        document.body.appendChild(m);
+    });
+
+    const syncBtn = document.getElementById("btn-sync-gmail");
+    const syncIcon = document.getElementById("icon-sync-gmail");
+
+    if (syncBtn) {
+        syncBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            if (syncIcon) syncIcon.classList.add("spin");
+            syncBtn.disabled = true;
+
+            try {
+                const resp = await fetch("messages.php?ajax_sync=1", {
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                });
+                const data = await resp.json();
+
+                if (data && data.success) {
+                    if (window.showEmperorToast) {
+                        window.showEmperorToast("🔄 Gmail Sync Complete", data.message, "success");
+                    }
+                    if (typeof window.handleDynamicFetch === "function") {
+                        window.handleDynamicFetch(window.location.href);
+                    }
+                } else {
+                    if (window.showEmperorToast) {
+                        window.showEmperorToast("ℹ️ Gmail Sync Notice", (data && data.message) ? data.message : "Sync attempt completed.", "info");
+                    }
+                }
+            } catch (err) {
+                console.error("AJAX Gmail Sync Error:", err);
+            } finally {
+                if (syncIcon) syncIcon.classList.remove("spin");
+                syncBtn.disabled = false;
+            }
+        });
+    }
 });
 </script>
 <?php renderAdminLayoutEnd(); ?>

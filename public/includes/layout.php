@@ -472,6 +472,75 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    window.handleDynamicFetch = handleDynamicFetch;
+
+    // Global Toast Notification Helper
+    window.showEmperorToast = (title, message, type = 'info') => {
+        let container = document.getElementById('emperor-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'emperor-toast-container';
+            container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 1090; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        const bg = type === 'success' ? '#065f46' : (type === 'error' ? '#991b1b' : '#1e293b');
+        const border = type === 'success' ? '#10b981' : (type === 'error' ? '#f87171' : '#fdd700');
+        toast.style.cssText = `background: ${bg}; color: #ffffff; border: 1.5px solid ${border}; padding: 14px 18px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); pointer-events: auto; min-width: 280px; max-width: 360px; font-family: system-ui, sans-serif; transition: all 0.3s ease; transform: translateY(-10px); opacity: 0;`;
+        toast.innerHTML = `<div style="font-weight: 700; font-size: 14px; margin-bottom: 4px; color: #ffdf73;">${title}</div><div style="font-size: 13px; opacity: 0.9;">${message}</div>`;
+        container.appendChild(toast);
+        requestAnimationFrame(() => {
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+        });
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-10px)';
+            setTimeout(() => toast.remove(), 350);
+        }, 4000);
+    };
+
+    // Automated Background Gmail Sync Engine (Zero Page Reload)
+    let isGmailSyncing = false;
+    async function backgroundGmailSync() {
+        if (isGmailSyncing) return;
+        isGmailSyncing = true;
+        try {
+            const resp = await fetch('messages.php?ajax_sync=1', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data && data.success && data.synced_count > 0) {
+                    // Update badge on Guest Messages sidebar links
+                    document.querySelectorAll('a[href="messages.php"]').forEach(link => {
+                        let badge = link.querySelector('.badge');
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'badge bg-danger rounded-pill ms-1 text-xs';
+                            link.appendChild(badge);
+                        }
+                        badge.textContent = data.unread_count;
+                    });
+                    
+                    window.showEmperorToast('📩 New Guest Email Reply', `Fetched ${data.synced_count} new email reply message(s) from guest!`, 'success');
+
+                    if (window.location.pathname.endsWith('messages.php')) {
+                        if (typeof window.handleDynamicFetch === 'function') {
+                            window.handleDynamicFetch(window.location.href);
+                        }
+                    }
+                }
+            }
+        } catch(e) { }
+        finally {
+            isGmailSyncing = false;
+        }
+    }
+
+    // Auto-check for new Gmail replies every 20 seconds in the background
+    setInterval(backgroundGmailSync, 20000);
+
     updateSidebarActiveState(window.location.href);
     attachDynamicEvents();
 
