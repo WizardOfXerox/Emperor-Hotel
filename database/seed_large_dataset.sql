@@ -662,4 +662,27 @@ INSERT INTO `room_reviews` (`review_id`, `reservation_id`, `user_id`, `room_id`,
 ('68', '159', '29', '15', '5', 'The suite layout and panoramic windows are breathtaking. Worth every peso!', '2025-09-02 00:00:00'),
 ('69', '160', '30', '16', '5', 'Best luxury hotel experience in the city! Cleanliness is 10/10.', '2026-03-17 00:00:00');
 
+-- 7. Contact Messages Table & Seed Data
+CREATE TABLE IF NOT EXISTS contact_messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    full_name VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    phone VARCHAR(50) NULL,
+    inquiry_type VARCHAR(100) NOT NULL DEFAULT 'General Inquiry',
+    subject VARCHAR(255) NULL,
+    message TEXT NOT NULL,
+    status ENUM('Unread', 'Read', 'Replied') NOT NULL DEFAULT 'Unread',
+    reply_message TEXT NULL,
+    replied_at DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+INSERT INTO contact_messages (message_id, user_id, full_name, email, phone, inquiry_type, subject, message, status, reply_message, replied_at) VALUES
+('1', NULL, 'Jane Smith', 'jane.smith@example.com', '+63 917 123 4567', 'Suite Reservation', 'Airport Shuttle Inquiry', 'Hello Concierge, I would like to inquire if airport shuttle transfers are available for guests staying in the Royal Executive Suite.', 'Unread', NULL, NULL),
+('2', NULL, 'Anthony Garcia', 'anthony.garcia@gmail.com', '+63 977 816 7054', 'Concierge Assistance', 'Early Check-in Request', 'Good day! Can we request an early check-in at 11:00 AM for our upcoming anniversary stay on Floor 3?', 'Read', NULL, NULL),
+('3', NULL, 'Katrina Legaspi', 'katrina.legaspi@gmail.com', '+63 956 250 1844', 'Dining & Events', 'Private Terrace Dining Menu', 'Hi Emperor Hotel team, we are planning a private dinner for 6 guests in the Ocean View Terrace. Do you offer custom tasting menus?', 'Replied', 'Dear Ms. Legaspi, thank you for reaching out! Our executive chef offers customized 5-course degustation menus for private terrace dining. Our concierge will contact you directly to finalize your menu preferences.', '2026-07-26 19:58:00')
+ON DUPLICATE KEY UPDATE status = VALUES(status);
+
 SET FOREIGN_KEY_CHECKS = 1;

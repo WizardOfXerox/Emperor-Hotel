@@ -35,3 +35,20 @@ CREATE TABLE IF NOT EXISTS room_reviews (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE CASCADE
 );
+
+-- 4. Create contact_messages table for Guest Concierge Inquiries & Inbox System
+CREATE TABLE IF NOT EXISTS contact_messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    full_name VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    phone VARCHAR(50) NULL,
+    inquiry_type VARCHAR(100) NOT NULL DEFAULT 'General Inquiry',
+    subject VARCHAR(255) NULL,
+    message TEXT NOT NULL,
+    status ENUM('Unread', 'Read', 'Replied') NOT NULL DEFAULT 'Unread',
+    reply_message TEXT NULL,
+    replied_at DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
+);

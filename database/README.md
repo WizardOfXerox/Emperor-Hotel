@@ -9,11 +9,13 @@ Database name: `emperors_hotel_db`
 
 ## Tables
 
-- `users`: login accounts and roles
-- `guests`: guest contact profiles
-- `rooms`: room inventory, room status, and dynamic nightly price
-- `reservations`: bookings connected to guests, users, and rooms
-- `payments`: payment records connected to reservations
+- `users`: login accounts, 2FA OTP tokens, password reset tokens, and roles (`admin`, `user`)
+- `guests`: guest contact profiles (name, email, phone)
+- `rooms`: room inventory, bed types, capacity, view types, operational statuses, and dynamic nightly prices
+- `reservations`: bookings connected to guests, users, and rooms with conflict detection
+- `payments`: payment records and transaction logs connected to reservations
+- `room_reviews`: verified guest rating (1 to 5 stars) and feedback reviews
+- `contact_messages`: guest concierge inquiries, messaging threads, and admin outbound direct email notices
 
 Application payment rules:
 

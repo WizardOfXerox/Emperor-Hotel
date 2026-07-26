@@ -12,6 +12,7 @@ try {
     $db->exec("SET FOREIGN_KEY_CHECKS = 0");
 
     // Truncate existing transactional tables
+    $db->exec("TRUNCATE TABLE contact_messages");
     $db->exec("TRUNCATE TABLE room_reviews");
     $db->exec("TRUNCATE TABLE payments");
     $db->exec("TRUNCATE TABLE reservations");
@@ -410,9 +411,58 @@ try {
     $reservationModel = new Reservation($db);
     $reservationModel->syncAllRoomStatuses();
 
+    // G. Contact Messages Seeding
+    $contactSeeds = [
+        [
+            'full_name' => 'Jane Smith',
+            'email' => 'jane.smith@example.com',
+            'phone' => '+63 917 123 4567',
+            'inquiry_type' => 'Suite Reservation',
+            'subject' => 'Airport Shuttle Inquiry',
+            'message' => 'Hello Concierge, I would like to inquire if airport shuttle transfers are available for guests staying in the Royal Executive Suite.',
+            'status' => 'Unread',
+        ],
+        [
+            'full_name' => 'Anthony Garcia',
+            'email' => 'anthony.garcia@gmail.com',
+            'phone' => '+63 977 816 7054',
+            'inquiry_type' => 'Concierge Assistance',
+            'subject' => 'Early Check-in Request',
+            'message' => 'Good day! Can we request an early check-in at 11:00 AM for our upcoming anniversary stay on Floor 3?',
+            'status' => 'Read',
+        ],
+        [
+            'full_name' => 'Katrina Legaspi',
+            'email' => 'katrina.legaspi@gmail.com',
+            'phone' => '+63 956 250 1844',
+            'inquiry_type' => 'Dining & Events',
+            'subject' => 'Private Terrace Dining Menu',
+            'message' => 'Hi Emperor Hotel team, we are planning a private dinner for 6 guests in the Ocean View Terrace. Do you offer custom tasting menus?',
+            'status' => 'Replied',
+            'reply_message' => 'Dear Ms. Legaspi, thank you for reaching out! Our executive chef offers customized 5-course degustation menus for private terrace dining. Our concierge will contact you directly to finalize your menu preferences.',
+            'replied_at' => date('Y-m-d H:i:s'),
+        ],
+    ];
+
+    $stmtContact = $db->prepare("INSERT INTO contact_messages (full_name, email, phone, inquiry_type, subject, message, status, reply_message, replied_at) VALUES (:full_name, :email, :phone, :inquiry_type, :subject, :message, :status, :reply_message, :replied_at)");
+    foreach ($contactSeeds as $cSeed) {
+        $stmtContact->execute([
+            'full_name' => $cSeed['full_name'],
+            'email' => $cSeed['email'],
+            'phone' => $cSeed['phone'],
+            'inquiry_type' => $cSeed['inquiry_type'],
+            'subject' => $cSeed['subject'],
+            'message' => $cSeed['message'],
+            'status' => $cSeed['status'],
+            'reply_message' => $cSeed['reply_message'] ?? null,
+            'replied_at' => $cSeed['replied_at'] ?? null,
+        ]);
+    }
+
     echo "Inserted $resCount total reservations.\n";
     echo "Inserted $payCount total payment transactions.\n";
     echo "Inserted $revCount total verified guest room reviews.\n";
+    echo "Inserted sample guest concierge messages.\n";
 
     echo "MASSIVE DATABASE SEEDING COMPLETED SUCCESSFULLY!\n";
 

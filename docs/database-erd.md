@@ -17,9 +17,13 @@ Related documentation:
 erDiagram
     USERS ||--o{ GUESTS : "owns optional guest profile"
     USERS ||--o{ RESERVATIONS : "creates optional booking"
+    USERS ||--o{ CONTACT_MESSAGES : "submits optional inquiry"
+    USERS ||--o{ ROOM_REVIEWS : "writes review"
     GUESTS ||--o{ RESERVATIONS : "books"
     ROOMS ||--o{ RESERVATIONS : "assigned to"
+    ROOMS ||--o{ ROOM_REVIEWS : "reviewed in"
     RESERVATIONS ||--o{ PAYMENTS : "has"
+    RESERVATIONS ||--o{ ROOM_REVIEWS : "reviewed for"
 
     USERS {
         int user_id PK
@@ -257,6 +261,11 @@ Quick ownership guide:
 | --- | --- | --- |
 | `users` | `app/models/User.php` | `public/auth/login.php`, `public/auth/register.php`, `public/admin/users.php` |
 | `guests` | `app/models/Guest.php` | `public/admin/guests.php`, `public/admin/reservations.php`, `public/user/dashboard.php` |
+| `rooms` | `app/models/Room.php` | `public/site/rooms.php`, `public/admin/rooms.php`, `public/admin/map.php` |
+| `reservations` | `app/models/Reservation.php` | `public/site/booking.php`, `public/admin/reservations.php`, `public/admin/dashboard.php` |
+| `payments` | `app/models/Payment.php` | `public/admin/payments.php`, `public/admin/receipt.php`, `public/user/dashboard.php` |
+| `room_reviews` | `app/models/RoomReview.php` | `public/site/rooms.php`, `public/site/room-detail.php` |
+| `contact_messages` | `app/models/ContactMessage.php` | `public/site/contact.php`, `public/admin/messages.php` |
 | `rooms` | `app/models/Room.php` | `public/admin/rooms.php`, `public/site/home.php`, `public/site/rooms.php`, reservation forms |
 | `reservations` | `app/models/Reservation.php` | `public/admin/reservations.php`, `public/admin/booking-records.php`, `public/user/dashboard.php`, availability endpoints, receipts |
 | `payments` | `app/models/Payment.php` | `public/admin/payments.php`, `public/user/payment.php`, `public/admin/receipt.php`, dashboard |

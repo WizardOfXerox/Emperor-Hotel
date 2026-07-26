@@ -31,6 +31,9 @@ A robust, local-first web application designed for guest self-service booking an
 * **Booking History & Self-Service Cancellation**: Consolidated timeline tracking guest stay records, verification states, and cancellation.
 
 ### 💼 Administrative Management Hub
+* **Guest Messages & Concierge Inbox**: Full-featured inbox (`public/admin/messages.php`) with unread badge indicators, status filters (`Unread`, `Read`, `Replied`), inquiry type filters, message modal, and instant SMTP email reply capabilities.
+* **Direct Outbound Guest Email Notifications**: Send direct email notices to guests regarding booking conflicts, payment reminders, suite transfers, or custom messages directly from reservation manage modals or the compose email wizard.
+* **Paginated User Management**: Interactive search, role filtering, and dynamic pagination controls on `public/admin/users.php`.
 * **Rooms Availability Information**: Renamed interactive 2D floor grid featuring floor tab navigation, real-time status legend badges, and touch-optimized horizontal tab scrolling on mobile viewports.
 * **Automatic Room Operational Status Reconciliation**: Built-in engine (`Reservation::syncAllRoomStatuses()`) automatically reconciling room statuses so active bookings (`Pending`, `Confirmed`, `Checked-in`) block rooms from being mistakenly displayed as `Available`.
 * **Unified Admin Dashboard & Executive Analytics**:
