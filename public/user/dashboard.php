@@ -598,6 +598,16 @@ $userMessages = $contactMessageModel->findForUser((int) $user['user_id'], (strin
         <?php foreach ($userMessages as $msg):
             $msgId = (int) $msg['message_id'];
             $isUnread = $msg['status'] === 'Unread';
+            $hasGuestReply = str_contains($msg['message'], '[Guest Follow-up Reply');
+
+            if ($hasGuestReply) {
+                $msgParts = explode('[Guest Follow-up Reply', $msg['message'], 2);
+                $userMainMessageText = trim($msgParts[0]);
+                $userGuestReplyText = '[Guest Follow-up Reply' . $msgParts[1];
+            } else {
+                $userMainMessageText = $msg['message'];
+                $userGuestReplyText = null;
+            }
         ?>
             <article class="p-3 rounded-4 border dashboard-history-item">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
@@ -606,6 +616,8 @@ $userMessages = $contactMessageModel->findForUser((int) $user['user_id'], (strin
                             <span class="badge-soft"><?php echo e($msg['inquiry_type']); ?></span>
                             <?php if ($msg['status'] === 'Replied'): ?>
                                 <span class="badge bg-success text-white text-xs"><i class="bi bi-check-circle-fill me-1"></i>Concierge Replied</span>
+                            <?php elseif ($hasGuestReply): ?>
+                                <span class="badge bg-warning text-dark text-xs font-serif fw-bold"><i class="bi bi-chat-right-quote-fill me-1"></i>Your Follow-up Sent</span>
                             <?php elseif ($isUnread): ?>
                                 <span class="badge bg-danger text-white text-xs"><i class="bi bi-bell-fill me-1"></i>New Hotel Notice</span>
                             <?php else: ?>
@@ -640,7 +652,19 @@ $userMessages = $contactMessageModel->findForUser((int) $user['user_id'], (strin
                             <!-- Message Body -->
                             <div class="mb-4">
                                 <label class="form-label text-xs text-uppercase tracking-wider text-warning font-serif fw-bold"><i class="bi bi-chat-left-quote-fill me-1"></i>Message Content / Notice:</label>
-                                <div class="p-3 rounded-3 border border-secondary text-sm text-light" style="background: rgba(15, 23, 42, 0.9); line-height: 1.6; white-space: pre-wrap;"><?php echo e($msg['message']); ?></div>
+                                <div class="p-3 rounded-3 border border-secondary text-sm text-light" style="background: rgba(15, 23, 42, 0.9); line-height: 1.6; white-space: pre-wrap;"><?php echo e($userMainMessageText); ?></div>
+                                
+                                <?php if ($userGuestReplyText): ?>
+                                    <div class="mt-3 p-3 rounded-3 border shadow-sm" style="background: rgba(212, 175, 55, 0.15) !important; border: 1.5px solid #fdd700 !important; color: #FFFDF0;">
+                                        <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-warning border-opacity-50">
+                                            <strong class="text-warning font-serif fw-bold text-sm">
+                                                <i class="bi bi-chat-right-quote-fill me-2"></i>💬 Your Follow-up Reply:
+                                            </strong>
+                                            <span class="badge bg-warning text-dark font-serif fw-bold px-2.5 py-1 text-xs">Sent to Staff</span>
+                                        </div>
+                                        <div class="text-sm font-monospace fw-semibold" style="line-height: 1.6; white-space: pre-wrap; color: #FFFFFF; font-size: 0.95rem;"><?php echo e($userGuestReplyText); ?></div>
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Hotel Staff Reply (if staff replied) -->

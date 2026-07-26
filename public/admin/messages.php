@@ -240,11 +240,25 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
                     <?php endif; ?>
                     <?php foreach ($messages as $msg):
                         $msgId = (int) $msg['message_id'];
-                        $statusBadgeClass = match ($msg['status']) {
-                            'Unread' => 'bg-danger text-white border border-danger',
-                            'Replied' => 'bg-success text-white border border-success',
+                        $hasGuestReply = str_contains($msg['message'], '[Guest Follow-up Reply');
+                        
+                        if ($hasGuestReply) {
+                            $msgParts = explode('[Guest Follow-up Reply', $msg['message'], 2);
+                            $mainMessageText = trim($msgParts[0]);
+                            $guestReplyText = '[Guest Follow-up Reply' . $msgParts[1];
+                        } else {
+                            $mainMessageText = $msg['message'];
+                            $guestReplyText = null;
+                        }
+
+                        $statusBadgeClass = match (true) {
+                            $hasGuestReply && $msg['status'] === 'Unread' => 'bg-warning text-dark border border-warning font-serif fw-bold shadow-sm',
+                            $msg['status'] === 'Unread' => 'bg-danger text-white border border-danger',
+                            $msg['status'] === 'Replied' => 'bg-success text-white border border-success',
                             default => 'bg-secondary text-light',
                         };
+
+                        $statusLabel = ($hasGuestReply && $msg['status'] === 'Unread') ? '💬 Guest Replied' : $msg['status'];
                     ?>
                         <tr class="<?php echo $msg['status'] === 'Unread' ? 'fw-bold bg-dark bg-opacity-50' : ''; ?>">
                             <td class="small text-muted text-nowrap"><?php echo e(date('M d, Y H:i', strtotime($msg['created_at']))); ?></td>
@@ -261,7 +275,7 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
                                     <?php echo e(mb_strimwidth($msg['message'], 0, 75, '...')); ?>
                                 </span>
                             </td>
-                            <td><span class="badge rounded-pill px-2.5 py-1 text-xs <?php echo $statusBadgeClass; ?>"><?php echo e($msg['status']); ?></span></td>
+                            <td><span class="badge rounded-pill px-2.5 py-1 text-xs <?php echo $statusBadgeClass; ?>"><?php echo e($statusLabel); ?></span></td>
                             <td class="text-end">
                                 <button class="btn btn-sm btn-warning fw-semibold" type="button" data-bs-toggle="modal" data-bs-target="#messageModal_<?php echo $msgId; ?>">
                                     <i class="bi bi-reply-fill me-1"></i>View & Reply
@@ -310,8 +324,20 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
 
                                         <!-- Message Content -->
                                         <div class="mb-4">
-                                            <label class="form-label text-xs text-uppercase tracking-wider text-warning font-serif fw-bold"><i class="bi bi-chat-left-quote-fill me-1"></i>Customer Inquiry Message:</label>
-                                            <div class="p-3 rounded-3 border border-secondary text-sm text-light" style="background: rgba(15, 23, 42, 0.9); line-height: 1.6; white-space: pre-wrap;"><?php echo e($msg['message']); ?></div>
+                                            <label class="form-label text-xs text-uppercase tracking-wider text-warning font-serif fw-bold"><i class="bi bi-chat-left-quote-fill me-1"></i>Customer Inquiry / Original Notice:</label>
+                                            <div class="p-3 rounded-3 border border-secondary text-sm text-light" style="background: rgba(15, 23, 42, 0.9); line-height: 1.6; white-space: pre-wrap;"><?php echo e($mainMessageText); ?></div>
+                                            
+                                            <?php if ($guestReplyText): ?>
+                                                <div class="mt-3 p-3 rounded-3 border shadow-sm" style="background: rgba(212, 175, 55, 0.15) !important; border: 1.5px solid #fdd700 !important; color: #FFFDF0;">
+                                                    <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-warning border-opacity-50">
+                                                        <strong class="text-warning font-serif fw-bold text-sm">
+                                                            <i class="bi bi-chat-right-quote-fill me-2"></i>💬 Guest Follow-up Response:
+                                                        </strong>
+                                                        <span class="badge bg-warning text-dark font-serif fw-bold px-2.5 py-1 text-xs">New Guest Reply</span>
+                                                    </div>
+                                                    <div class="text-sm font-monospace fw-semibold" style="line-height: 1.6; white-space: pre-wrap; color: #FFFFFF; font-size: 0.95rem;"><?php echo e($guestReplyText); ?></div>
+                                                </div>
+                                            <?php endif; ?>
                                         </div>
 
                                         <!-- Previous Reply (if already replied) -->
