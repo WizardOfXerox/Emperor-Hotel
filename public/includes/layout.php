@@ -103,6 +103,21 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
 
     $links['payments'] = ['label' => 'Payments', 'href' => 'payments.php', 'icon' => 'bi-credit-card-2-back'];
     $links['guests'] = ['label' => 'Guests', 'href' => 'guests.php', 'icon' => 'bi-person-lines-fill'];
+
+    $unreadMsgCount = 0;
+    try {
+        $contactMsgModel = new ContactMessage(Database::connect());
+        $unreadMsgCount = $contactMsgModel->countUnread();
+    } catch (Throwable $e) {
+        $unreadMsgCount = 0;
+    }
+
+    $links['messages'] = [
+        'label' => 'Guest Messages' . ($unreadMsgCount > 0 ? ' <span class="badge bg-danger rounded-pill ms-1 text-xs">' . $unreadMsgCount . '</span>' : ''),
+        'href' => 'messages.php',
+        'icon' => 'bi-chat-left-text-fill'
+    ];
+
     $links['reports'] = ['label' => 'Reports', 'href' => 'reports.php', 'icon' => 'bi-graph-up-arrow'];
     $links['users'] = ['label' => 'Users', 'href' => 'users.php', 'icon' => 'bi-people'];
 
@@ -156,7 +171,7 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
         $isActive = $active === $key ? ' active' : '';
         echo '<a class="sidebar-link' . $isActive . ' text-decoration-none px-3 py-2.5 rounded-3 d-flex align-items-center gap-2" href="' . e($link['href']) . '">';
         echo '<i class="bi ' . e($link['icon']) . '"></i>';
-        echo '<span>' . e($link['label']) . '</span>';
+        echo '<span>' . $link['label'] . '</span>';
         echo '</a>';
     }
     echo '</nav>';
@@ -190,7 +205,7 @@ function renderAdminLayoutStart(string $title, string $active, array $user, arra
         $isActive = $active === $key ? ' active' : '';
         echo '<a class="sidebar-link' . $isActive . '" href="' . e($link['href']) . '">';
         echo '<i class="bi ' . e($link['icon']) . '"></i>';
-        echo '<span>' . e($link['label']) . '</span>';
+        echo '<span>' . $link['label'] . '</span>';
         echo '</a>';
     }
 

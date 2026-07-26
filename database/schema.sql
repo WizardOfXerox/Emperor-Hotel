@@ -84,6 +84,23 @@ CREATE TABLE IF NOT EXISTS room_reviews (
     FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE CASCADE
 );
 
+-- 7. Contact Messages Table (Guest Inquiries & Concierge Desk Inbox)
+CREATE TABLE IF NOT EXISTS contact_messages (
+    message_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    full_name VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    phone VARCHAR(50) NULL,
+    inquiry_type VARCHAR(100) NOT NULL DEFAULT 'General Inquiry',
+    subject VARCHAR(255) NULL,
+    message TEXT NOT NULL,
+    status ENUM('Unread', 'Read', 'Replied') NOT NULL DEFAULT 'Unread',
+    reply_message TEXT NULL,
+    replied_at DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
 -- Seed Data: 36 Luxury Hotel Rooms
 INSERT INTO rooms (room_number, room_type, floor, price_per_night, bed_type, max_capacity, view_type, status) VALUES
 ('101', 'Imperial Deluxe', 1, 4500.00, 'Queen Bed', 2, 'City Skyline View', 'Available'),

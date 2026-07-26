@@ -23,6 +23,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('contact.php');
     }
 
+    // Save Guest Inquiry Message to Database Table
+    $contactMessageModel = new ContactMessage($db);
+    $contactMessageModel->create([
+        'user_id' => $user ? (int) $user['user_id'] : null,
+        'full_name' => $fullName,
+        'email' => $email,
+        'phone' => $phone,
+        'inquiry_type' => $inquiryType,
+        'message' => $message,
+    ]);
+
     // Send Concierge Confirmation Email via SMTP
     $subject = "👑 [The Emperor Hotel] We Received Your Inquiry: {$inquiryType}";
     $html = "
