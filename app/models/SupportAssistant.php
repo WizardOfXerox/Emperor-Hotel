@@ -96,12 +96,12 @@ class SupportAssistant
             return $this->aiReply($scope, $range, $keywords);
         }
 
-        if ($this->matchesAny($normalized, ['spa', 'dining', 'pool', 'breakfast', 'towel', 'pillows', 'shuttle', 'amenities', 'menu'])) {
-            return $this->customerConciergeServicesReply();
+        if ($this->matchesAny($normalized, ['receipt', 'receipts', 'my booking', 'reservation status', 'my receipt', 'booking status', 'lookup reservation', 'check my', 'find booking', 'view booking', 'view reservation', 'lookup', 'status'])) {
+            return $this->customerReservationLookupReply();
         }
 
-        if ($this->matchesAny($normalized, ['my booking', 'reservation status', 'my receipt', 'booking status', 'lookup reservation'])) {
-            return $this->customerReservationLookupReply();
+        if ($this->matchesAny($normalized, ['spa', 'dining', 'pool', 'breakfast', 'towel', 'pillows', 'shuttle', 'amenities', 'menu'])) {
+            return $this->customerConciergeServicesReply();
         }
 
         if ($customerIntent) {
@@ -227,48 +227,72 @@ class SupportAssistant
 
     private function customerBookingReply(): array
     {
-        $lines = [
-            'Here is the step-by-step guide to make a room booking at Emperor Hotel:',
-            '',
-            '### Guest Booking Guide:',
-            '1. **Log In**: Access your guest account (or sign up if you don\'t have one).',
-            '2. **Go to User Dashboard**: Navigate to the booking area on your dashboard.',
-            '3. **Stay Dates**: Select your check-in and check-out dates in the stay details form.',
-            '4. **Select Room**: Browse the live room cards on the right-hand panel and pick your preferred room.',
-            '5. **Choose Payment Mode**: Select "Cash" to pay at the front desk (creates a pending payment reference) or choose card/online transfer.',
-            '6. **Confirm Booking**: Submit the form. If you chose card/online payment, complete the simulated payment screen.',
-            '7. **Track Status**: Scroll to the "Booking History" table at the bottom of your dashboard to view your booking details and status (Pending, Confirmed, etc.).',
-            '',
-            '### Staff/Admin Walk-in Booking Guide:',
-            '1. **Reservations Tab**: Go to the admin panel and navigate to the "Reservations" page to log a walk-in guest.',
-            '2. **Fill Details**: Select room, check-in/check-out dates, and input guest name, email, and phone number.',
-            '3. **Manage Status & Operations**: To confirm, check-in, check-out, extend a stay, or cancel, go to the **Booking Records** page and click the **Manage** button on the booking row to open the controls modal.',
-        ];
+        $html = "
+        <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 10px; padding: 10px 12px;'>
+            <div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;'>
+                <span>🏨 How to Book a Room</span>
+                <span style='font-size:10px; color:#94a3b8; background:rgba(212,175,55,0.12); padding:2px 6px; border-radius:99px;'>Booking Guide</span>
+            </div>
 
-        return $this->reply($lines, 'customer-booking');
+            <div style='display:flex; flex-direction:column; gap:6px; margin-bottom:8px;'>
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px 8px; border-radius:6px;'>
+                    <strong style='color:#ffdf73; font-size:11px;'>1. Pick Dates & Select Room</strong>
+                    <p style='font-size:11px; color:#cbd5e1; margin:2px 0 0 0;'>Select check-in & check-out dates, then browse live suite cards to choose your room.</p>
+                </div>
+
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px 8px; border-radius:6px;'>
+                    <strong style='color:#ffdf73; font-size:11px;'>2. Select Payment Option</strong>
+                    <p style='font-size:11px; color:#cbd5e1; margin:2px 0 0 0;'>Pay online instantly via Credit Card/E-Wallet or choose Cash to settle at front desk upon check-in.</p>
+                </div>
+
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px 8px; border-radius:6px;'>
+                    <strong style='color:#ffdf73; font-size:11px;'>3. Instant Confirmation & Receipt</strong>
+                    <p style='font-size:11px; color:#cbd5e1; margin:2px 0 0 0;'>Your reservation reference is generated immediately and visible on your guest dashboard.</p>
+                </div>
+            </div>
+
+            <a href='../user/dashboard.php' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color:#020617; font-weight:bold; padding:6px 10px; border-radius:6px; text-decoration:none; font-size:11px;'>Book a Suite Now &rarr;</a>
+        </div>";
+
+        return [
+            'text' => $html,
+            'kind' => 'customer-booking',
+            'quick_chips' => ['📅 Available Rooms', '💰 Suite Rates', '🔍 My Booking'],
+        ];
     }
 
     private function hotelProfileReply(): array
     {
-        $foundedYear = $this->hotelProfile['founded_year'] ?? null;
-        $lines = [];
+        $foundedYear = $this->hotelProfile['founded_year'] ?? 2024;
+        $yearsRunning = max(1, (int) date('Y') - (int) $foundedYear);
+        $name = htmlspecialchars((string) $this->hotelProfile['name']);
+        $desc = htmlspecialchars((string) $this->hotelProfile['description']);
 
-        if ($foundedYear) {
-            $yearsRunning = max(0, (int) date('Y') - (int) $foundedYear);
-            $lines[] = sprintf('%s was founded in %s and has been running for about %d year(s).', $this->hotelProfile['name'], $foundedYear, $yearsRunning);
-        } else {
-            $lines[] = (string) ($this->hotelProfile['founded_note'] ?? 'Founding information is not recorded yet.');
-            $lines[] = 'Add the founding year in `app/config/hotel.php` so support can answer it directly.';
-        }
+        $html = "
+        <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 10px; padding: 10px 12px;'>
+            <div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:14px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;'>
+                <span>👑 About {$name}</span>
+                <span style='font-size:10px; color:#94a3b8;'>Est. {$foundedYear} ({$yearsRunning} yrs)</span>
+            </div>
+            <p style='font-size:11px; color:#cbd5e1; line-height:1.4; margin:0 0 8px 0;'>{$desc}</p>
+            <div style='display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:11px;'>
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px; border-radius:6px;'>
+                    <span style='color:#94a3b8; font-size:10px; display:block;'>Support Email</span>
+                    <strong style='color:#ffdf73;'>support@emperorhotel.com</strong>
+                </div>
+                <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:6px; border-radius:6px;'>
+                    <span style='color:#94a3b8; font-size:10px; display:block;'>Concierge Hotline</span>
+                    <strong style='color:#4ade80;'>+63 2 8888 7777</strong>
+                </div>
+            </div>
+            <a href='../site/about.php' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37 0%, #FFDF73 50%, #AA7C11 100%); color:#020617; font-weight:bold; padding:5px 10px; border-radius:6px; text-decoration:none; margin-top:8px; font-size:11px;'>Explore Hotel Story &rarr;</a>
+        </div>";
 
-        $lines[] = '';
-        $lines[] = 'Hotel identity:';
-        $lines[] = '- Name: ' . (string) $this->hotelProfile['name'];
-        $lines[] = '- Description: ' . (string) $this->hotelProfile['description'];
-        $lines[] = '- Support Email: ' . (string) ($this->hotelProfile['support_email'] ?: 'support@example.com');
-        $lines[] = '- Support Phone: ' . (string) ($this->hotelProfile['support_phone'] ?: 'Not provided');
-
-        return $this->reply($lines, 'customer-hotel-profile');
+        return [
+            'text' => $html,
+            'kind' => 'customer-hotel-profile',
+            'quick_chips' => ['🏨 Room Categories', '💰 Suite Rates', '📅 Available Rooms'],
+        ];
     }
 
     private function greetingReply(string $scope): array
