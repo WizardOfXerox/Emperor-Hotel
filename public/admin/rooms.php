@@ -233,7 +233,7 @@ renderAdminLayoutStart('Rooms', 'rooms', $currentAdmin, ['../assets/css/admin/ro
             <span class="badge-soft"><?php echo e($filterActiveCount); ?> active filter(s)</span>
             <a class="btn btn-outline-light btn-sm" href="rooms.php">Clear Filters</a>
             <a class="btn btn-outline-warning btn-sm fw-semibold" href="rooms.php?export=xml">Export XML</a>
-            <button class="btn btn-warning btn-sm fw-semibold" type="button" onclick="openCreateRoomModal()">
+            <button class="btn btn-warning btn-sm fw-semibold" type="button" data-bs-toggle="modal" data-bs-target="#createRoomModal">
                 <i class="bi bi-plus-circle me-1"></i>New Room
             </button>
         </div>

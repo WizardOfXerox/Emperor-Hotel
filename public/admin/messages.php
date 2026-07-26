@@ -141,9 +141,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('messages.php');
         }
 
-        if ($action === 'mark_read') {
-            $messageId = (int) ($_POST['message_id'] ?? 0);
-            $contactMessageModel->markAsRead($messageId);
+        if ($action === 'mark_read' || isset($_GET['ajax_mark_read'])) {
+            $messageId = (int) ($_POST['message_id'] ?? ($_GET['message_id'] ?? 0));
+            if ($messageId > 0) {
+                $contactMessageModel->markAsRead($messageId);
+            }
+            if (isset($_GET['ajax_mark_read']) || (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true]);
+                exit;
+            }
             setFlash('success', 'Message marked as read.');
             redirect('messages.php');
         }
@@ -157,6 +164,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if (isset($_GET['view'])) {
     $viewId = (int) $_GET['view'];
     $contactMessageModel->markAsRead($viewId);
+}
+if (isset($_GET['ajax_mark_read'])) {
+    $viewId = (int) $_GET['message_id'];
+    $contactMessageModel->markAsRead($viewId);
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true]);
+    exit;
 }
 
 $search = trim((string) ($_GET['search'] ?? ''));
@@ -293,7 +307,7 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
 
                         $statusLabel = ($hasGuestReply && $msg['status'] === 'Unread') ? '💬 Guest Replied' : $msg['status'];
                     ?>
-                        <tr class="<?php echo $msg['status'] === 'Unread' ? 'fw-bold bg-dark bg-opacity-50' : ''; ?>">
+                        <tr id="message_row_<?php echo $msgId; ?>" class="<?php echo $msg['status'] === 'Unread' ? 'fw-bold bg-dark bg-opacity-50' : ''; ?>">
                             <td class="small text-muted text-nowrap"><?php echo e(date('M d, Y H:i', strtotime($msg['created_at']))); ?></td>
                             <td>
                                 <strong class="d-block text-white"><?php echo e($msg['full_name']); ?></strong>
@@ -308,11 +322,18 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
                                     <?php echo e(mb_strimwidth($msg['message'], 0, 75, '...')); ?>
                                 </span>
                             </td>
-                            <td><span class="badge rounded-pill px-2.5 py-1 text-xs <?php echo $statusBadgeClass; ?>"><?php echo e($statusLabel); ?></span></td>
+                            <td><span id="status_badge_<?php echo $msgId; ?>" class="badge rounded-pill px-2.5 py-1 text-xs <?php echo $statusBadgeClass; ?>"><?php echo e($statusLabel); ?></span></td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-warning fw-semibold" type="button" data-bs-toggle="modal" data-bs-target="#messageModal_<?php echo $msgId; ?>">
+                                <button class="btn btn-sm btn-warning fw-semibold" type="button" data-bs-toggle="modal" data-bs-target="#messageModal_<?php echo $msgId; ?>" onclick="markMessageAsRead(<?php echo $msgId; ?>)">
                                     <i class="bi bi-reply-fill me-1"></i>View & Reply
                                 </button>
+                                <?php if ($msg['status'] === 'Unread'): ?>
+                                    <form method="post" class="d-inline">
+                                        <input type="hidden" name="action" value="mark_read">
+                                        <input type="hidden" name="message_id" value="<?php echo $msgId; ?>">
+                                        <button class="btn btn-sm btn-outline-info" type="submit" title="Mark as Read"><i class="bi bi-check2-circle"></i></button>
+                                    </form>
+                                <?php endif; ?>
                                 <form method="post" class="d-inline" onsubmit="return confirm('Delete this guest message?')">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="message_id" value="<?php echo $msgId; ?>">
@@ -521,8 +542,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (syncIcon) syncIcon.classList.remove("spin");
                 syncBtn.disabled = false;
             }
-        });
-    }
-});
+function markMessageAsRead(messageId) {
+    fetch(`messages.php?ajax_mark_read=1&message_id=${messageId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const badge = document.getElementById(`status_badge_${messageId}`);
+                if (badge && badge.textContent.trim() !== 'Replied') {
+                    badge.className = 'badge rounded-pill px-2.5 py-1 text-xs bg-secondary text-light';
+                    badge.textContent = 'Read';
+                }
+                const row = document.getElementById(`message_row_${messageId}`);
+                if (row) {
+                    row.classList.remove('fw-bold', 'bg-dark', 'bg-opacity-50');
+                }
+            }
+        }).catch(err => console.error('Mark read error:', err));
+}
 </script>
 <?php renderAdminLayoutEnd(); ?>

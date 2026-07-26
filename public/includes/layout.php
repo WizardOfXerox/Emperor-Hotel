@@ -472,7 +472,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    // Global Modal Safety Handler: ensures modals reside on document.body and have valid Bootstrap instances
+    // Global Modal Safety Handler: ensures modals reside on document.body for Bootstrap 5 native toggles
     document.addEventListener("click", (e) => {
         const btn = e.target.closest('[data-bs-toggle="modal"]');
         if (!btn) return;
@@ -480,18 +480,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!targetSelector || !targetSelector.startsWith('#')) return;
 
         const modalEl = document.querySelector(targetSelector);
-        if (modalEl) {
-            if (modalEl.parentNode !== document.body) {
-                document.body.appendChild(modalEl);
-            }
-            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                try {
-                    const existing = bootstrap.Modal.getInstance(modalEl);
-                    if (existing) {
-                        existing.dispose();
-                    }
-                } catch (err) {}
-            }
+        if (modalEl && modalEl.parentNode !== document.body) {
+            document.body.appendChild(modalEl);
         }
     }, true);
 

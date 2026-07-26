@@ -230,7 +230,7 @@ function syncGmailReplies(PDO $db): array
     // SELECT INBOX
     sendImapCommand($socket, 'A2', 'SELECT INBOX');
 
-    // SEARCH UNSEEN
+    // SEARCH UNSEEN first
     $searchLines = sendImapCommand($socket, 'A3', 'SEARCH UNSEEN');
     $msgSeqNums = [];
 
@@ -247,8 +247,31 @@ function syncGmailReplies(PDO $db): array
         }
     }
 
+    // Fallback: If no UNSEEN messages found, check ALL recent messages in case Gmail marked as SEEN
+    if (empty($msgSeqNums)) {
+        $searchAllLines = sendImapCommand($socket, 'A3_ALL', 'SEARCH ALL');
+        $allNums = [];
+        foreach ($searchAllLines as $l) {
+            if (str_starts_with($l, '* SEARCH')) {
+                $parts = explode(' ', trim($l));
+                array_shift($parts);
+                array_shift($parts);
+                foreach ($parts as $p) {
+                    if (ctype_digit($p)) {
+                        $allNums[] = (int) $p;
+                    }
+                }
+            }
+        }
+        if (!empty($allNums)) {
+            // Check the last 30 messages in the INBOX
+            $msgSeqNums = array_slice($allNums, -30);
+        }
+    }
+
     $syncedCount = 0;
     $contactMessageModel = new ContactMessage($db);
+    $hotelEmail = strtolower(trim($imapUser));
 
     foreach ($msgSeqNums as $seq) {
         // FETCH HEADER & BODY
@@ -275,19 +298,31 @@ function syncGmailReplies(PDO $db): array
             }
         }
 
-        if ($rawHeader !== '') {
+        // If BODY[TEXT] was empty, retry fetching full BODY[1]
+        if (trim($rawBody) === '') {
+            $fetchBody1Lines = sendImapCommand($socket, "A4_B1_{$seq}", "FETCH {$seq} (BODY[1])");
+            foreach ($fetchBody1Lines as $fl) {
+                if (!str_starts_with($fl, "A4_B1_{$seq}") && !str_starts_with($fl, '* ')) {
+                    $rawBody .= $fl;
+                }
+            }
+        }
+
+        if ($rawHeader !== '' && $rawHeader !== $hotelEmail) {
             $cleanText = cleanEmailReplyBody($rawBody);
 
             if ($cleanText !== '') {
-                $stmt = $db->prepare('SELECT message_id FROM contact_messages WHERE LOWER(email) = :email ORDER BY created_at DESC LIMIT 1');
+                $stmt = $db->prepare('SELECT message_id FROM contact_messages WHERE LOWER(email) = LOWER(:email) ORDER BY created_at DESC LIMIT 1');
                 $stmt->execute(['email' => $rawHeader]);
                 $targetMessageId = (int) $stmt->fetchColumn();
 
                 if ($targetMessageId > 0) {
-                    $contactMessageModel->appendGuestReply($targetMessageId, $cleanText);
-                    $syncedCount++;
-                    // Mark message as SEEN
-                    sendImapCommand($socket, "A5_{$seq}", "STORE {$seq} +FLAGS (\\Seen)");
+                    $appended = $contactMessageModel->appendGuestReply($targetMessageId, $cleanText);
+                    if ($appended) {
+                        $syncedCount++;
+                        // Mark message as SEEN
+                        sendImapCommand($socket, "A5_{$seq}", "STORE {$seq} +FLAGS (\\Seen)");
+                    }
                 }
             }
         }
