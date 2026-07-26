@@ -8,9 +8,6 @@ SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE `users`;
 INSERT INTO `users` (`user_id`, `full_name`, `email`, `password_hash`, `role`, `created_at`, `email_verified`, `otp_code`, `otp_expires_at`, `reset_token`) VALUES
 ('1', 'Jeffrey U. Pantaleon Jr.', 'jayjaypantaleon@gmail.com', '$2y$10$3hNZFSkU9BLG3/pn22CieuCZLshCUh6hRuMxBHvTnaPhgpi3oRFUW', 'admin', '2026-07-25 23:11:55', '1', NULL, NULL, NULL),
-('2', 'Wizard Of Xerox', 'wizardofxerox@gmail.com', '$2y$10$C.sayQkYkC.LsfUlLcASV.iNs2DkifJUKaOrYlzX/tI3WGqNKhzi.', 'user', '2026-07-25 23:11:55', '1', NULL, NULL, NULL),
-('3', 'Vincent Gabriel', 'vincent@gmail.com', '$2y$10$C.sayQkYkC.LsfUlLcASV.iNs2DkifJUKaOrYlzX/tI3WGqNKhzi.', 'user', '2026-07-25 23:11:55', '1', NULL, NULL, NULL),
-('4', 'Lore Mae Reyes', 'lore@gmail.com', '$2y$10$C.sayQkYkC.LsfUlLcASV.iNs2DkifJUKaOrYlzX/tI3WGqNKhzi.', 'user', '2026-07-25 23:11:55', '1', NULL, NULL, NULL),
 ('5', 'Maria Santos', 'maria.santos@gmail.com', '$2y$10$C.sayQkYkC.LsfUlLcASV.iNs2DkifJUKaOrYlzX/tI3WGqNKhzi.', 'user', '2026-07-25 23:11:55', '1', NULL, NULL, NULL),
 ('6', 'Juan Dela Cruz', 'juan.delacruz@gmail.com', '$2y$10$C.sayQkYkC.LsfUlLcASV.iNs2DkifJUKaOrYlzX/tI3WGqNKhzi.', 'user', '2026-07-25 23:11:55', '1', NULL, NULL, NULL),
 ('7', 'Alexander Reyes', 'alex.reyes@gmail.com', '$2y$10$C.sayQkYkC.LsfUlLcASV.iNs2DkifJUKaOrYlzX/tI3WGqNKhzi.', 'user', '2026-07-25 23:11:55', '1', NULL, NULL, NULL),
@@ -52,9 +49,6 @@ INSERT INTO `users` (`user_id`, `full_name`, `email`, `password_hash`, `role`, `
 TRUNCATE TABLE `guests`;
 INSERT INTO `guests` (`guest_id`, `user_id`, `first_name`, `last_name`, `phone`, `email`, `created_at`) VALUES
 ('1', '1', 'Jeffrey', 'Jr.', '09174151478', 'jayjaypantaleon@gmail.com', '2026-07-25 23:11:55'),
-('2', '2', 'Wizard', 'Xerox', '09188264303', 'wizardofxerox@gmail.com', '2026-07-25 23:11:55'),
-('3', '3', 'Vincent', 'Gabriel', '09288702899', 'vincent@gmail.com', '2026-07-25 23:11:55'),
-('4', '4', 'Lore', 'Reyes', '09084578795', 'lore@gmail.com', '2026-07-25 23:11:55'),
 ('5', '5', 'Maria', 'Santos', '09776402521', 'maria.santos@gmail.com', '2026-07-25 23:11:55'),
 ('6', '6', 'Juan', 'Cruz', '09565073786', 'juan.delacruz@gmail.com', '2026-07-25 23:11:55'),
 ('7', '7', 'Alexander', 'Reyes', '09983901181', 'alex.reyes@gmail.com', '2026-07-25 23:11:55'),

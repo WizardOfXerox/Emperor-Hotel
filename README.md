@@ -11,7 +11,7 @@ A robust, local-first web application designed for guest self-service booking an
 | Account Role | Email Address | Password | Privileges |
 | :--- | :--- | :--- | :--- |
 | **System Administrator** | `jayjaypantaleon@gmail.com` | `admin123` *(or `AdminPass123!`)* | Full Admin Dashboard, Room Inventory, Front Desk Actions, Reports, User Management. |
-| **Registered Guest** | `wizardofxerox@gmail.com` | `user123` | Guest Portal, Stay Bookings, Room Inspection, Payment Checkout, Receipt Printing. |
+| **Registered Guest** | `maria.santos@gmail.com` | `user123` | Guest Portal, Stay Bookings, Room Inspection, Payment Checkout, Receipt Printing. |
 
 ---
 

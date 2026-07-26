@@ -30,9 +30,6 @@ try {
 
     $usersData = [
         ['full_name' => 'Jeffrey U. Pantaleon Jr.', 'email' => 'jayjaypantaleon@gmail.com', 'role' => 'admin'],
-        ['full_name' => 'Wizard Of Xerox', 'email' => 'wizardofxerox@gmail.com', 'role' => 'user'],
-        ['full_name' => 'Vincent Gabriel', 'email' => 'vincent@gmail.com', 'role' => 'user'],
-        ['full_name' => 'Lore Mae Reyes', 'email' => 'lore@gmail.com', 'role' => 'user'],
         ['full_name' => 'Maria Santos', 'email' => 'maria.santos@gmail.com', 'role' => 'user'],
         ['full_name' => 'Juan Dela Cruz', 'email' => 'juan.delacruz@gmail.com', 'role' => 'user'],
         ['full_name' => 'Alexander Reyes', 'email' => 'alex.reyes@gmail.com', 'role' => 'user'],
