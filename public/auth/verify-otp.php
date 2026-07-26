@@ -14,9 +14,29 @@ if ($pendingUserId <= 0) {
     redirect('login.php');
 }
 
+$pendingUser = $userModel->findById($pendingUserId);
+if (!$pendingUser) {
+    unset($_SESSION['pending_otp_user_id']);
+    setFlash('warning', 'Invalid verification session. Please log in or register.');
+    redirect('login.php');
+}
+
 $error = null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Handle Resend OTP Code
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'resend_otp') {
+    $newOtp = sprintf('%06d', random_int(100000, 999999));
+    $newExpiresAt = date('Y-m-d H:i:s', time() + 900);
+    $db->prepare("UPDATE users SET otp_code = :otp, otp_expires_at = :exp WHERE user_id = :uid")
+       ->execute(['otp' => $newOtp, 'exp' => $newExpiresAt, 'uid' => $pendingUserId]);
+
+    sendRegistrationOtpEmail($pendingUser['email'], $pendingUser['full_name'], $newOtp);
+    setFlash('info', "📩 Fresh 6-digit verification code sent to <strong>" . e($pendingUser['email']) . "</strong>.");
+    redirect('verify-otp.php');
+}
+
+// Handle OTP Form Verification
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['action'])) {
     $digit1 = trim((string) ($_POST['d1'] ?? ''));
     $digit2 = trim((string) ($_POST['d2'] ?? ''));
     $digit3 = trim((string) ($_POST['d3'] ?? ''));
@@ -108,7 +128,7 @@ renderHeader('Verify Email OTP - Emperor Hotel', ['../assets/css/site/home.css']
                             Security Checkpoint
                         </h2>
                         <p class="text-white-50 font-serif lead fs-6 mb-4">
-                            Please enter the 6-digit OTP verification code sent to your registered email address.
+                            Please enter the 6-digit OTP verification code sent to <strong class="text-warning"><?= e($pendingUser['email']) ?></strong>.
                         </p>
 
                         <div class="d-flex flex-column gap-3 mb-4">
@@ -116,7 +136,7 @@ renderHeader('Verify Email OTP - Emperor Hotel', ['../assets/css/site/home.css']
                                 <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; background: rgba(212, 175, 55, 0.25); color: #FFDF73;">
                                     <i class="bi bi-envelope-check-fill"></i>
                                 </div>
-                                <span class="small font-serif fw-medium text-white-90">Instant SMTP Email Delivery</span>
+                                <span class="small font-serif fw-medium text-white-90">Delivered to <?= e($pendingUser['email']) ?></span>
                             </div>
                             <div class="d-flex align-items-center gap-3">
                                 <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; background: rgba(212, 175, 55, 0.25); color: #FFDF73;">
@@ -143,7 +163,7 @@ renderHeader('Verify Email OTP - Emperor Hotel', ['../assets/css/site/home.css']
                             Verify Email OTP
                         </h3>
                         <p class="text-muted font-serif small m-0 mt-1">
-                            Enter the 6-digit code sent to your inbox to complete your verification.
+                            Enter the 6-digit code sent to <strong class="text-warning"><?= e($pendingUser['email']) ?></strong>.
                         </p>
                     </div>
 
@@ -168,6 +188,13 @@ renderHeader('Verify Email OTP - Emperor Hotel', ['../assets/css/site/home.css']
 
                         <button type="submit" class="btn btn-warning w-100 rounded-pill py-3 font-serif fw-bold fs-6 shadow text-uppercase tracking-wider mt-2" style="background: #ffc107; color: #070A10; border: none; box-shadow: 0 8px 25px rgba(255, 193, 7, 0.35);">
                             <i class="bi bi-shield-check me-2"></i>Verify Code &amp; Continue
+                        </button>
+                    </form>
+
+                    <form method="POST" action="verify-otp.php" class="mt-3 text-center">
+                        <input type="hidden" name="action" value="resend_otp">
+                        <button type="submit" class="btn btn-link text-warning text-decoration-none small p-0 font-serif">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Didn't receive code? Resend OTP
                         </button>
                     </form>
 

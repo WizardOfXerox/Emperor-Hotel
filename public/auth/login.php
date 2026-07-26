@@ -10,7 +10,8 @@ if (isLoggedIn()) {
     redirect($user['role'] === 'admin' ? '../admin/dashboard.php' : '../user/dashboard.php');
 }
 
-$userModel = new User(Database::connect());
+$db = Database::connect();
+$userModel = new User($db);
 
 if (!empty($_GET['redirect'])) {
     $_SESSION['redirect_after_login'] = trim((string)$_GET['redirect']);
