@@ -94,8 +94,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Email subject and message body are required.');
             }
 
-            $guestEmail = $targetRes['email'];
-            $guestName = $targetRes['first_name'] . ' ' . $targetRes['last_name'];
+            $guestEmail = trim((string) ($targetRes['guest_email'] ?? $targetRes['email'] ?? ''));
+            if ($guestEmail === '') {
+                throw new RuntimeException('Guest email address is missing for this reservation.');
+            }
+            $guestName = trim($targetRes['first_name'] . ' ' . $targetRes['last_name']);
 
             $html = "
             <div style='background: #020617; color: #f8fafc; font-family: sans-serif; padding: 40px 20px; text-align: center;'>
@@ -582,7 +585,8 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
                         <?php endif; ?>
 
                         <!-- Direct Email Notification Section -->
-                        <div class="reservation-modal-section border border-warning border-opacity-30 rounded-4 p-3 my-3 bg-dark" style="box-shadow: 0 8px 25px rgba(0,0,0,0.5);">
+                        <?php $resGuestEmail = (string) ($reservation['guest_email'] ?? $reservation['email'] ?? ''); ?>
+                        <div class="reservation-modal-section border border-warning border-opacity-30 rounded-4 p-3.5 my-3 bg-dark" style="box-shadow: 0 8px 25px rgba(0,0,0,0.5);">
                             <div class="d-flex align-items-center gap-2 pb-2 mb-3 border-bottom border-warning border-opacity-25">
                                 <i class="bi bi-envelope-exclamation-fill text-warning fs-5"></i>
                                 <h6 class="text-warning font-serif fw-bold m-0">Send Direct Email Notice to Guest</h6>
@@ -591,13 +595,13 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
                                 <input type="hidden" name="action" value="notify_guest">
                                 <input type="hidden" name="reservation_id" value="<?php echo e($reservationId); ?>">
 
-                                <div class="row g-2 mb-2">
+                                <div class="row g-2.5 mb-3">
                                     <div class="col-12 col-md-7">
-                                        <label class="form-label text-xs text-light">Email Subject</label>
+                                        <label class="form-label text-xs text-light fw-semibold mb-1">Email Subject</label>
                                         <input type="text" name="email_subject" class="form-control form-control-sm bg-dark text-light border-secondary text-xs" value="👑 [The Emperor Hotel] Important Booking Notice regarding Reservation #<?php echo e($reservationId); ?>" required>
                                     </div>
                                     <div class="col-12 col-md-5">
-                                        <label class="form-label text-xs text-light">Message Category</label>
+                                        <label class="form-label text-xs text-light fw-semibold mb-1">Message Category</label>
                                         <select class="form-select form-select-sm bg-dark text-light border-secondary text-xs" onchange="
                                             const textarea = document.getElementById('notice_msg_<?php echo e($reservationId); ?>');
                                             const val = this.value;
@@ -618,8 +622,8 @@ renderAdminLayoutStart('Manage Reservations', 'reservations', $currentAdmin, ['.
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label text-xs text-light">Message Content</label>
-                                    <textarea name="notice_message" id="notice_msg_<?php echo e($reservationId); ?>" rows="4" class="form-control form-control-sm bg-dark text-light border-warning rounded-3 text-xs" placeholder="Type custom message to guest..." required>Dear <?php echo e($reservation['first_name']); ?>,
+                                    <label class="form-label text-xs text-light fw-semibold mb-1">Message Content</label>
+                                    <textarea name="notice_message" id="notice_msg_<?php echo e($reservationId); ?>" rows="4" class="form-control form-control-sm bg-dark text-light border-warning rounded-3 text-xs" style="padding: 10px 14px; min-height: 110px; line-height: 1.5; resize: vertical;" placeholder="Type custom message to guest..." required>Dear <?php echo e($reservation['first_name']); ?>,
 
 We are writing to notify you regarding an operational schedule update for your upcoming stay reservation #<?php echo e($reservationId); ?> (Room #<?php echo e($reservation['room_number']); ?>). Please contact our front desk concierge team at your earliest convenience to review your booking preferences.
 
@@ -627,10 +631,10 @@ Warm regards,
 Emperor Hotel Concierge Desk</textarea>
                                 </div>
 
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted text-xs"><i class="bi bi-send-check text-warning me-1"></i>Sends instant SMTP email to <?php echo e($reservation['email']); ?></small>
-                                    <button type="submit" class="btn btn-sm btn-warning font-serif fw-bold px-3 shadow-sm">
-                                        <i class="bi bi-send-fill me-1"></i>Send Email Notice to Guest
+                                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 pt-2 border-top border-secondary-subtle">
+                                    <small class="text-muted text-xs me-2"><i class="bi bi-send-check text-warning me-1"></i>Sends instant SMTP email to <strong class="text-light"><?php echo e($resGuestEmail); ?></strong></small>
+                                    <button type="submit" class="btn btn-sm btn-warning font-serif fw-bold px-3.5 py-2 text-dark text-nowrap shadow-sm ms-auto me-0">
+                                        <i class="bi bi-send-fill me-1.5"></i>Send Email Notice to Guest
                                     </button>
                                 </div>
                             </form>
