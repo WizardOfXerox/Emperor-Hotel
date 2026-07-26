@@ -1345,10 +1345,22 @@ body.light-mode .rooms-nav__logo img {
     border-color: rgba(180, 140, 60, 0.3) !important;
 }
 
+.rooms-hero__content h1,
+.home-hero__content h1,
+.hero-title {
+    color: #fdd700 !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #fdd700 !important;
+}
+
 body.light-mode .rooms-hero__content h1,
 body.light-mode .home-hero__content h1,
 body.light-mode .hero-title {
-    color: #ffffff !important;
+    color: #fdd700 !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #fdd700 !important;
     text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8) !important;
 }
 
