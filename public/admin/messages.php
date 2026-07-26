@@ -276,7 +276,7 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
 
                         <!-- VIEW & REPLY MODAL FOR EACH MESSAGE -->
                         <div class="modal fade" id="messageModal_<?php echo $msgId; ?>" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
                                 <div class="modal-content bg-dark text-light border-gold-glow rounded-4 p-3 shadow-lg" style="background: rgba(15, 23, 42, 0.98) !important; border: 1px solid rgba(212, 175, 55, 0.45) !important;">
                                     <div class="modal-header border-secondary">
                                         <div>
@@ -285,7 +285,7 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
                                         </div>
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                     </div>
-                                    <div class="modal-body">
+                                    <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
                                         <!-- Guest Contact Card -->
                                         <div class="p-3 rounded-3 mb-3 border border-secondary" style="background: rgba(30, 41, 59, 0.7);">
                                             <div class="row g-2 text-xs">
@@ -354,7 +354,7 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
 
 <!-- COMPOSE DIRECT EMAIL MODAL -->
 <div class="modal fade" id="composeEmailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content bg-dark text-light border-gold-glow rounded-4 p-3 shadow-lg" style="background: rgba(15, 23, 42, 0.98) !important; border: 1px solid rgba(212, 175, 55, 0.45) !important;">
             <div class="modal-header border-secondary">
                 <div>
@@ -365,7 +365,7 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
             </div>
             <form method="post" action="messages.php">
                 <input type="hidden" name="action" value="send_direct_email">
-                <div class="modal-body">
+                <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label text-xs text-light fw-bold mb-1">Select Registered Guest (Optional)</label>
@@ -423,4 +423,9 @@ Emperor Hotel Guest Relations</textarea>
         </div>
     </div>
 </div>
+<script>
+document.querySelectorAll(".modal").forEach((m) => {
+    document.body.appendChild(m);
+});
+</script>
 <?php renderAdminLayoutEnd(); ?>

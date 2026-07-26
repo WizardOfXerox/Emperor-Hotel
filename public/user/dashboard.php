@@ -627,7 +627,7 @@ $userMessages = $contactMessageModel->findForUser((int) $user['user_id'], (strin
 
             <!-- GUEST VIEW & REPLY MODAL -->
             <div class="modal fade" id="userMessageModal_<?php echo $msgId; ?>" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
                     <div class="modal-content bg-dark text-light border-gold-glow rounded-4 p-3 shadow-lg" style="background: rgba(15, 23, 42, 0.98) !important; border: 1px solid rgba(212, 175, 55, 0.45) !important;">
                         <div class="modal-header border-secondary">
                             <div>
@@ -636,7 +636,7 @@ $userMessages = $contactMessageModel->findForUser((int) $user['user_id'], (strin
                             </div>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
-                        <div class="modal-body">
+                        <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
                             <!-- Message Body -->
                             <div class="mb-4">
                                 <label class="form-label text-xs text-uppercase tracking-wider text-warning font-serif fw-bold"><i class="bi bi-chat-left-quote-fill me-1"></i>Message Content / Notice:</label>
@@ -675,6 +675,11 @@ $userMessages = $contactMessageModel->findForUser((int) $user['user_id'], (strin
         <?php endforeach; ?>
     </div>
 </section>
+<script>
+document.querySelectorAll(".modal").forEach((m) => {
+    document.body.appendChild(m);
+});
+</script>
 <script>
 document.querySelectorAll("[data-customer-payment-method]").forEach((methodSelect) => {
     const form = methodSelect.closest("form");
