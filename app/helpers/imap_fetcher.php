@@ -10,6 +10,66 @@ declare(strict_types=1);
  * WITHOUT requiring the php_imap extension to be enabled in php.ini!
  */
 
+/**
+ * Clean, truncate, and format raw email reply body text.
+ * Strips MIME boundary markers, headers, and quoted history text.
+ */
+function cleanEmailReplyBody(string $rawBody): string
+{
+    // Decode quoted-printable if encoded
+    if (str_contains($rawBody, '=E2=80') || str_contains($rawBody, 'Content-Transfer-Encoding: quoted-printable') || preg_match('/=[0-9A-F]{2}/i', $rawBody)) {
+        $rawBody = quoted_printable_decode($rawBody);
+    }
+
+    $rawBody = strip_tags($rawBody);
+    $lines = explode("\n", str_replace("\r\n", "\n", $rawBody));
+    $cleanLines = [];
+
+    foreach ($lines as $line) {
+        $trimmed = trim($line);
+
+        // Stop parsing at quoted thread dividers (e.g. "On Sun, Jul 26... wrote:")
+        if (
+            preg_match('/^On\s+.*wrote\s*:/i', $trimmed) ||
+            preg_match('/^On\s+.*<.*@.*>/i', $trimmed) ||
+            str_starts_with($trimmed, '-----Original Message-----') ||
+            str_starts_with($trimmed, '---------- Forwarded message ---------') ||
+            str_starts_with($trimmed, '> THE EMPEROR HOTEL')
+        ) {
+            break;
+        }
+
+        // Ignore MIME boundaries (e.g. --000000000000cfc8d40657828df4)
+        if (str_starts_with($trimmed, '--') && strlen($trimmed) > 10) {
+            continue;
+        }
+
+        // Ignore MIME headers
+        if (
+            preg_match('/^Content-Type\s*:/i', $trimmed) ||
+            preg_match('/^Content-Transfer-Encoding\s*:/i', $trimmed) ||
+            preg_match('/^Content-Disposition\s*:/i', $trimmed) ||
+            str_starts_with(strtolower($trimmed), 'charset=')
+        ) {
+            continue;
+        }
+
+        // Ignore quoted history lines starting with '>'
+        if (str_starts_with($trimmed, '>')) {
+            continue;
+        }
+
+        if ($trimmed !== '') {
+            $cleanLines[] = $trimmed;
+        }
+    }
+
+    $cleaned = implode("\n", $cleanLines);
+    $cleaned = preg_replace("/\n{3,}/", "\n\n", $cleaned);
+
+    return trim($cleaned);
+}
+
 function fetchImapLine($socket): string
 {
     stream_set_timeout($socket, 2);
@@ -87,8 +147,12 @@ function syncGmailReplies(PDO $db): array
                         $body = imap_body($mailbox, $emailNumber);
                     }
 
-                    $cleanReplyText = trim(strip_tags((string)$body));
+                    $cleanReplyText = cleanEmailReplyBody((string)$body);
                     
+                    if ($cleanReplyText === '') {
+                        continue;
+                    }
+
                     $stmt = $db->prepare('SELECT message_id FROM contact_messages WHERE LOWER(email) = :email ORDER BY created_at DESC LIMIT 1');
                     $stmt->execute(['email' => $fromEmail]);
                     $targetMessageId = (int) $stmt->fetchColumn();
@@ -204,17 +268,19 @@ function syncGmailReplies(PDO $db): array
         }
 
         if ($rawHeader !== '') {
-            $cleanText = trim(strip_tags($rawBody));
+            $cleanText = cleanEmailReplyBody($rawBody);
 
-            $stmt = $db->prepare('SELECT message_id FROM contact_messages WHERE LOWER(email) = :email ORDER BY created_at DESC LIMIT 1');
-            $stmt->execute(['email' => $rawHeader]);
-            $targetMessageId = (int) $stmt->fetchColumn();
+            if ($cleanText !== '') {
+                $stmt = $db->prepare('SELECT message_id FROM contact_messages WHERE LOWER(email) = :email ORDER BY created_at DESC LIMIT 1');
+                $stmt->execute(['email' => $rawHeader]);
+                $targetMessageId = (int) $stmt->fetchColumn();
 
-            if ($targetMessageId > 0) {
-                $contactMessageModel->appendGuestReply($targetMessageId, $cleanText);
-                $syncedCount++;
-                // Mark message as SEEN
-                sendImapCommand($socket, "A5_{$seq}", "STORE {$seq} +FLAGS (\\Seen)");
+                if ($targetMessageId > 0) {
+                    $contactMessageModel->appendGuestReply($targetMessageId, $cleanText);
+                    $syncedCount++;
+                    // Mark message as SEEN
+                    sendImapCommand($socket, "A5_{$seq}", "STORE {$seq} +FLAGS (\\Seen)");
+                }
             }
         }
     }

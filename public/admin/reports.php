@@ -403,11 +403,22 @@ function toggleReportView(btn, mode) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initEmperorReportCharts() {
+    ['trendLineChart', 'paymentPieChart', 'occupancyBarChart', 'ratingsBarChart', 'roomNightsChart', 'revenueRoomTypeChart', 'revenueMethodChart', 'dailyBookingBarChart'].forEach(id => {
+        if (typeof Chart !== 'undefined' && Chart.getChart) {
+            const existing = Chart.getChart(id);
+            if (existing) {
+                existing.destroy();
+            }
+        }
+    });
+
     const isLightMode = document.documentElement.classList.contains('light-mode');
-    Chart.defaults.color = isLightMode ? '#334155' : '#94a3b8';
-    Chart.defaults.borderColor = isLightMode ? 'rgba(15, 23, 42, 0.08)' : 'rgba(248, 250, 252, 0.08)';
-    Chart.defaults.font.family = "'Outfit', 'Segoe UI', system-ui, sans-serif";
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = isLightMode ? '#334155' : '#94a3b8';
+        Chart.defaults.borderColor = isLightMode ? 'rgba(15, 23, 42, 0.08)' : 'rgba(248, 250, 252, 0.08)';
+        Chart.defaults.font.family = "'Outfit', 'Segoe UI', system-ui, sans-serif";
+    }
 
     // High-Contrast Pill Badge Renderer for Chart Labels
     const drawPillBadge = (ctx, text, x, y, bgColor, textColor) => {
@@ -800,6 +811,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEmperorReportCharts);
+} else {
+    initEmperorReportCharts();
+}
 </script>
 <?php renderAdminLayoutEnd(); ?>

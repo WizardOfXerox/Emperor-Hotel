@@ -274,7 +274,11 @@ renderAdminLayoutStart('Guest Messages', 'messages', $currentAdmin, ['../assets/
                         if ($hasGuestReply) {
                             $msgParts = explode('[Guest Follow-up Reply', $msg['message'], 2);
                             $mainMessageText = trim($msgParts[0]);
-                            $guestReplyText = '[Guest Follow-up Reply' . $msgParts[1];
+                            $rawReplyBlock = '[Guest Follow-up Reply' . $msgParts[1];
+                            $replyParts = explode(']:', $rawReplyBlock, 2);
+                            $hdr = $replyParts[0] ?? '[Guest Follow-up Reply]';
+                            $cleanText = cleanEmailReplyBody($replyParts[1] ?? '');
+                            $guestReplyText = $hdr . "]:\n" . $cleanText;
                         } else {
                             $mainMessageText = $msg['message'];
                             $guestReplyText = null;

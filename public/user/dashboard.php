@@ -603,7 +603,11 @@ $userMessages = $contactMessageModel->findForUser((int) $user['user_id'], (strin
             if ($hasGuestReply) {
                 $msgParts = explode('[Guest Follow-up Reply', $msg['message'], 2);
                 $userMainMessageText = trim($msgParts[0]);
-                $userGuestReplyText = '[Guest Follow-up Reply' . $msgParts[1];
+                $rawReplyBlock = '[Guest Follow-up Reply' . $msgParts[1];
+                $replyParts = explode(']:', $rawReplyBlock, 2);
+                $hdr = $replyParts[0] ?? '[Guest Follow-up Reply]';
+                $cleanText = cleanEmailReplyBody($replyParts[1] ?? '');
+                $userGuestReplyText = $hdr . "]:\n" . $cleanText;
             } else {
                 $userMainMessageText = $msg['message'];
                 $userGuestReplyText = null;
