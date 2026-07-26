@@ -34,7 +34,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($user['email_verified']) && (int)$user['email_verified'] === 0) {
         $_SESSION['pending_otp_user_id'] = (int)$user['user_id'];
-        setFlash('warning', 'Please complete 2FA verification to access your account.');
+        
+        // Re-generate fresh 6-digit OTP code & send directly to logging-in user's email
+        $otpCode = (string) random_int(100000, 999999);
+        $otpExpiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+        $db->prepare("UPDATE users SET otp_code = :otp, otp_expires_at = :exp WHERE user_id = :uid")
+           ->execute(['otp' => $otpCode, 'exp' => $otpExpiresAt, 'uid' => (int)$user['user_id']]);
+
+        sendRegistrationOtpEmail($user['email'], $user['full_name'], $otpCode);
+
+        setFlash('warning', "Please enter the 6-digit verification code sent to <strong>" . e($user['email']) . "</strong>.");
         redirect('verify-otp.php');
     }
 
