@@ -219,13 +219,13 @@ body.rooms-showcase-page .rooms-hero__content a:hover {
 }
 
 /* Rooms Showcase Section */
-body.rooms-showcase-page .rooms {
+.rooms {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
     min-height: auto;
-    padding: 36px 24px;
+    padding: 48px 24px;
     box-sizing: border-box;
     align-items: center;
     justify-content: center;
@@ -233,19 +233,79 @@ body.rooms-showcase-page .rooms {
     border-bottom: 1px solid rgba(212, 175, 55, 0.15);
 }
 
-body.rooms-showcase-page .rooms .container-carousel {
+.rooms .container-content {
+    width: 100%;
+    max-width: 840px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.rooms .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+}
+
+.rooms .content h2 {
+    margin: 0 0 10px 0 !important;
+    color: #94A3B8 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 2.5px !important;
+    text-transform: uppercase !important;
+    text-align: center !important;
+}
+
+.rooms .content h1 {
+    margin: 0 0 12px 0 !important;
+    background: linear-gradient(135deg, #FFF 30%, #D4AF37 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-size: clamp(32px, 4vw, 46px) !important;
+    line-height: 1.15 !important;
+    font-family: 'DM Serif Display', serif !important;
+    font-weight: 800 !important;
+    text-align: center !important;
+}
+
+.rooms .content p {
+    margin: 0 0 10px 0 !important;
+    color: #E2E8F0 !important;
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+}
+
+.rooms .content .room-inclusion-line {
+    margin: 4px 0 0 0 !important;
+    color: #94A3B8 !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+}
+
+.rooms .container-carousel {
     width: 100%;
     max-width: 840px;
     flex: 0 0 auto;
     display: flex;
     justify-content: center;
+    position: relative;
 }
 
 .carousel-wrapper {
-    position: relative;
+    position: relative !important;
     width: 100%;
     max-width: 840px;
     aspect-ratio: 16 / 9;
+    overflow: visible;
 }
 
 .carousel-track {
@@ -293,46 +353,44 @@ body.rooms-showcase-page .rooms .container-carousel {
     border-radius: 16px;
 }
 
-body.rooms-showcase-page .rooms .carousel-control {
-    top: 50%;
-    z-index: 2;
-    border: 1px solid rgba(212, 175, 55, 0.4);
-    width: 40px;
-    height: 40px;
-    transform: translateY(-50%);
-    z-index: 5;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 1px solid rgba(212, 175, 55, 0.6);
-    color: #FFDF73;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(7, 10, 16, 0.75);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
+.carousel-control {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 10 !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+    color: #070A10 !important;
+    background: #ffc107 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+    transition: all 0.25s ease !important;
+    cursor: pointer !important;
+    font-size: 18px !important;
 }
 
-body.rooms-showcase-page .rooms .carousel-control:hover {
-    color: #070A10;
-    background: #ffc107;
-    border-color: transparent;
+.carousel-control:hover {
+    background: #f59e0b !important;
+    color: #070A10 !important;
+    transform: translateY(-50%) scale(1.1) !important;
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6) !important;
 }
 
-body.rooms-showcase-page .rooms .carousel-control.prev,
-.rooms .carousel-control.prev {
-    left: 14px !important;
+.carousel-control.prev {
+    left: 16px !important;
     right: auto !important;
 }
 
-body.rooms-showcase-page .rooms .carousel-control.next,
-.rooms .carousel-control.next {
-    right: 14px !important;
+.carousel-control.next {
+    right: 16px !important;
     left: auto !important;
 }
 
-body.rooms-showcase-page .rooms .carousel-dots {
+.carousel-dots {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -341,7 +399,7 @@ body.rooms-showcase-page .rooms .carousel-dots {
     background-color: rgba(7, 10, 16, 0.6);
 }
 
-body.rooms-showcase-page .rooms .carousel-dot {
+.carousel-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
@@ -352,114 +410,35 @@ body.rooms-showcase-page .rooms .carousel-dot {
     transition: all 0.3s ease;
 }
 
-body.rooms-showcase-page .rooms .carousel-dot.active {
+.carousel-dot.active {
     background-color: #D4AF37;
     width: 20px;
     border-radius: 4px;
 }
 
-body.rooms-showcase-page .rooms .room-body {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-body.rooms-showcase-page .rooms .room-actions {
-    margin-top: auto;
-}
-
-body.rooms-showcase-page .rooms .room-actions .btn-warning {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    font-size: 1rem;
-    font-weight: 700;
-    text-align: center;
-    border-radius: 50px;
-    padding: 0.5rem 1.5rem !important;
-    color: #070A10 !important;
-    background: #ffc107 !important;
-}
-
-body.rooms-showcase-page .rooms .container-content {
+.rooms .room-badges {
     width: 100%;
     max-width: 840px;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 6px;
 }
 
-body.rooms-showcase-page .rooms .content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    width: 100%;
-}
-
-body.rooms-showcase-page .rooms .content h1 {
-    margin: 0 0 4px;
-    background: linear-gradient(135deg, #FFF 30%, #D4AF37 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-size: clamp(30px, 3.8vw, 42px);
-    line-height: 1.1;
-    font-family: 'DM Serif Display', serif;
-    font-weight: 800;
-    text-align: center;
-}
-
-body.rooms-showcase-page .rooms .content h2 {
-    margin: 0;
-    color: #94A3B8;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    text-align: center;
-}
-
-body.rooms-showcase-page .rooms .content p {
-    margin: 0;
-    color: #E2E8F0;
-    font-size: 15px;
-    line-height: 1.4;
-    text-align: center;
-}
-
-body.rooms-showcase-page .rooms .content .room-inclusion-line {
-    margin-top: 2px;
-    color: #CBD5E1;
-    font-size: 14px;
-    text-align: center;
-}
-
-body.rooms-showcase-page .rooms .room-badges {
-    width: 100%;
-    max-width: 840px;
-    margin-top: 6px;
-    margin-bottom: 4px;
-}
-
-body.rooms-showcase-page .rooms .container-card {
+.rooms .container-card {
     gap: 16px;
     width: 100%;
     max-width: 840px;
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    margin-top: 6px;
-    margin-bottom: 6px;
+    margin-top: 8px;
+    margin-bottom: 8px;
 }
 
-body.rooms-showcase-page .rooms .card {
+.rooms .card {
     flex: 1 1 250px;
     max-width: 270px;
     min-height: 150px;
-    padding: 12px 16px;
+    padding: 14px 18px;
     box-sizing: border-box;
     color: #F8FAFC;
     background: rgba(15, 23, 42, 0.75);
@@ -471,42 +450,42 @@ body.rooms-showcase-page .rooms .card {
     text-align: left;
 }
 
-body.rooms-showcase-page .rooms .card:hover {
+.rooms .card:hover {
     transform: translateY(-2px);
     border-color: rgba(212, 175, 55, 0.6);
 }
 
-body.rooms-showcase-page .rooms .card-content p {
+.rooms .card-content p {
     margin: 0;
     color: #D4AF37;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
     font-family: 'DM Serif Display', serif;
 }
 
-body.rooms-showcase-page .rooms .card-content hr {
+.rooms .card-content hr {
     border: none;
-    margin: 6px 0;
+    margin: 8px 0;
     border-top: 1px solid rgba(212, 175, 55, 0.25);
 }
 
-body.rooms-showcase-page .rooms .card-content ul {
+.rooms .card-content ul {
     margin: 0;
-    padding: 0 0 0 14px;
+    padding: 0 0 0 16px;
     color: #CBD5E1;
     font-size: 13px;
 }
 
-body.rooms-showcase-page .rooms .card-content li {
+.rooms .card-content li {
     margin: 0;
     color: #CBD5E1;
-    padding-top: 3px;
+    padding-top: 4px;
 }
 
-body.rooms-showcase-page .rooms .room-actions {
+.rooms .room-actions {
     gap: 14px;
     display: flex;
-    margin-top: 8px;
+    margin-top: 12px;
     margin-bottom: 0;
     flex-wrap: wrap;
     align-items: center;
@@ -514,7 +493,7 @@ body.rooms-showcase-page .rooms .room-actions {
     width: 100%;
 }
 
-body.rooms-showcase-page .rooms .room-price {
+.rooms .room-price {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -522,39 +501,39 @@ body.rooms-showcase-page .rooms .room-price {
     font-weight: 700;
     text-align: center;
     border-radius: 50px;
-    padding: 0.5rem 1.5rem !important;
+    padding: 0.6rem 1.6rem !important;
     color: #070A10 !important;
     background: #ffc107 !important;
-    box-shadow: 0 4px 18px rgba(212, 175, 55, 0.35);
+    box-shadow: 0 4px 18px rgba(255, 193, 7, 0.35);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border: 1px solid transparent;
     line-height: 1.5;
 }
 
-body.rooms-showcase-page .rooms .room-actions .btn-outline-warning {
+.rooms .room-actions .btn-outline-warning {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 1rem;
     font-weight: 700;
-    padding: 0.5rem 1.5rem !important;
+    padding: 0.6rem 1.6rem !important;
     line-height: 1.5;
 }
 
-body.rooms-showcase-page .rooms .room-price:hover {
+.rooms .room-price:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
+    box-shadow: 0 8px 25px rgba(255, 193, 7, 0.5);
 }
 
 /* Responsive Media Queries for Mobile & Tablet */
 @media (max-width: 991.98px) {
-    body.rooms-showcase-page .rooms {
+    .rooms {
         flex-direction: column !important;
         padding: 30px 20px !important;
         gap: 24px !important;
     }
 
-    body.rooms-showcase-page .rooms .container-carousel {
+    .rooms .container-carousel {
         width: 100% !important;
         flex: 0 0 100% !important;
         justify-content: center !important;
@@ -569,39 +548,49 @@ body.rooms-showcase-page .rooms .room-price:hover {
         aspect-ratio: 16 / 9 !important;
     }
 
-    body.rooms-showcase-page .rooms .container-content {
+    .rooms .container-content {
         width: 100% !important;
         max-width: 100% !important;
         flex: 0 0 100% !important;
     }
 
-    body.rooms-showcase-page .rooms .cards {
+    .rooms .cards {
         flex-direction: column !important;
         width: 100% !important;
     }
 
-    body.rooms-showcase-page .rooms .card {
+    .rooms .card {
         width: 100% !important;
         min-height: auto !important;
     }
 
-    body.rooms-showcase-page .rooms .room-actions {
+    .rooms .room-actions {
         flex-direction: column !important;
         width: 100% !important;
     }
 
-    body.rooms-showcase-page .rooms .room-price {
+    .rooms .room-price {
         width: 100% !important;
         box-sizing: border-box !important;
     }
 }
 
 @media (max-width: 575.98px) {
-    body.rooms-showcase-page .rooms {
-        padding: 20px 12px !important;
+    .rooms {
+        padding: 24px 14px !important;
     }
 
-    body.rooms-showcase-page .rooms-hero__content {
-        padding: 0 16px !important;
+    .rooms .carousel-control {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 15px !important;
+    }
+
+    .rooms .carousel-control.prev {
+        left: 8px !important;
+    }
+
+    .rooms .carousel-control.next {
+        right: 8px !important;
     }
 }
