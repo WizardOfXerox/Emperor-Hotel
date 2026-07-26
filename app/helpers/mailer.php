@@ -31,12 +31,15 @@ function sendSmtpEmail(string $toEmail, string $subject, string $bodyHtml, ?stri
 
     $hasInternet = isInternetConnected();
 
-    // In local development / offline / presentation mode without active internet or SMTP credentials,
-    // we instantly log and flash an on-screen Toast/Notice containing the 6-digit OTP code
-    // so the system works 100% reliably on localhost even when completely offline!
-    if (!$hasInternet || empty($smtpHost) || empty($smtpUser) || empty($smtpPass)) {
+    // Dummy test domains (e.g. example.com, test.local, invalid) used during automated testing
+    // are intercepted locally to prevent mailer-daemon bounce emails from Gmail SMTP!
+    $isDummyDomain = str_contains($toEmail, 'example.com') || str_contains($toEmail, 'test.local') || str_contains($toEmail, 'invalid');
+
+    if (!$hasInternet || empty($smtpHost) || empty($smtpUser) || empty($smtpPass) || $isDummyDomain) {
         if ($otpCode !== null && function_exists('setFlash')) {
-            if (!$hasInternet) {
+            if ($isDummyDomain) {
+                $modeNotice = 'Automated Test Mode';
+            } elseif (!$hasInternet) {
                 $modeNotice = 'Offline / Localhost Mode';
             } elseif (empty($smtpPass)) {
                 $modeNotice = 'SMTP_PASS Missing in .env';
