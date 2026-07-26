@@ -28,14 +28,14 @@ class SupportAssistant
         $isGreeting = $this->isGreeting($normalized);
         $customerIntent = $this->hasCustomerIntent($normalized);
         $adminIntent = $this->hasAdminIntent($normalized);
-        $datasetMatch = $this->findBestDatasetMatch($normalized);
+        $datasetMatches = $this->findAllDatasetMatches($normalized);
 
         if ($isGreeting) {
             return $this->greetingReply($scope);
         }
 
-        if ($datasetMatch !== null) {
-            return $this->datasetReply($datasetMatch);
+        if (!empty($datasetMatches)) {
+            return $this->datasetMultiReply($datasetMatches);
         }
 
         if ($scope === 'admin') {
@@ -296,6 +296,66 @@ class SupportAssistant
             'booking-guide' => $this->customerBookingReply(),
             default => $this->reply([(string) ($match['answer'] ?? 'How can I help you with Emperor Hotel today?')], 'dataset'),
         };
+    }
+
+    private function datasetMultiReply(array $matches): array
+    {
+        if (count($matches) === 1) {
+            return $this->datasetReply($matches[0]);
+        }
+
+        $html = "<div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 10px; padding: 10px 12px;'>";
+        $html .= "<div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;'>";
+        $html .= "<span>✨ Hotel Amenities & Services Details</span>";
+        $html .= "<span style='font-size:10px; color:#94a3b8; background:rgba(212,175,55,0.12); padding:2px 6px; border-radius:99px;'>Concierge Guide</span>";
+        $html .= "</div>";
+        $html .= "<div style='display:flex; flex-direction:column; gap:6px;'>";
+
+        $iconMap = [
+            'breakfast' => '🍳',
+            'buffet' => '🍳',
+            'pool' => '🏊',
+            'swimming' => '🏊',
+            'spa' => '💆',
+            'massage' => '💆',
+            'gym' => '🏋️',
+            'fitness' => '🏋️',
+            'wifi' => '📶',
+            'internet' => '📶',
+            'parking' => '🅿️',
+            'pet' => '🐾',
+            'check in' => '🔑',
+            'check out' => '🚪',
+            'extra bed' => '🛏️',
+            'cancellation' => '📋',
+        ];
+
+        foreach ($matches as $match) {
+            $answer = htmlspecialchars((string) ($match['answer'] ?? ''));
+            $title = htmlspecialchars(ucwords((string) ($match['patterns'][0] ?? 'Facility Details')));
+            $icon = '✨';
+
+            foreach ($iconMap as $key => $ic) {
+                if (str_contains(strtolower($title), $key) || str_contains(strtolower($answer), $key)) {
+                    $icon = $ic;
+                    break;
+                }
+            }
+
+            $html .= "
+            <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:8px 10px; border-radius:6px;'>
+                <strong style='color:#ffdf73; font-size:12px;'>{$icon} {$title}</strong>
+                <p style='font-size:11px; color:#cbd5e1; margin:3px 0 0 0; line-height:1.4;'>{$answer}</p>
+            </div>";
+        }
+
+        $html .= "</div></div>";
+
+        return [
+            'text' => $html,
+            'kind' => 'customer-concierge',
+            'quick_chips' => ['🏨 Room Categories', '💰 Suite Rates', '📅 Available Rooms'],
+        ];
     }
 
     private function aiReply(string $scope, array $range, array $keywords): array
@@ -665,10 +725,9 @@ class SupportAssistant
         return $this->matchesAny($text, ['statistics', 'stats', 'analytics', 'summary', 'overview', 'numbers', 'metrics', 'performance', 'trend', 'how many', 'what is the revenue', 'what are the numbers']);
     }
 
-    private function findBestDatasetMatch(string $normalizedMessage): ?array
+    private function findAllDatasetMatches(string $normalizedMessage): array
     {
-        $bestEntry = null;
-        $bestScore = 0.0;
+        $matches = [];
         $input = $normalizedMessage;
 
         foreach ($this->datasetEntries() as $entry) {
@@ -690,25 +749,23 @@ class SupportAssistant
                     }
                 }
 
-                if ($input === $normalizedPattern) {
-                    $score = 1.0;
-                } else {
-                    $patternWords = count(explode(' ', $normalizedPattern));
-                    $inputWords = count(explode(' ', $input));
-                    $coverage = $patternWords / max($inputWords, 1);
-                    
-                    $score = 0.55 + ($coverage * 0.25) + (strlen($normalizedPattern) / 80);
-                    $score = min(1.0, $score);
+                $alreadyAdded = false;
+                foreach ($matches as $existing) {
+                    if (($existing['answer'] ?? '') === ($entry['answer'] ?? '')) {
+                        $alreadyAdded = true;
+                        break;
+                    }
                 }
 
-                if ($score > $bestScore) {
-                    $bestScore = $score;
-                    $bestEntry = $entry;
+                if (!$alreadyAdded) {
+                    $matches[] = $entry;
                 }
+
+                break;
             }
         }
 
-        return $bestEntry && $bestScore >= 0.55 ? $bestEntry : null;
+        return $matches;
     }
 
     private function datasetEntries(): array
