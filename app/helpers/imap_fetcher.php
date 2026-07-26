@@ -26,15 +26,25 @@ function cleanEmailReplyBody(string $rawBody): string
     $cleanLines = [];
 
     foreach ($lines as $line) {
-        $trimmed = trim($line);
+        // Normalize all unicode spaces (including \u{00A0} and \u{202F}) to standard space
+        $trimmed = preg_replace('/[\s\x{00A0}\x{202F}]+/u', ' ', $line);
+        $trimmed = trim((string)$trimmed);
+
+        if ($trimmed === '') {
+            continue;
+        }
 
         // Stop parsing at quoted thread dividers (e.g. "On Sun, Jul 26... wrote:")
         if (
-            preg_match('/^On\s+.*wrote\s*:/i', $trimmed) ||
+            preg_match('/^On\s+[A-Za-z0-9,.\s:]+(wrote|written|said)\s*:/i', $trimmed) ||
             preg_match('/^On\s+.*<.*@.*>/i', $trimmed) ||
+            preg_match('/^On\s+[A-Z][a-z]{2},\s+[A-Z][a-z]{2}\s+\d+/i', $trimmed) ||
+            (str_starts_with($trimmed, 'On ') && str_contains($trimmed, '<') && str_contains($trimmed, '>')) ||
+            (str_starts_with($trimmed, 'On ') && str_contains(strtolower($trimmed), 'wrote')) ||
             str_starts_with($trimmed, '-----Original Message-----') ||
             str_starts_with($trimmed, '---------- Forwarded message ---------') ||
-            str_starts_with($trimmed, '> THE EMPEROR HOTEL')
+            str_starts_with($trimmed, '> THE EMPEROR HOTEL') ||
+            str_starts_with($trimmed, 'THE EMPEROR HOTEL')
         ) {
             break;
         }
@@ -59,9 +69,7 @@ function cleanEmailReplyBody(string $rawBody): string
             continue;
         }
 
-        if ($trimmed !== '') {
-            $cleanLines[] = $trimmed;
-        }
+        $cleanLines[] = $trimmed;
     }
 
     $cleaned = implode("\n", $cleanLines);
@@ -108,7 +116,7 @@ function syncGmailReplies(PDO $db): array
     $smtpPass = getenv('SMTP_PASSWORD') ?: (getenv('SMTP_PASS') ?: ($_ENV['SMTP_PASSWORD'] ?? ($_ENV['SMTP_PASS'] ?? ($_SERVER['SMTP_PASSWORD'] ?? ($_SERVER['SMTP_PASS'] ?? '')))));
 
     $imapUser = getenv('IMAP_USER') ?: ($_ENV['IMAP_USER'] ?? ($_SERVER['IMAP_USER'] ?? $smtpUser));
-    $imapPass = getenv('IMAP_PASSWORD') ?: (getenv('IMAP_PASS') ?: ($_ENV['IMAP_PASSWORD'] ?? ($_ENV['IMAP_PASS'] ?? ($_SERVER['IMAP_PASSWORD'] ?? ($_SERVER['SMTP_PASS'] ?? $smtpPass)))));
+    $imapPass = getenv('IMAP_PASSWORD') ?: (getenv('IMAP_PASS') ?: ($_ENV['IMAP_PASSWORD'] ?? ($_ENV['IMAP_PASS'] ?: ($_SERVER['IMAP_PASSWORD'] ?? ($_SERVER['SMTP_PASS'] ?? $smtpPass)))));
 
     if (empty($imapUser) || empty($imapPass)) {
         return [

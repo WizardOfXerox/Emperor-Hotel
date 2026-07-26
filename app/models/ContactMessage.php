@@ -187,6 +187,14 @@ class ContactMessage
             throw new RuntimeException('Message thread not found.');
         }
 
+        // Deduplication Check: Do not append if exact reply content is already present!
+        $cleanExisting = strtolower((string)preg_replace('/[\s\x{00A0}\x{202F}]+/u', ' ', (string)$existing['message']));
+        $cleanNew = strtolower((string)preg_replace('/[\s\x{00A0}\x{202F}]+/u', ' ', $guestReplyText));
+
+        if ($cleanNew !== '' && str_contains($cleanExisting, $cleanNew)) {
+            return true;
+        }
+
         $appendedMessage = $existing['message'] . "\n\n[Guest Follow-up Reply on " . date('M d, Y H:i') . "]:\n" . $guestReplyText;
 
         // Reset status to Unread so Admin sees the new guest response in inbox!
