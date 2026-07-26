@@ -43,6 +43,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string) ($_POST['action'] ?? '');
 
     try {
+        if ($action === 'guest_reply_message') {
+            $messageId = (int) ($_POST['message_id'] ?? 0);
+            $replyText = trim((string) ($_POST['guest_reply_text'] ?? ''));
+
+            $contactMessageModel = new ContactMessage($db);
+            $targetMsg = $contactMessageModel->find($messageId);
+
+            if (!$targetMsg || ((int)$targetMsg['user_id'] !== (int)$user['user_id'] && $targetMsg['email'] !== $user['email'])) {
+                throw new RuntimeException('Target concierge message was not found for this account.');
+            }
+
+            if ($replyText === '') {
+                throw new RuntimeException('Reply message content cannot be empty.');
+            }
+
+            $contactMessageModel->appendGuestReply($messageId, $replyText);
+            setFlash('success', 'Your reply has been sent directly to the Front Desk & Concierge Desk!');
+            redirect('dashboard.php');
+        }
+
         if ($action === 'submit_review') {
             $reviewModel = new Review($db);
             $reviewModel->create([
@@ -549,6 +569,109 @@ renderSiteLayoutStart('My Dashboard', $user, '../site/', ['../assets/css/user/da
                     </div>
                 </div>
             </article>
+        <?php endforeach; ?>
+    </div>
+</section>
+
+<!-- CONCIERGE DESK MESSAGES & SUPPORT NOTICES -->
+<?php
+$contactMessageModel = new ContactMessage($db);
+$userMessages = $contactMessageModel->findForUser((int) $user['user_id'], (string) $user['email']);
+?>
+<section class="card rounded-4 p-4 shadow-lg border mb-5 dashboard-main-card">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary">
+        <div>
+            <h6 class="text-uppercase tracking-wider text-warning font-serif fw-bold m-0 mb-1"><i class="bi bi-chat-left-text-fill me-2"></i>Concierge Desk Communications</h6>
+            <h2 class="h3 font-serif fw-bold dashboard-title mb-1">Messages & Support Notices</h2>
+            <p class="dashboard-subtitle text-xs m-0">View messages, booking updates, and concierge inquiries sent by Emperor Hotel staff.</p>
+        </div>
+        <a href="../site/contact.php" class="btn btn-sm btn-outline-warning rounded-pill px-3 font-serif fw-semibold"><i class="bi bi-envelope-plus me-1"></i>New Inquiry to Concierge</a>
+    </div>
+
+    <div class="d-flex flex-column gap-3">
+        <?php if (!$userMessages): ?>
+            <div class="text-center py-4 text-muted small">
+                <i class="bi bi-chat-left-check me-2"></i>You have no active concierge messages or notices at this time.
+            </div>
+        <?php endif; ?>
+
+        <?php foreach ($userMessages as $msg):
+            $msgId = (int) $msg['message_id'];
+            $isUnread = $msg['status'] === 'Unread';
+        ?>
+            <article class="p-3 rounded-4 border dashboard-history-item">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge-soft"><?php echo e($msg['inquiry_type']); ?></span>
+                            <?php if ($msg['status'] === 'Replied'): ?>
+                                <span class="badge bg-success text-white text-xs"><i class="bi bi-check-circle-fill me-1"></i>Concierge Replied</span>
+                            <?php elseif ($isUnread): ?>
+                                <span class="badge bg-danger text-white text-xs"><i class="bi bi-bell-fill me-1"></i>New Hotel Notice</span>
+                            <?php else: ?>
+                                <span class="badge bg-secondary text-light text-xs"><?php echo e($msg['status']); ?></span>
+                            <?php endif; ?>
+                            <span class="text-muted text-xs ms-2"><?php echo e(date('M d, Y H:i', strtotime($msg['created_at']))); ?></span>
+                        </div>
+                        <strong class="dashboard-title text-sm d-block mb-1"><?php echo e($msg['subject'] ?: $msg['inquiry_type']); ?></strong>
+                        <p class="text-muted text-xs m-0 text-truncate" style="max-width: 600px;"><?php echo e(mb_strimwidth($msg['message'], 0, 100, '...')); ?></p>
+                    </div>
+
+                    <div class="text-end">
+                        <button class="btn btn-xs btn-warning rounded-pill px-3 font-serif fw-bold text-dark" type="button" data-bs-toggle="modal" data-bs-target="#userMessageModal_<?php echo $msgId; ?>">
+                            <i class="bi bi-envelope-open-fill me-1"></i>Read &amp; Reply
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <!-- GUEST VIEW & REPLY MODAL -->
+            <div class="modal fade" id="userMessageModal_<?php echo $msgId; ?>" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content bg-dark text-light border-gold-glow rounded-4 p-3 shadow-lg" style="background: rgba(15, 23, 42, 0.98) !important; border: 1px solid rgba(212, 175, 55, 0.45) !important;">
+                        <div class="modal-header border-secondary">
+                            <div>
+                                <p class="eyebrow mb-1 text-warning"><i class="bi bi-shield-check me-1"></i>Emperor Hotel Concierge Desk</p>
+                                <h5 class="modal-title font-serif text-white fw-bold"><?php echo e($msg['subject'] ?: $msg['inquiry_type']); ?></h5>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Message Body -->
+                            <div class="mb-4">
+                                <label class="form-label text-xs text-uppercase tracking-wider text-warning font-serif fw-bold"><i class="bi bi-chat-left-quote-fill me-1"></i>Message Content / Notice:</label>
+                                <div class="p-3 rounded-3 border border-secondary text-sm text-light" style="background: rgba(15, 23, 42, 0.9); line-height: 1.6; white-space: pre-wrap;"><?php echo e($msg['message']); ?></div>
+                            </div>
+
+                            <!-- Hotel Staff Reply (if staff replied) -->
+                            <?php if (!empty($msg['reply_message'])): ?>
+                                <div class="mb-4">
+                                    <label class="form-label text-xs text-uppercase tracking-wider text-success font-serif fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Emperor Hotel Staff Response (<?php echo e(date('M d, Y H:i', strtotime($msg['replied_at']))); ?>):</label>
+                                    <div class="p-3 rounded-3 border border-success text-sm text-light" style="background: rgba(16, 185, 129, 0.1); line-height: 1.6; white-space: pre-wrap;"><?php echo e($msg['reply_message']); ?></div>
+                                </div>
+                            <?php endif; ?>
+
+                            <!-- Guest Reply Form -->
+                            <form method="post" action="dashboard.php">
+                                <input type="hidden" name="action" value="guest_reply_message">
+                                <input type="hidden" name="message_id" value="<?php echo $msgId; ?>">
+
+                                <div class="mb-3">
+                                    <label class="form-label text-xs text-uppercase tracking-wider text-warning font-serif fw-bold" for="guest_reply_text_<?php echo $msgId; ?>"><i class="bi bi-reply-fill me-1"></i>Reply Back to Concierge Desk:</label>
+                                    <textarea name="guest_reply_text" id="guest_reply_text_<?php echo $msgId; ?>" rows="3" class="form-control form-control-sm bg-dark text-light border-warning rounded-3 text-xs" style="padding: 10px 14px; min-height: 90px; line-height: 1.5;" placeholder="Type your follow-up reply to hotel staff here..." required></textarea>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary">
+                                    <span class="text-xs text-muted"><i class="bi bi-shield-check text-warning me-1"></i>Sends instant follow-up to Front Desk Admin</span>
+                                    <button type="submit" class="btn btn-warning rounded-pill px-4 font-serif fw-bold text-dark shadow">
+                                        <i class="bi bi-send-fill me-2"></i>Send Reply to Concierge Desk
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         <?php endforeach; ?>
     </div>
 </section>

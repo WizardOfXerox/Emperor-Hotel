@@ -159,4 +159,46 @@ class ContactMessage
 
         return $summary;
     }
+
+    public function findForUser(int $userId, string $email): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT * FROM contact_messages 
+             WHERE user_id = :user_id OR email = :email 
+             ORDER BY created_at DESC, message_id DESC'
+        );
+        $stmt->execute([
+            'user_id' => $userId,
+            'email' => trim($email),
+        ]);
+
+        return $stmt->fetchAll();
+    }
+
+    public function appendGuestReply(int $messageId, string $guestReplyText): bool
+    {
+        $guestReplyText = trim($guestReplyText);
+        if ($guestReplyText === '') {
+            throw new RuntimeException('Reply message content cannot be empty.');
+        }
+
+        $existing = $this->find($messageId);
+        if (!$existing) {
+            throw new RuntimeException('Message thread not found.');
+        }
+
+        $appendedMessage = $existing['message'] . "\n\n[Guest Follow-up Reply on " . date('M d, Y H:i') . "]:\n" . $guestReplyText;
+
+        // Reset status to Unread so Admin sees the new guest response in inbox!
+        $stmt = $this->db->prepare(
+            'UPDATE contact_messages 
+             SET message = :message, status = "Unread" 
+             WHERE message_id = :message_id'
+        );
+
+        return $stmt->execute([
+            'message' => $appendedMessage,
+            'message_id' => $messageId,
+        ]);
+    }
 }
