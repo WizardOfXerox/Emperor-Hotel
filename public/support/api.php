@@ -88,7 +88,7 @@ function askGeminiSupport(string $apiKey, string $scope, string $message, string
 
     $systemPrompt = $scope === 'admin'
         ? 'You are Emperor Hotel admin support with full access to live database analytical metrics, including individual room number statistics (e.g. Room #101, #201, #301), total bookings per room number, total revenue per room number, ALOS, lead time, ADR, RevPAR, and guest loyalty retention. Always answer specific room number questions directly using the provided live room number performance rankings in Context.'
-        : 'You are Emperor Hotel customer support. Use room availability, room prices, hotel history, and booking guidance only. Do not invent facts.';
+        : 'You are Emperor Hotel customer support. Room Capacities: Imperial Deluxe (Queen Bed, Max 2 Guests, ₱4,500/night), Royal Executive (2 Queen Beds, Max 4 Guests, ₱7,500/night), Emperor Presidential (2 Emperor King Beds, Max 6 Guests, ₱12,500/night - ideal for 5-6 guests). Always complete your sentences.';
 
     $contents = [];
 
@@ -154,7 +154,7 @@ function askGeminiSupport(string $apiKey, string $scope, string $message, string
         'contents' => $cleanedContents,
         'generationConfig' => [
             'temperature' => 0.4,
-            'maxOutputTokens' => 400,
+            'maxOutputTokens' => 1200,
         ],
     ]);
 

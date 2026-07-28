@@ -100,6 +100,12 @@ class SupportAssistant
             return $this->customerReservationLookupReply();
         }
 
+        if (preg_match('/\b(?:recommend|suitable|fit|good|best|suggest|stay|room|suite|capacity)\b/i', $normalized)
+            && (preg_match('/\b([1-9]|10)\s*(?:people|persons|guests|pax|adults|members)\b/i', $normalized, $mCount)
+                || preg_match('/\bfor\s*([1-9]|10)\b/i', $normalized, $mCount))) {
+            return $this->customerRecommendationReply((int) $mCount[1]);
+        }
+
         if ($this->matchesAny($normalized, ['spa', 'dining', 'pool', 'breakfast', 'towel', 'pillows', 'shuttle', 'amenities', 'menu'])) {
             return $this->customerConciergeServicesReply();
         }
@@ -223,6 +229,72 @@ class SupportAssistant
     private function customerRoomPriceReply(): array
     {
         return $this->customerRoomTypeReply();
+    }
+
+    private function customerRecommendationReply(int $guestCount): array
+    {
+        $html = "
+        <div style='background: rgba(15,23,42,0.95); border: 1px solid rgba(212,175,55,0.35); border-radius: 10px; padding: 10px 12px;'>
+            <div style='color:#ffdf73; font-weight:bold; font-family:serif; font-size:14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;'>
+                <span>💡 Suite Recommendation</span>
+                <span style='font-size:10px; color:#94a3b8; background:rgba(212,175,55,0.12); padding:2px 6px; border-radius:99px;'>For {$guestCount} Guests</span>
+            </div>";
+
+        if ($guestCount <= 2) {
+            $html .= "
+            <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:8px 10px; border-radius:8px; margin-bottom:8px;'>
+                <div style='display:flex; justify-content:space-between; align-items:center;'>
+                    <strong style='color:#ffdf73; font-size:13px;'>Imperial Deluxe Suite</strong>
+                    <span style='background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid rgba(34,197,94,0.4); padding:1px 6px; border-radius:99px; font-size:10px; font-weight:bold;'>Max 2 Guests</span>
+                </div>
+                <p style='font-size:11px; color:#cbd5e1; margin:4px 0 6px 0;'>Perfect for solo travelers or couples. Features 1 Queen Bed, City Skyline View, and complimentary breakfast set.</p>
+                <div style='display:flex; justify-content:space-between; align-items:center;'>
+                    <strong style='color:#4ade80; font-size:12px;'>₱4,500.00 / night</strong>
+                    <a href='../user/dashboard.php' style='background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:3px 10px; border-radius:6px; text-decoration:none; font-size:11px;'>Book Imperial Deluxe &rarr;</a>
+                </div>
+            </div>";
+        } elseif ($guestCount <= 4) {
+            $html .= "
+            <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:8px 10px; border-radius:8px; margin-bottom:8px;'>
+                <div style='display:flex; justify-content:space-between; align-items:center;'>
+                    <strong style='color:#ffdf73; font-size:13px;'>Royal Executive Suite</strong>
+                    <span style='background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid rgba(34,197,94,0.4); padding:1px 6px; border-radius:99px; font-size:10px; font-weight:bold;'>Max 4 Guests</span>
+                </div>
+                <p style='font-size:11px; color:#cbd5e1; margin:4px 0 6px 0;'>Ideal for families or small groups of up to 4. Features 2 Queen Beds, Garden Terrace View, and breakfast buffet.</p>
+                <div style='display:flex; justify-content:space-between; align-items:center;'>
+                    <strong style='color:#4ade80; font-size:12px;'>₱7,500.00 / night</strong>
+                    <a href='../user/dashboard.php' style='background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:3px 10px; border-radius:6px; text-decoration:none; font-size:11px;'>Book Royal Executive &rarr;</a>
+                </div>
+            </div>";
+        } elseif ($guestCount <= 6) {
+            $html .= "
+            <div style='background:rgba(212,175,55,0.12); border:1px solid rgba(212,175,55,0.4); padding:8px 10px; border-radius:8px; margin-bottom:8px;'>
+                <div style='display:flex; justify-content:space-between; align-items:center;'>
+                    <strong style='color:#ffdf73; font-size:13px;'>👑 Emperor Presidential Suite</strong>
+                    <span style='background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid rgba(34,197,94,0.4); padding:1px 6px; border-radius:99px; font-size:10px; font-weight:bold;'>Max 6 Guests</span>
+                </div>
+                <p style='font-size:11px; color:#cbd5e1; margin:4px 0 6px 0;'>Highly recommended for your group of <strong>{$guestCount} guests</strong>! Our flagship suite features 2 Emperor King Beds, Panoramic Ocean View, breakfast buffet, and complimentary shuttle.</p>
+                <div style='display:flex; justify-content:space-between; align-items:center;'>
+                    <strong style='color:#4ade80; font-size:12px;'>₱12,500.00 / night</strong>
+                    <a href='../user/dashboard.php' style='background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:3px 10px; border-radius:6px; text-decoration:none; font-size:11px;'>Book Presidential Suite &rarr;</a>
+                </div>
+            </div>";
+        } else {
+            $html .= "
+            <div style='background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:8px 10px; border-radius:8px; margin-bottom:8px;'>
+                <strong style='color:#ffdf73; font-size:12px;'>Group Booking Recommendation ({$guestCount} Guests)</strong>
+                <p style='font-size:11px; color:#cbd5e1; margin:4px 0 6px 0;'>For large parties of {$guestCount} guests, we recommend reserving <strong>multiple suites</strong> (e.g. 1 Emperor Presidential Suite + 1 Royal Executive Suite).</p>
+                <a href='../user/dashboard.php' style='display:block; text-align:center; background:linear-gradient(135deg, #D4AF37, #FFDF73); color:#020617; font-weight:bold; padding:4px 10px; border-radius:6px; text-decoration:none; font-size:11px;'>Book Multiple Suites &rarr;</a>
+            </div>";
+        }
+
+        $html .= "</div>";
+
+        return [
+            'text' => $html,
+            'kind' => 'customer-recommendation',
+            'quick_chips' => ['📅 Available Rooms', '💰 Suite Rates', '🛎️ Concierge Desk'],
+        ];
     }
 
     private function customerBookingReply(): array
